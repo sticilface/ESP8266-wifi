@@ -186,7 +186,7 @@ void send_mqtt_msg (String topic, String message ) // overloading functon to all
 
 void handle_mqtt() {
  if (server.arg("mqttserver").length() != 0) mqttserver_command(server.arg("mqttserver")); 
- if (server.arg("reboot").length() != 0) system_restart(); // abort();
+ if (server.arg("reboot").length() != 0) ESP.reset(); // abort();
 
   if (server.arg("form_MQTT_enabled").length() != 0) 
   {

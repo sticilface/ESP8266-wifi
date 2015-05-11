@@ -22,13 +22,14 @@
 
 #include <ESP.h> // has to be below stdlib???
 
+/*
 extern "C" {
 #include "ets_sys.h"
 #include "c_types.h"
 #include "osapi.h"
 #include "user_interface.h"
 }
-
+*/
 
 /// Plugins....
 
