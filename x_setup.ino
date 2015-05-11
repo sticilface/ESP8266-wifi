@@ -82,7 +82,9 @@ void setup() {
   //server.on("/temperature", handle_temperature);
 
   // Start the server 
+
   server.begin();
+
   Serial.println("HTTP server started");
 
     timer.setInterval(APtimeout, deactivateAP);
@@ -91,6 +93,7 @@ void setup() {
 
   
   setup_Plugin ();
+  Serial.println("Plugins started");
 
 
 }
