@@ -92,6 +92,5 @@ void setup() {
   
   setup_Plugin ();
 
-//initiateWS2812();
 
 }
