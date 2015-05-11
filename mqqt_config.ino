@@ -68,12 +68,7 @@ if (mqttbuf.indexOf('=') > 0)
          if (instruction == "lights") plugin_lights_command(value);       
          if (instruction == "debug") debug_command(value);       
          //if (instruction == "settemp") melvide_setpoint_command(value);       
-         
-          if (instruction == "sethumidity") double_pct_command (value, Setpoint_Humidity, Humidity_SpAddress, Humidity_SpAddressbyte, "Setpoint_Humidity"); 
-          if (instruction == "settemp") double_pct_command (value, Setpoint, SpAddress, SpAddressbyte, "Setpoint"); 
-          if (instruction == "tempon") melvide_state_command (value);
-          if (instruction == "humidityon") humidity_state_command (value);
-       
+        
        //action_handler ();
         if (networkrestart) restartNetworking(); 
         if (mqttreload) mqttreloadfunc();
