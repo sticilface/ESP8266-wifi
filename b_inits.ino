@@ -13,6 +13,7 @@ PubSubClient mqttclient(mqttserver, 1883, callback, wifiClient);
  /// set timer....
 SimpleTimer timer;
 
+const String version = "Melvarium Beta";
 
 //Usage.....
 /*
