@@ -1,0 +1,8 @@
+Changelog for Melvano systems...
+
+1.0.0 - 9/4/15 
+	Projecy added to Git.
+	MQTT status included in config page
+	Looping For statements for variable parsing have been removed.
+	Functions for each variable + EEPROM saving now in 1 function, callable from MQTT or Web based commands.
+	Window Size added to Melvide
