@@ -1,0 +1,386 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"r",
+				"r"
+			],
+			[
+				"Se",
+				"SetPixelColor"
+			],
+			[
+				"cu",
+				"CurrentBrightness"
+			],
+			[
+				"count",
+				"countPixels"
+			],
+			[
+				"la",
+				"LastOpState"
+			],
+			[
+				"strip",
+				"stripoff"
+			],
+			[
+				"WS",
+				"WS2812timerID"
+			],
+			[
+				"str",
+				"stripOFFcalled"
+			],
+			[
+				"mqt",
+				"mqtttopicbuf"
+			],
+			[
+				"L",
+				"LastOpState"
+			],
+			[
+				"In",
+				"Input_Humidity"
+			],
+			[
+				"Addre",
+				"Addressbyte"
+			],
+			[
+				"V",
+				"ValueDouble"
+			],
+			[
+				"adress",
+				"Address"
+			],
+			[
+				"Windows",
+				"WindowSize_Humidity"
+			],
+			[
+				"Window",
+				"WindowSize_Humidity"
+			],
+			[
+				"A",
+				"Addressbyte"
+			],
+			[
+				"Setpoin",
+				"Setpoint_Humidity"
+			],
+			[
+				"humidity",
+				"humidity_status_string"
+			],
+			[
+				"digitalWrite",
+				"digitalWrite"
+			],
+			[
+				"byte",
+				"bytedump2"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "Melvana.ino",
+			"settings":
+			{
+				"buffer_size": 939,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/amelvin/git/Arduino/build/Arduino.app/Contents/Java/hardware/tools/esp8266/pyesptool/esptool.py",
+		"/Users/amelvin/git/Arduino/build/Arduino.app/Contents/Java/hardware/esp8266com/esp8266/platform.txt",
+		"/Users/amelvin/git/temp/Arduino/build/macosx/Arduino.app/Contents/Java/hardware/esp8266com/esp8266/platform.txt",
+		"/Users/amelvin/git/temp/Arduino/build/macosx/Arduino.app/Contents/Java/hardware/esp8266com/esp8266/programmers.txt",
+		"/Users/amelvin/git/Arduino/build/Arduino.working1.app/Contents/Java/hardware/esp8266com/esp8266/programmers.txt",
+		"/Users/amelvin/git/Arduino/build/Arduino.working1.app/Contents/Java/hardware/esp8266com/esp8266/platform.txt",
+		"/Users/amelvin/git/temp/Arduino/build/macosx/Arduino.app.old/Contents/Java/hardware/esp8266com/esp8266/boards.txt",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/c_ws2812.ino",
+		"/Users/amelvin/Dropbox/Arduino/libraries/NeoPixelBus/RgbColor.cpp",
+		"/Users/amelvin/Dropbox/Arduino/libraries/NeoPixelBus/RgbColor.h",
+		"/Users/amelvin/Downloads/CoolTermMac/baudrates.ini",
+		"/System/Library/Extensions/FTDIUSBSerialDriver.kext/Contents/Info.plist",
+		"/Users/amelvin/Dropbox/Arduino/libraries/NeoPixelBus/examples/NeoPixelFun/NeoPixelFun.pde",
+		"/Users/amelvin/Dropbox/Arduino/libraries/NeoPixelBus/NeoPixelBus.cpp",
+		"/Users/amelvin/hyperion.config.json",
+		"/Users/amelvin/Dropbox/Arduino/libraries/u8g/u8g.cpp",
+		"/Users/amelvin/Dropbox/Arduino/libraries/U8glibesp/utility/u8g.h",
+		"/Users/amelvin/Dropbox/Arduino/libraries/U8glibesp/utility/u8g_rot.c",
+		"/Users/amelvin/Dropbox/Arduino/libraries/Esp_WS2812/Esp_WS2812.h",
+		"/Users/amelvin/Dropbox/Arduino/libraries/U8glibesp/U8glibesp.cpp",
+		"/Users/amelvin/Dropbox/Arduino/libraries/U8glib/U8glib.h",
+		"/Users/amelvin/Dropbox/Arduino/libraries/U8glib/U8glib.cpp",
+		"/Users/amelvin/Dropbox/Arduino/ATTINY85/ESP-RESET-SCRIPT",
+		"/Users/amelvin/git/nodemcu-firmware/app/modules/u8g.c",
+		"/Users/amelvin/Dropbox/Arduino/libraries/u8g/u8g.h",
+		"/Users/amelvin/Dropbox/Arduino/un-crash-test/un-crash-test.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/d_memory_func.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/Melvano-Core.sublime-workspace",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/web_server.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/Melvano-Core.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/a_variables.ino",
+		"/Users/amelvin/git/Arduino/build/Arduino.app/Contents/Java/hardware/esp8266com/esp8266/programmers.txt",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/mqqt_config.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/misc_functions.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core-fuck/a_changelog.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core-fuck/.DS_Store",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core-fuck/changelog.sublime-workspace",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/x_setup.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/b_inits.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/a_changelog.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/c_command_handle.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/c_plugin_commands.ino",
+		"/Users/amelvin/Dropbox/projects/Sous Vide/Sous_Viduino/Sous_Viduino.ino",
+		"/Users/amelvin/Dropbox/Arduino/libraries/Adafruit-GFX-Library-master/Adafruit_GFX.h",
+		"/Users/amelvin/Dropbox/Arduino/libraries/Adafruit-GFX-Library-master/Adafruit_GFX.cpp",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/MelvinoPlugins.h",
+		"/Users/amelvin/Documents/Git-Projects/Melvano-Core/z_loop.ino",
+		"/Users/amelvin/Dropbox/Arduino/Projects/Melvano-Core/Melvano-Core/c_new_command_handle.ino",
+		"/Users/amelvin/Dropbox/Arduino/Projects/Melvano-Core/Melvano-Core/a_variables.ino",
+		"/Users/amelvin/Library/Application Support/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/Users/amelvin/Downloads/Arduino-espfinal.app/Contents/Java/hardware/esp8266com/esp8266/cores/esp8266/core_esp8266_noniso.c",
+		"/Users/amelvin/Documents/Arduino/libraries/EepromUtil/EepromUtil.cpp",
+		"/Users/amelvin/Documents/Arduino/libraries/EepromUtil/EepromUtil.h",
+		"/Users/amelvin/Downloads/Arduino.app/Contents/Java/hardware/esp8266com/esp8266/libraries/EEPROM/EEPROM.h",
+		"/Users/amelvin/Downloads/Arduino-ESP.app/Contents/Java/hardware/arduino/esp8266/cores/esp8266/core_esp8266_noniso.c",
+		"/Users/amelvin/Documents/Arduino/libraries/PubSubClient/PubSubClient.h",
+		"/Users/amelvin/Documents/Arduino/libraries/PubSubClient/PubSubClient.cpp",
+		"/Users/amelvin/Documents/Arduino/libraries/PubSubClient/pubsubclient-old/tests/README.md",
+		"/Users/amelvin/git/fishy-wifi/01 smart IP/README.md",
+		"/Users/amelvin/git/fishy-wifi/01 smart IP/init.lua",
+		"/Users/amelvin/git/fishy-wifi/01 smart IP/smart-ip-5.lua",
+		"/Users/amelvin/git/nodemcu-firmware/lua_examples/dht22/LEDvar.lua",
+		"/Users/amelvin/git/nodemcu-firmware/lua_examples/dht22/test.html",
+		"/Users/amelvin/Desktop/test",
+		"/Users/amelvin/git/nodemcu-firmware/lua_examples/dht22/http.lua",
+		"/Users/amelvin/git/nodemcu-firmware/lua_examples/dht22/ap.lua",
+		"/Users/amelvin/git/nodemcu-firmware/lua_examples/dht22/pwmled.lua",
+		"/Users/amelvin/git/nodemcu-firmware/lua_examples/dht22/init.lua",
+		"/Volumes/Untitled 13/etc/motion.conf",
+		"/Volumes/home/multimedia/apps and temp/01 script automation/webtunes/webtunes.html",
+		"/Volumes/home/multimedia/apps and temp/01 script automation/AHKsock-2.ahk",
+		"/Volumes/home/multimedia/apps and temp/01 script automation/AHKsock.ahk",
+		"/Volumes/home/multimedia/apps and temp/01 script automation/webtunes/player.php",
+		"/Volumes/home/multimedia/apps and temp/BIOS ASUS/itunes-carpc.au3",
+		"/Users/amelvin/Library/Application Support/Sublime Text 3/Packages/User/Plain text.sublime-settings",
+		"/Users/amelvin/Downloads/fnjailup-2.sh",
+		"/Users/amelvin/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings"
+	],
+	"find":
+	{
+		"height": 23.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"24577",
+			"system_get_free_heap_size",
+			"Plugin_enablebyte",
+			"Plugin_enabled",
+			"Input",
+			"TempC",
+			"lights_status",
+			"HEAD"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "Melvana.ino",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 939,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.1428592857.79001":
+	{
+		"height": 100.0
+	},
+	"output.build|/Users/amelvin/Documents/Git-Projects/Melvano-Core|1428592948.708241":
+	{
+		"height": 100.0
+	},
+	"output.build|/Users/amelvin/Documents/Git-Projects/Melvano-Core|1428592986.381843":
+	{
+		"height": 100.0
+	},
+	"output.build|/Users/amelvin/Documents/Git-Projects/Melvano-Core|1428593038.066005":
+	{
+		"height": 25.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "Melvana.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 206.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
