@@ -12,19 +12,8 @@ void LoadParams()
   	MQTT_enabled = false;
   }
 
-  if (EEPROM.read(Temperature_enablebyte) == flagvalue) {
-  	isrunning = true;
-  	// Plugin_enable
-  } else {
-  	isrunning = false;
-  }   
 
-  if (EEPROM.read(Humidity_enablebyte) == flagvalue) {
-  	isrunning_Humidity = true;
-  	// Plugin_enable
-  } else {
-  	isrunning_Humidity = false;
-  } 
+
 
 
   if (EEPROM.read(DEBUGenabledbyte) != 0) {

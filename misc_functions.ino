@@ -214,15 +214,6 @@ void Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
 }
 
 
-void flip ()
-
-{
-
-  int state = digitalRead(RelayPin3);  // get the current state of GPIO1 pin
-  digitalWrite(RelayPin3, !state);  
-  Serial.println("RELAY PIN CHANGED TO" + String(!state));
-
-}
 
 void uptime ()
 

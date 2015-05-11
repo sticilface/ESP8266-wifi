@@ -188,7 +188,7 @@ void debug_command (String value)
     DEBUG = 1;
     if(EEPROM.read(DEBUGenabledbyte) != 1) EEPROM.write(DEBUGenabledbyte, 1);
     EEPROM.commit();
-    flipper.attach(5, flip);
+    //flipper.attach(5, flip);
     send_mqtt_msg ("Status", "Debug set to timer");
 
 
@@ -201,8 +201,8 @@ void debug_command (String value)
     Serial.println("DEBUG IS DISBALED");
     if(EEPROM.read(DEBUGenabledbyte) != 0) EEPROM.write(DEBUGenabledbyte, 0);
     EEPROM.commit();
-    flipper.detach();
-      digitalWrite(13, LOW);  
+    //flipper.detach();
+    //  digitalWrite(13, LOW);  
     send_mqtt_msg ("Status", "Debug disabled");
 
 

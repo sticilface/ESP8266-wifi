@@ -65,9 +65,7 @@ if (mqttbuf.indexOf('=') > 0)
          if (instruction == "mqttserver") mqttserver_command(value);
          if (instruction == "serial") Serial_Command(value);
 
-         if (instruction == "lights") plugin_lights_command(value);       
          if (instruction == "debug") debug_command(value);       
-         //if (instruction == "settemp") melvide_setpoint_command(value);       
         
        //action_handler ();
         if (networkrestart) restartNetworking(); 
