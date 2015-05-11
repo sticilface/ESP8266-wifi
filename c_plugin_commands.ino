@@ -137,6 +137,126 @@ boolean driverelayinterrupt2;
 
 /////// ---- Code base ------
 
+void handle_root() {
+
+
+ if (server.arg("state").length() != 0) melvide_state_command(server.arg("state"));
+ if (server.arg("humidity").length() != 0) humidity_state_command(server.arg("humidity"));
+ if (server.arg("lights").length() != 0) plugin_lights_command(server.arg("lights"));
+ if (server.arg("debug").length() != 0) debug_command(server.arg("debug"));
+
+
+  
+httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + "</title></head>\n<body><h1>" + version + "</h1>\n";
+ 
+String status_color;
+ String humidity_status_color;
+ String temp_color;
+ String humidity_color;
+ String humidity_Status;
+ String temp_actual;
+ String humidity_actual;
+ String light_status_string;
+
+ if (light_status)
+  {
+    light_status_string = "green'> ON";
+  } else 
+  {
+    
+  light_status_string = "red'> OFF";
+
+  }
+
+  if(isrunning) 
+    {
+      Status = "ON";
+      status_color = "green";
+      //temp_actual = String(Input);
+      //humidity_actual = String(Humidity);
+
+      if ((Input < Setpoint - 2) || (Input > Setpoint + 2))
+      {
+        temp_color = "red";
+      } else
+      { temp_color = "green";}
+      
+      /*if ((Input <= Setpoint - 2) || (Input >= Setpoint + 2))
+      {
+        temp_color = "red";
+      } else
+      { temp_color = "green";} */ 
+
+    } else {   
+      Status = "OFF";  
+      status_color = "red";
+
+      //temp_actual = String(Input);
+      //humidity_actual = String(Humidity);
+
+      //temp_actual = " ";
+      //humidity_actual = " ";
+    }
+
+
+    ////// - humidity control
+
+      if(isrunning_Humidity) 
+    {
+      humidity_Status = "ON";
+      humidity_status_color = "green";
+      //humidity_actual = String(Input);
+      //humidity_actual = String(Humidity);
+
+      if ((Humidity < Setpoint_Humidity - 2) || (Humidity > Setpoint_Humidity + 2))
+      {
+        humidity_color = "red";
+      } else
+      { humidity_color = "green";}
+      
+      /*if ((Input <= Setpoint - 2) || (Input >= Setpoint + 2))
+      {
+        temp_color = "red";
+      } else
+      { temp_color = "green";} */ 
+
+    } else {   
+      humidity_Status = "OFF";  
+      humidity_status_color = "red";
+      humidity_color = "black";
+      // temp_actual = String(Input);
+      //humidity_actual = String(Humidity);
+
+      //temp_actual = " ";
+      //humidity_actual = " ";
+    }
+
+
+  httpbuf += "<form action='/' method='POST' style='display: inline;'>     Temperature Control is:  <font size='5' color='"+status_color+"'>" + Status + "</font>    <input type='submit' name='state' value='ON'>    <input type='submit' name='state' value='OFF'></form>"; 
+  httpbuf += "<br>Set Temperature: <font size='5'>" + String(Setpoint) +"</font>" ; // + ". Status is " + mqttconnected ;
+  httpbuf += "<br>Temperature is: <font size='5' color=' "+ temp_color + "'>" + String(Input) + "</font>";
+  
+  httpbuf += "<p><form action='/' method='POST' style='display: inline;'>     Humidity Control is:  <font size='5' color='" + humidity_status_color + "'>" + humidity_Status + "</font>    <input type='submit' name='humidity' value='ON'>    <input type='submit' name='humidity' value='OFF'></form>"; 
+  httpbuf += "<br>Set Humidity: <font size='5'>" + String(Setpoint_Humidity) +"</font>" ; // + ". Status is " + mqttconnected ;
+
+  httpbuf += "<br>Humidity is: <font size='5' color='"+ humidity_color + "'>" + String(Humidity) + "</font></br>";
+
+  //httpbuf += "<br> Output: " + String(pct) ; // + ". Status is " + mqttconnected ;
+ 
+  //httpbuf += "<form action='/' method='POST'>     Humidity Control is:  <font size='5' color='" + humidity_status_string + " </font>    <input type='submit' name='humidity' value='ON'>    <input type='submit' name='humidity' value='OFF'></form>";   
+  httpbuf += "<br><form action='/' method='POST'>     Lights are :  <font size='5' color='" + light_status_string + " </font>    <input type='submit' name='lights' value='ON'>    <input type='submit' name='lights' value='OFF'></form>";   
+  
+
+  httpbuf += htmlendstring; 
+  
+  server.send(200, "text/html", httpbuf);
+  
+
+
+               
+}
+
+
 void plugin_lights_command (String value)
 
 {
