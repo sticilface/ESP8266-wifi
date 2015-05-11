@@ -1,120 +1,18 @@
-       
-/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Root Main Page
------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-void handle_temperature() {
-
-
-  //Serial.print("TEST: Number of items in array: "+ String(sizeof(*config_string_names_actual)));
-  //Serial.println("Web Server Page entered!");
-/*  for (int i=0;i < number_of_strings; i++)
-  {
-    //Serial.println("Processing...." +   String((root_string_names_actual[i])) );
-
-    if (server.arg(root_string_names_actual[i]).length() != 0)
-       {
-        
-        Command_Handler(root_string_names_actual[i], server.arg(root_string_names_actual[i]));
-       }  
-  } */
- if (server.arg("state").length() != 0) melvide_state_command(server.arg("state"));
- 
-  if (server.arg("setpoint").length() != 0) double_pct_command (server.arg("setpoint"), Setpoint, SpAddress, SpAddressbyte, "Setpoint"); 
- if (server.arg("kp").length() != 0) double_pct_command (server.arg("kp"), Kp, KpAddress, KpAddressbyte, "Kp"); 
- if (server.arg("ki").length() != 0) double_pct_command (server.arg("ki"), Ki, KiAddress, KiAddressbyte, "Ki"); 
- if (server.arg("kd").length() != 0) double_pct_command (server.arg("kd"), Kd, KdAddress, KdAddressbyte, "Kd"); 
- if (server.arg("window").length() != 0) int_pct_command (server.arg("window"), WindowSize , WindowSizeAddress, WindowSizeAddressbyte, "WindowSize"); 
-
-
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Temperature </h1>\n";
-  //httpbuf += "<p>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
-  //httpbuf += "<br>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
- 
-  if(isrunning) 
-    {
-      Status = "on";
-    } else {   
-      Status = "off";  
-    }
-  httpbuf += "<form action='/temperature' method='POST'>     System is:  <font size='5' color='red'>" + Status + "</font>    <input type='submit' name='state' value='ON'>    <input type='submit' name='state' value='OFF'></form>"; 
-  httpbuf += "<p>Current Temperature is: " + String(Input);
-  //httpbuf += "<br>Current Humidity is: " + String(Humidity);
-  httpbuf += "<br>Current Set Temperature: " + String(Setpoint) ; // + ". Status is " + mqttconnected ;
-  httpbuf += "<br>Current Output: " + String(pct) ; // + ". Status is " + mqttconnected ;
-  httpbuf += "<br><form action='/temperature' method='POST'>\n";
-  httpbuf += "\n\nTemp: <input type='text' id='setpoint' name='setpoint' value='" + String(Setpoint) + "'><br>";
-  httpbuf += "\n\nKp: <input type='text' id='kp' name='kp' value='" + String(Kp) + "'>  (850)<br>";
-  httpbuf += "\n\nKi: <input type='text' id='kp' name='ki' value='" + String(Ki) + "'>  (0.5)<br>";
-  httpbuf += "\n\nKd: <input type='text' id='kp' name='kd' value='" + String(Kd) + "'>  (0.1)<br>";  
-  httpbuf += "\n\nWindow: <input type='text' id='window' name='window' value='" + String(WindowSize) + "'>  (10000)<br>";    
-  // working httpbuf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-  httpbuf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
-  httpbuf += "  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "</form></p>"; 
-
-  //httpbuf += "<p> Heap Size = " + String(system_get_free_heap_size()) + "</p>";
-  //httpbuf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
-  //httpbuf += "<br><a href='/wifi?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
-  //httpbuf += "<br><a href='/wifi?eeprom=wipe'> EEPROM FORMAT </a>";
-  httpbuf += htmlendstring; 
-  
-  server.send(200, "text/html", httpbuf);
-  
-
-
-               
-}
-
-/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Byte DUMP EEPROM to HTML.... Main Page 
------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-          
-  
-
-
-
-
-
-
 
 
 void handle_root() {
 
 
-  //Serial.print("TEST: Number of items in array: "+ String(sizeof(*config_string_names_actual)));
-  //Serial.println("Web Server Page entered!");
-/*  for (int i=0;i < number_of_strings; i++)
-  {
-    //Serial.println("Processing...." +   String((root_string_names_actual[i])) );
-
-    if (server.arg(root_string_names_actual[i]).length() != 0)
-       {
-        
-        Command_Handler(root_string_names_actual[i], server.arg(root_string_names_actual[i]));
-       }  
-  } */
  if (server.arg("state").length() != 0) melvide_state_command(server.arg("state"));
  if (server.arg("humidity").length() != 0) humidity_state_command(server.arg("humidity"));
  if (server.arg("lights").length() != 0) plugin_lights_command(server.arg("lights"));
  if (server.arg("debug").length() != 0) debug_command(server.arg("debug"));
 
- //if (server.arg("setpoint").length() != 0) melvide_setpoint_command(server.arg("setpoint")); 
- //if (server.arg("kp").length() != 0) melvide_kp_command(server.arg("kp"));
- //if (server.arg("ki").length() != 0) melvide_ki_command(server.arg("ki"));
- //if (server.arg("kd").length() != 0) melvide_kd_command(server.arg("kd"));
- //if (server.arg("window").length() != 0) melvide_window_command(server.arg("window"));
-          
-          
-          
-  /* for (int i=0;i < numberofcommands; ++i)
-          {
-              if (server.arg(commands[i]).length() != 0) Command_Handler(commands[i], server.arg(commands[i]));
-          } */
+
   
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + "</title></head>\n<body><h1>" + version + "</h1>\n";
-  //httpbuf += "<p>Current device name is: " + String(deviceid) + " (<a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>)";
-  //httpbuf += "<br>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
- String status_color;
+httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + "</title></head>\n<body><h1>" + version + "</h1>\n";
+ 
+String status_color;
  String humidity_status_color;
  String temp_color;
  String humidity_color;
@@ -211,20 +109,7 @@ void handle_root() {
   //httpbuf += "<form action='/' method='POST'>     Humidity Control is:  <font size='5' color='" + humidity_status_string + " </font>    <input type='submit' name='humidity' value='ON'>    <input type='submit' name='humidity' value='OFF'></form>";   
   httpbuf += "<br><form action='/' method='POST'>     Lights are :  <font size='5' color='" + light_status_string + " </font>    <input type='submit' name='lights' value='ON'>    <input type='submit' name='lights' value='OFF'></form>";   
   
-  //httpbuf += "<br><form action='/' method='POST'>\n";
-  //httpbuf += "\n\nTemp: <input type='text' id='setpoint' name='setpoint' value='" + String(Setpoint) + "'><br>";
-  //httpbuf += "\n\nKp: <input type='text' id='kp' name='kp' value='" + String(Kp) + "'>  (850)<br>";
-  //httpbuf += "\n\nKi: <input type='text' id='kp' name='ki' value='" + String(Ki) + "'>  (0.5)<br>";
-  //httpbuf += "\n\nKd: <input type='text' id='kp' name='kd' value='" + String(Kd) + "'>  (0.1)<br>";  
-  //httpbuf += "\n\nWindow: <input type='text' id='window' name='window' value='" + String(WindowSize) + "'>  (10000)<br>";    
-  // working httpbuf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-  //httpbuf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
-  //httpbuf += "  <input type='submit' value='Submit'/>" ; 
-  //httpbuf += "</form></p>"; 
-  //httpbuf += "<p> Heap Size = " + String(system_get_free_heap_size()) + "</p>";
-  //httpbuf += "<p> Up Time = " + String(millis()/60000) + " Minutes</p>";
-   // httpbuf += "<p> Heap Size = " + String(system_get_free_heap_size());
-  //httpbuf += "<br> Up Time = " + String(millis()/60000) + " Minutes";
+
   httpbuf += htmlendstring; 
   
   server.send(200, "text/html", httpbuf);
@@ -546,58 +431,6 @@ void handle_test() {
   
     server.send(200, "text/html", httpbuf);
     
-}
-
-
-
-
-void handle_humidity() {
-
-
-
- if (server.arg("state").length() != 0) humidity_state_command(server.arg("state"));
- if (server.arg("setpoint").length() != 0) double_pct_command (server.arg("setpoint"), Setpoint_Humidity, Humidity_SpAddress, Humidity_SpAddressbyte, "Setpoint_Humidity"); 
- if (server.arg("kp").length() != 0) double_pct_command (server.arg("kp"), Kp_Humidity, Humidity_KpAddress, Humidity_KpAddressbyte, "Kp_Humidity"); 
- if (server.arg("ki").length() != 0) double_pct_command (server.arg("ki"), Ki_Humidity, Humidity_KiAddress, Humidity_KiAddressbyte, "Ki_Humidity"); 
- if (server.arg("kd").length() != 0) double_pct_command (server.arg("kd"), Kd_Humidity, Humidity_KdAddress, Humidity_KdAddressbyte, "Kd_Humidity"); 
- if (server.arg("window").length() != 0) int_pct_command (server.arg("window"), WindowSize_Humidity , Humidity_WindowSizeAddress, Humidity_WindowSizeAddressbyte, "WindowSize_Humidity"); 
-
-  
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Humidity</h1>\n";
-  //httpbuf += "<p>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
-  //httpbuf += "<br>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
- 
-  if(isrunning_Humidity) 
-    {
-      Status = "on";
-    } else {   
-      Status = "off";  
-    }
-  httpbuf += "<form action='/humidity' method='POST'>     Humidity is:  <font size='5' color='red'>" + Status + "</font>    <input type='submit' name='state' value='ON'>    <input type='submit' name='state' value='OFF'></form>"; 
-  //httpbuf += "<p>Current Temperature is: " + String(Humidity);
-  httpbuf += "<br>Current Humidity is: " + String(Humidity);
-  httpbuf += "<br>Current Set Humidity: " + String(Setpoint_Humidity) ; // + ". Status is " + mqttconnected ;
-  httpbuf += "<br>Current Output: " + String(pct_Humidity) + "</br>"; // + ". Status is " + mqttconnected ;
-  httpbuf += "<br><form action='/humidity' method='POST'>\n";
-  httpbuf += "\n\nHumidity: <input type='text' id='setpoint' name='setpoint' value='" + String(Setpoint_Humidity) + "'><br>";
-  httpbuf += "\n\nKp: <input type='text' id='kp' name='kp' value='" + String(Kp_Humidity) + "'>  (850)<br>";
-  httpbuf += "\n\nKi: <input type='text' id='kp' name='ki' value='" + String(Ki_Humidity) + "'>  (0.5)<br>";
-  httpbuf += "\n\nKd: <input type='text' id='kp' name='kd' value='" + String(Kd_Humidity) + "'>  (0.1)<br>";  
-  httpbuf += "\n\nWindow: <input type='text' id='window' name='window' value='" + String(WindowSize_Humidity) + "'>  (10000)<br>";    
-  // working httpbuf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-  httpbuf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
-  httpbuf += "  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "  </form></p>"; 
-
-  //httpbuf += "<p> Heap Size = " + String(system_get_free_heap_size()) + "</p>";
-  //httpbuf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
-  //httpbuf += "<br><a href='/wifi?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
-  //httpbuf += "<br><a href='/wifi?eeprom=wipe'> EEPROM FORMAT </a>";
-  httpbuf += htmlendstring; 
-  
-  server.send(200, "text/html", httpbuf);
-
-
 }
 
 
