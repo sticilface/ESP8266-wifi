@@ -14,8 +14,9 @@
 #include <EEPROM.h>
 #include <EepromUtil.h>
 
+#include <SimpleTimer.h>
+#include <Ticker.h>
 
-//#include <Ticker.h>
 //#include <Esp_WS2812.h>
 
 
@@ -33,11 +34,4 @@ extern "C" {
 
 //#include <DallasTemperature.h>
 //#include <OneWire.h>
-#include <PID_v1.h>
-
-#include <Ticker.h>
-
-#include "DHT.h"
-
-#include <SimpleTimer.h>
 

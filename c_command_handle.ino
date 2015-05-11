@@ -56,28 +56,7 @@ void password_command (String value)
               
               Save_String(password, passwordAddress,passwordAddressbyte);
 
-              /// Save changes
-              /*
-              int writeaddress = passwordAddress;  
-              int writeaddressbyte = passwordAddressbyte;        
-              Serial.print("Saving new...");
-              char wipestring[16] = "123456789123456";
-              EepromUtil::eeprom_write_string(writeaddress, wipestring);
-              if (EepromUtil::eeprom_write_string(writeaddress, bufchar)) 
-                  { 
-                    Serial.print(" ..sucess...");                               
-                  }
-                    else {
-                    Serial.print(" ..fail..");
-                  }
-              
-              if(EEPROM.read(writeaddressbyte) != flagvalue)   //  Check if check bit has been written...
-                  {
-                    Serial.println("Check bit written");
-                    EEPROM.write(writeaddressbyte, flagvalue);
-                   } else Serial.println();
-              
-               EEPROM.commit(); */
+
             }
    }
 
@@ -100,28 +79,7 @@ void deviceid_command (String value)
               }
               Serial.println(deviceid);     
               Save_String(deviceid, deviceidAddress,deviceidAddressbyte);
-/*
-              /// Save changes
-              int writeaddress = deviceidAddress;  
-              int writeaddressbyte = deviceidAddressbyte;        
-              Serial.print("Saving new...");
-              char wipestring[16] = "123456789123456";
-              EepromUtil::eeprom_write_string(writeaddress, wipestring);
-              if (EepromUtil::eeprom_write_string(writeaddress, bufchar)) 
-                  { 
-                    Serial.print(" ..sucess...");                               
-                  }
-                    else {
-                    Serial.print(" ..fail..");
-                  }
-              
-              if(EEPROM.read(writeaddressbyte) != flagvalue)   //  Check if check bit has been written...
-                  {
-                    Serial.println("Check bit written");
-                    EEPROM.write(writeaddressbyte, flagvalue);
-                   } else Serial.println();
-              
-               EEPROM.commit(); */
+
             }
    }
    
@@ -147,29 +105,7 @@ void mqttserver_command (String value)
               }
               Serial.println(mqttserver);     
               Save_String(mqttserver, mqttAddress,mqttAddressbyte);
- /*             
-              /// Save changes
-              int writeaddress = mqttAddress;  
-              int writeaddressbyte = mqttAddressbyte;        
-              Serial.print("Saving new...");
-              char wipestring[16] = "123456789123456";
-              EepromUtil::eeprom_write_string(writeaddress, wipestring);
-              if (EepromUtil::eeprom_write_string(writeaddress, bufchar)) 
-                  { 
-                    Serial.print(" ..sucess...");                               
-                  }
-                    else {
-                    Serial.print(" ..fail..");
-                  }
-              
-              if(EEPROM.read(writeaddressbyte) != flagvalue)   //  Check if check bit has been written...
-                  {
-                    Serial.println("Check bit written");
-                    EEPROM.write(writeaddressbyte, flagvalue);
-                   } else Serial.println();
-              
-               EEPROM.commit();
-*/
+
                mqttreload = true;
 
             }

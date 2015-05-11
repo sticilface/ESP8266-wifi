@@ -259,11 +259,6 @@ void handle_mqtt() {
 
 }
 
-
-  //httpbuf += "<p> Heap Size = " + String(system_get_free_heap_size()) + "</p>";
-  //httpbuf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
-  //httpbuf += "<br><a href='/wifi?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
-  //httpbuf += "<br><a href='/wifi?eeprom=wipe'> EEPROM FORMAT </a>";
   httpbuf += htmlendstring; 
 
 
