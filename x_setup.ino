@@ -76,7 +76,6 @@ void setup() {
   server.on("/io", handle_io);
   server.on("/test", handle_test);
 
-  server.on("/humidity", handle_humidity);
   server.on("/misc", handle_misc);
   //server.on("/ws2812", handle_WS2812);
 

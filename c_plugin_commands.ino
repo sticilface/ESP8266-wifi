@@ -625,6 +625,7 @@ void setup_Plugin ()
 	Load_melvide_params();
 
   server.on("/temperature", handle_temperature);
+  server.on("/humidity", handle_humidity);
 
 
   dht.begin();
