@@ -16,4 +16,4 @@ SimpleTimer timer;
 const String version = "Melvarium Beta";
 
 
-  
+  NeoPixelBus strip = NeoPixelBus(8, 2);

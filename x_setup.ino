@@ -90,10 +90,10 @@ void setup() {
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
     timer.setInterval(Uptimer_timeout, uptime);
-
   
   setup_Plugin ();
   Serial.println("Plugins started");
+    //timer.setInterval(32,ws2812_animating);
 
 
 }

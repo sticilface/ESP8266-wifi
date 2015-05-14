@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"topic",
+				"topicrecieved"
+			],
+			[
 				"r",
 				"r"
 			],
@@ -92,10 +96,18 @@
 	"buffers":
 	[
 		{
-			"file": "Melvana.ino",
+			"file": "c_ws2812.ino",
 			"settings":
 			{
-				"buffer_size": 939,
+				"buffer_size": 16187,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "c_plugin_commands.ino",
+			"settings":
+			{
+				"buffer_size": 716,
 				"line_ending": "Unix"
 			}
 		}
@@ -130,8 +142,28 @@
 		"side_bar_visible": false,
 		"status_bar_visible": false
 	},
+	"expanded_folders":
+	[
+		"/Users/amelvin/Documents/Git-Projects/Melvana"
+	],
 	"file_history":
 	[
+		"/Users/amelvin/Documents/Git-Projects/Melvana/z_loop.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/c_plugin_commands.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/a_0plugin_headers.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/Melvana.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/mqqt_config.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/b_display.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/c_command_handle.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/d_memory_func.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/b_inits.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/web_server.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/misc_functions.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/x_setup.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/0_plugin_headers.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/0_plugin_headers",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/plugin.h",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/MelvinoPlugins.h",
 		"/Users/amelvin/git/Arduino/build/Arduino.app/Contents/Java/hardware/tools/esp8266/pyesptool/esptool.py",
 		"/Users/amelvin/git/Arduino/build/Arduino.app/Contents/Java/hardware/esp8266com/esp8266/platform.txt",
 		"/Users/amelvin/git/temp/Arduino/build/macosx/Arduino.app/Contents/Java/hardware/esp8266com/esp8266/platform.txt",
@@ -212,7 +244,7 @@
 	],
 	"find":
 	{
-		"height": 23.0
+		"height": 35.0
 	},
 	"find_in_files":
 	{
@@ -226,6 +258,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"255",
+			"CurrentBrightness",
 			"24577",
 			"system_get_free_heap_size",
 			"Plugin_enablebyte",
@@ -256,19 +290,49 @@
 			[
 				{
 					"buffer": 0,
-					"file": "Melvana.ino",
+					"file": "c_ws2812.ino",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 939,
+						"buffer_size": 16187,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								9266,
+								9266
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4459.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "c_plugin_commands.ino",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 716,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								671,
+								671
 							]
 						],
 						"settings":
@@ -279,7 +343,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -291,7 +355,7 @@
 	},
 	"input":
 	{
-		"height": 0.0
+		"height": 31.0
 	},
 	"layout":
 	{

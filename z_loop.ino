@@ -16,5 +16,18 @@ loop_Plugin();
  
     //CPU_clock_count();
 
+ //strip.UpdateAnimations();
+
  
+
+}
+
+void ws2812_animating () {
+ if (strip.IsAnimating())
+  {
+
+  
+    strip.UpdateAnimations();
+    strip.Show();
+}
 }
