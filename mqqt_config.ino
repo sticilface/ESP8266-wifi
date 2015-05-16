@@ -3,12 +3,18 @@
 
 
 
-void callback(char* mqtttopic, byte* payload, unsigned int length) {
+//void callback(char* mqtttopic, byte* payload, unsigned int length) {
+
+void callback(const MQTT::Publish& pub) {
 
   Serial.print("MQTT Message Recieved: ");
+  Serial.print(pub.topic());
+  Serial.print(" => ");
+  Serial.println(pub.payload_string());
 
-    mqttbufcharclear (); // Clear the MQTT buffer..
 
+  //  mqttbufcharclear (); // Clear the MQTT buffer..
+/*
     char messagerecieved[length];
 
       for (int i = 0; i < length; i++)
@@ -28,6 +34,10 @@ void callback(char* mqtttopic, byte* payload, unsigned int length) {
         Serial.println(mqttbuf);
     
         const char identify[] = "identify";
+*/
+    String topicrecieved = pub.topic();
+            mqttbuf = pub.payload_string();
+
 
 /*
    if (topicrecieved.indexOf("/WS2812period") > 0) WS2812timer_command_string(mqttbuf);
@@ -97,16 +107,24 @@ if (mqttbuf.indexOf('=') > 0)
 
 void initiatemqqt ()
     {
-      
-      
-      
+      //IPAddress MQTTserver(0,0,0,0);
+
+      //PubSubClient mqttclient(MQTTserver);
+        mqttclient.set_server(MQTTserver);
+
+
+        mqttclient.set_callback(callback);
+
+
       Serial.print("Initiating MQTT Connection: ");
       if (EEPROM.read(mqttAddressbyte) == flagvalue) 
         {                   
       if (!mqttclient.connected()) 
         {             // - check to see if connected 
           
-          Serial.print("Connecting: ("+ String(mqttserver) + ")....");
+          Serial.print("Connecting: (") ;
+            Serial.print(MQTTserver);
+            Serial.print(")....");
           if(mqttclient.connect(deviceid)) 
           
                 {     //  - if not connected then connect 
