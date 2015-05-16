@@ -47,6 +47,7 @@ void handle_WS2812 () { // handles the web commands...
   { WS2812_command_string("rgb " + server.arg("rgb"));
     //Serial.println("RGB command: " + server.arg("rgb"));
   }
+  
  if (server.arg("rgbpicker").length() != 0) 
   { WS2812_command_string("rgb " + server.arg("rgbpicker"));
     //Serial.println("RGB picker command: " + server.arg("rgbpicker"));
@@ -360,7 +361,7 @@ int b = StripColor & 0xFF;
   //for(j=0; j<256; j++) { v
     for(i=0; i<countPixels; i++) {
 
-      strip.SetPixelColor(i, Wheel(i+wsPoint )) ; // & 255));
+      strip.SetPixelColor(i, Wheel(i+wsPoint )) & 255));
     }
     //strip.setPixelColor(0,0);
     strip.Show();

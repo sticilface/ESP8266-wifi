@@ -82,7 +82,7 @@ char mqttserver[BUFSIZE];// = "192.168.1.24";
 //const char* commands[numberofcommands] = {"setpoint","kd","ki","kp","state","ssid","password","eeprom","deviceid","mqttserver","restart", "send","test"};
 
 
-String htmlendstring = "<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a>";
+String htmlendstring = "<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a> <a href='/ws2812'>WS2812</a>";
 
 
 
@@ -100,4 +100,8 @@ const int bitaddress = 500;
 #define PIN_6 0x20
 #define PIN_7 0x40
 #define PIN_8 0x80
+
+enum operatingState { OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,COOLBLOBS};
+operatingState opState = OFF;
+operatingState LastOpState = LOOPAROUND;
 
