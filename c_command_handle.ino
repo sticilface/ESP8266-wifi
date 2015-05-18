@@ -89,6 +89,47 @@ void deviceid_command (String value)
 void mqttserver_command (String value)
 {
           Serial.print("*MQTTServer recieved....");
+          Serial.println(value);
+          IPAddress tempaddress;
+  for (int i = 0; i < 4; i++) {
+   String token = value.substring(0,value.indexOf('.'));
+   value = value.substring(value.indexOf('.') + 1 , value.length());
+   //Serial.println(String(i) + " : " + token);
+   int tokenInt = token.toInt();
+   tempaddress[i] = (byte)tokenInt;
+   }
+
+   if (MQTTserver == tempaddress) {
+    Serial.println("No change. Exiting MQTTServer command");
+    return;
+    } else {
+   Serial.print("MQTTserver IPAddress CHANGED: ");
+   MQTTserver = tempaddress;
+   send_mqtt_msg("Status","MQTTServer updated: " + MQTTserver);
+   Serial.println(tempaddress);
+
+   for (int i=0; i<4; i++) {  // SAVE NEW TO EEPROM
+    EEPROM.write( mqttAddress+i,(byte)MQTTserver[i]);
+   }
+    EEPROM.write (mqttAddressbyte,flagvalue);
+    EEPROM.commit();
+ /*
+
+   IPAddress READtest;
+     for (int i=0; i<4; i++) {  // SAVE NEW TO EEPROM
+    READtest[i] = EEPROM.read( mqttAddress+i);
+   }
+
+  Serial.print("READ test : " );
+  Serial.println(READtest);
+
+*/
+mqttreload = true;
+
+ }
+
+
+/*
           String buf;
           buf = value.substring(0,BUFSIZE-1);
           buf.toCharArray(bufchar, BUFSIZE);
@@ -108,7 +149,7 @@ void mqttserver_command (String value)
 
                mqttreload = true;
 
-            }
+            } */
    }
    
 void debug_command (String value)
@@ -172,7 +213,7 @@ void mqttreloadfunc ()
       WiFiClient wifiClient;
       delay(10);
       Serial.println("Calling pubsubclient:..... ");
-      PubSubClient mqttclient(mqttserver, 1883, callback, wifiClient);
+      //PubSubClient mqttclient(mqttserver, 1883, callback, wifiClient);
       delay(10);
       initiatemqqt (); 
                          

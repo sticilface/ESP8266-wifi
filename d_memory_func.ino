@@ -4,7 +4,18 @@ void LoadParams()
   if (EEPROM.read(deviceidAddressbyte) == flagvalue) EepromUtil::eeprom_read_string(deviceidAddress, deviceid, BUFSIZE);
   if (EEPROM.read(ssidAddressbyte) == flagvalue) EepromUtil::eeprom_read_string(ssidAddress, ssid , BUFSIZE);
   if (EEPROM.read(passwordAddressbyte) == flagvalue) EepromUtil::eeprom_read_string(passwordAddress, password, BUFSIZE);
-  if (EEPROM.read(mqttAddressbyte) == flagvalue) EepromUtil::eeprom_read_string(mqttAddress, mqttserver, BUFSIZE);
+  if (EEPROM.read(mqttAddressbyte) == flagvalue) 
+  {
+    //EepromUtil::eeprom_read_string(mqttAddress, mqttserver, BUFSIZE);
+     for (int i=0; i<4; i++) {  // SAVE NEW TO EEPROM
+    MQTTserver[i] = EEPROM.read( mqttAddress+i);
+   }
+   
+   mqttserver = String(MQTTserver[0]) + "." + String(MQTTserver[1]) + "." + String(MQTTserver[2]) + "." + String(MQTTserver[3]) ; 
+
+   Serial.print("SAVED MqqttServer: ");
+   Serial.println(mqttserver);
+  }
   
   if (EEPROM.read(MQTTenabledbyte) == flagvalue) {
   	MQTT_enabled = true;

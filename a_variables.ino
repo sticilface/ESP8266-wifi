@@ -71,11 +71,12 @@ int DEBUG;
 boolean Plugin_enable = false;
 
 
+IPAddress MQTTserver(0,0,0,0);
 ////////////////////-----------MQTT---------------///////////////////
 
 char mqtttopic[BUFSIZE];// = "esp";
-char mqttserver[BUFSIZE];// = "192.168.1.24";
-
+// char mqttserver[BUFSIZE];// = "192.168.1.24";
+String mqttserver; 
 
 /////// ------- COMMAND ARGS -------
 //const int numberofcommands = 13;
