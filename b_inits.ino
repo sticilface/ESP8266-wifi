@@ -22,4 +22,6 @@ SimpleTimer timer;
 const String version = "WS2812";
 
 
-  NeoPixelBus strip = NeoPixelBus(120, 2);
+  //NeoPixelBus strip = NeoPixelBus(120, 2);
+  NeoPixelBus* strip = NULL; // dynamic
+

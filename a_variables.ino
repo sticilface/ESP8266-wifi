@@ -48,8 +48,7 @@ const int mqttAddressbyte = 4;
 const int APbyte = 5; // Used to set emergency access mode...
 const int MQTTenabledbyte = 6;
 const int DEBUGenabledbyte = 7;
-const int Temperature_enablebyte = 8; 
-const int Humidity_enablebyte = 9;
+
 
 //boolean MQTTenabled;
 
@@ -106,3 +105,5 @@ enum operatingState { OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, ADALIGHT, TES
 operatingState opState = OFF;
 operatingState LastOpState = LOOPAROUND;
 
+uint16_t pixelCount = 40;
+uint8_t pixelPIN = 2;

@@ -14,8 +14,7 @@ int spectrumValue[7];
 int filter=80;
 
 
-uint16_t pixelCount = 120;
-uint8_t pinPixels = 2;
+
 
 uint16_t effectState = 0;
 
@@ -28,7 +27,7 @@ uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 
 void handle_WS2812 () { // handles the web commands...
- 
+ boolean updateLEDs = false;
  //Serial.println("WS2812 - Web page called.");
  //= 0;
 //String CurrentRGBcolour = "00000";
@@ -44,6 +43,16 @@ void handle_WS2812 () { // handles the web commands...
   }
 
   if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
+
+  if (server.arg("leds").length() != 0) {
+    pixelCount = server.arg("leds").toInt();
+    updateLEDs = true;
+  }
+
+   if (server.arg("ledpin").length() != 0) {
+    pixelPIN = server.arg("ledpin").toInt();
+    updateLEDs = true;
+  }
  
 
 
@@ -70,11 +79,17 @@ void handle_WS2812 () { // handles the web commands...
   httpbuf += "<p>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' > ";
   httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
   httpbuf += "</form></p>"; 
+  httpbuf += "<p><form action='/ws2812' method='POST'";
+  httpbuf += "<form action='/ws2812' method='POST'>";    
+  httpbuf += "\n\nNumber of LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "'>";
+  httpbuf += "\n\nPIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "'>";
+  httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
+  httpbuf += "</form></p>"; 
   httpbuf += htmlendstring; 
   
   server.send(200, "text/html", httpbuf);
 
-
+if (updateLEDs) initiateWS2812();
 
 }
 
@@ -94,24 +109,25 @@ void WS2812_dim_string (String Value)
         Serial.println("Brightness Darken by: " + String(DiffDim));
 
         for (int i = 0; i < pixelCount; i++) {
-          prevColor = strip.GetPixelColor(i);
+          prevColor = strip->GetPixelColor(i);
           prevColor.Darken(DiffDim);
-          strip.SetPixelColor(i,prevColor);
+          strip->SetPixelColor(i,prevColor);
         }
       } else if (DiffDim < 0) { 
         DiffDim = DiffDim * -1;
         Serial.println("Brightness Lighten by: " + String(DiffDim));
           for (int i = 0; i < pixelCount; i++) {
-          prevColor = strip.GetPixelColor(i);
+          prevColor = strip->GetPixelColor(i);
           prevColor.Lighten(DiffDim);
-          strip.SetPixelColor(i,prevColor);       
+          strip->SetPixelColor(i,prevColor);       
         }
       } 
 
 
 
 
-          strip.Show();
+          strip->Show();
+;
 
 }
 
@@ -168,7 +184,7 @@ if (Value.indexOf("rgb") >= 0)
   Serial.println("RGB command recieved: " + instruction);
   NewColour = HEXtoRGB(instruction);
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
-      strip.LinearFadePixelColor(1000, pixel, NewColour);
+      strip->LinearFadePixelColor(1000, pixel, NewColour);
     }
 }
 
@@ -183,7 +199,7 @@ void SetRGBcolour (RgbColor value) {
    
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
 
-        strip.LinearFadePixelColor(1000, pixel, value);
+        strip->LinearFadePixelColor(1000, pixel, value);
     }
 
 }
@@ -218,9 +234,10 @@ void StripOFF() {
 
   for (int i = 0; i < pixelCount; i++)
   {
-    strip.SetPixelColor(i,0);
+    strip->SetPixelColor(i,0);
   }
-  strip.Show();
+  strip->Show();
+;
 
 }
 
@@ -230,8 +247,13 @@ void initiateWS2812 ()
 
 {
 
-  strip.Begin();
-  StripOFF();
+  //ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
+
+  //strip->Begin();
+  //StripOFF();
+  
+  // 
+  
   SetRandomSeed();
 
 }
@@ -261,7 +283,8 @@ switch (opState)
       rainbow();
       break;
     case COLOR:
-      strip.Show();
+      strip->Show();
+;
       break;
    case ChaseRainbow:
       //TuneP();
@@ -314,7 +337,7 @@ void setcolour () {
 
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
 
-      strip.LinearFadePixelColor(5000, pixel, NewColour);
+      strip->LinearFadePixelColor(5000, pixel, NewColour);
 
     }
 
@@ -329,7 +352,7 @@ void FadeInFadeOutRinseRepeat(uint8_t peak)
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
     {
       uint16_t time = random(800,100);
-      strip.LinearFadePixelColor(time, pixel, RgbColor(random(peak), random(peak), random(peak)));
+      strip->LinearFadePixelColor(time, pixel, RgbColor(random(peak), random(peak), random(peak)));
     }
   }
   else if (effectState == 1)
@@ -337,7 +360,7 @@ void FadeInFadeOutRinseRepeat(uint8_t peak)
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
     {
       uint16_t time = random(600,700);
-      strip.LinearFadePixelColor(time, pixel, RgbColor(0, 0, 0));
+      strip->LinearFadePixelColor(time, pixel, RgbColor(0, 0, 0));
     }
   }
   effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
@@ -354,13 +377,13 @@ void PickRandom(uint8_t peak)
     uint8_t pixel = random(pixelCount);
     
     // configure the animations
-    RgbColor color; // = strip.getPixelColor(pixel);
+    RgbColor color; // = strip->getPixelColor(pixel);
 
     color = RgbColor(random(peak), random(peak), random(peak));
 
     
     uint16_t time = random(100,400);
-    strip.LinearFadePixelColor( time, pixel, color);
+    strip->LinearFadePixelColor( time, pixel, color);
     
     count--;
   }
@@ -374,34 +397,34 @@ void LoopAround(uint8_t peak, uint16_t speed)
   
   // fade previous one dark
   prevPixel = (effectState + (pixelCount - 5)) % pixelCount; 
-  strip.LinearFadePixelColor(speed, prevPixel, RgbColor(0, 0, 0));
+  strip->LinearFadePixelColor(speed, prevPixel, RgbColor(0, 0, 0));
   
   // fade previous one dark
   prevPixel = (effectState + (pixelCount - 4)) % pixelCount; 
-  prevColor = strip.GetPixelColor( prevPixel );
+  prevColor = strip->GetPixelColor( prevPixel );
   prevColor.Darken(prevColor.CalculateBrightness() / 2);
-  strip.LinearFadePixelColor(speed, prevPixel, prevColor);
+  strip->LinearFadePixelColor(speed, prevPixel, prevColor);
   
   // fade previous one dark
   prevPixel = (effectState + (pixelCount - 3)) % pixelCount; 
-  prevColor = strip.GetPixelColor( prevPixel );
+  prevColor = strip->GetPixelColor( prevPixel );
   prevColor.Darken(prevColor.CalculateBrightness() / 2);
-  strip.LinearFadePixelColor(speed, prevPixel, prevColor);
+  strip->LinearFadePixelColor(speed, prevPixel, prevColor);
   
   // fade previous one dark
   prevPixel = (effectState + (pixelCount - 2)) % pixelCount; 
-  prevColor = strip.GetPixelColor( prevPixel );
+  prevColor = strip->GetPixelColor( prevPixel );
   prevColor.Darken(prevColor.CalculateBrightness() / 2);
-  strip.LinearFadePixelColor(speed, prevPixel, prevColor);
+  strip->LinearFadePixelColor(speed, prevPixel, prevColor);
   
   // fade previous one dark
   prevPixel = (effectState + (pixelCount - 1)) % pixelCount; 
-  prevColor = strip.GetPixelColor( prevPixel );
+  prevColor = strip->GetPixelColor( prevPixel );
   prevColor.Darken(prevColor.CalculateBrightness() / 2);
-  strip.LinearFadePixelColor(speed, prevPixel, prevColor);
+  strip->LinearFadePixelColor(speed, prevPixel, prevColor);
   
   // fade current one light
-  strip.LinearFadePixelColor(speed, effectState, RgbColor(random(peak), random(peak), random(peak)));
+  strip->LinearFadePixelColor(speed, effectState, RgbColor(random(peak), random(peak), random(peak)));
   effectState = (effectState + 1) % pixelCount;
 }
 
@@ -450,7 +473,7 @@ RgbColor col = Wheel(j);
 //int col = 200; 
 
 for (int i=0; i < pixelCount; i++) {
-          strip.SetPixelColor(i, col);    //turn every third pixel on
+          strip->SetPixelColor(i, col);    //turn every third pixel on
         }
 
 ApplyPixels();
@@ -467,7 +490,8 @@ void ApplyPixels () {
 
 
 
-    strip.Show();
+    strip->Show();
+;
 }
 
  void rainbow() {
@@ -480,14 +504,14 @@ void ApplyPixels () {
   //for(j=0; j<256; j++) { v
     for(i=0; i<pixelCount; i++) {
       //RgbColor tempcolour = Wheel(i+wsPoint);
-      strip.SetPixelColor(i, Wheel(i+wsPoint));
+      strip->SetPixelColor(i, Wheel(i+wsPoint));
     }
     ApplyPixels();
       if (wsPoint==256) wsPoint=0; 
     wsPoint++;
     lasteffectupdate = millis();
 }
-    // Serial.println("Colours Updated..." + String(strip.numPixels()));
+    // Serial.println("Colours Updated..." + String(strip->numPixels()));
 
 }   // END OF 
 
@@ -498,19 +522,21 @@ static boolean Adalight_configured;
  if (!Adalight_configured) {
     delay(500);
     for(i=0; i<pixelCount; i++) {
-      strip.SetPixelColor(i, RgbColor(255,0,0));
+      strip->SetPixelColor(i, RgbColor(255,0,0));
     }
-    strip.Show();
+    strip->Show();
+;
     delay(500);
     for(i=0; i<pixelCount; i++) {
-      strip.SetPixelColor(i, RgbColor(0,255,0));
+      strip->SetPixelColor(i, RgbColor(0,255,0));
     }
-    strip.Show();
+    strip->Show();
+;
     delay(500);
     for(i=0; i<pixelCount; i++) {
-      strip.SetPixelColor(i, RgbColor(0,0,255));
+      strip->SetPixelColor(i, RgbColor(0,0,255));
     }
-    strip.Show();
+    strip->Show();
     Serial.println();
     Serial.print("Ada\n"); // Send "Magic Word" string to host
     Adalight_configured = true;
@@ -518,7 +544,7 @@ static boolean Adalight_configured;
 
  //if(Serial.read() > 0 ) Serial.println("Serial Contect Recieved...");
 
-
+/*
 
     if(Serial.available()) {
           Serial.println("Serial Contect Recieved...");
@@ -531,7 +557,7 @@ static boolean Adalight_configured;
 
           }
         
-
+*/
     
 /*
 
@@ -573,14 +599,27 @@ static boolean Adalight_configured;
     while(!Serial.available());
     b = Serial.read();
    
-    strip.SetPixelColor(i, RgbColor(r,g,b));
+    strip->SetPixelColor(i, RgbColor(r,g,b));
 
   } */ 
 
 
-strip.Show();
+strip->Show();
 
 
 
 
+}
+
+
+// called to change the number of pixels
+void ChangeNeoPixels(uint16_t count, uint8_t pin)
+{
+    if (strip)
+    {
+        StripOFF();
+
+        delete strip;
+    }
+    strip = new NeoPixelBus(count, pin);
 }

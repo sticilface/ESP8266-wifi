@@ -44,7 +44,7 @@ void setup() {
 
 
   restartNetworking();
-  
+  /*
    if (!mdns.begin(deviceid, WiFi.localIP())) {
     Serial.print("Error setting up MDNS responder!....(");
     
@@ -53,6 +53,8 @@ void setup() {
     }
   }
   Serial.print("mDNS responder started.........(");
+*/
+    
   Serial.print(deviceid);
   Serial.println(".local)");
   
@@ -90,6 +92,8 @@ void setup() {
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
     timer.setInterval(Uptimer_timeout, uptime);
+
+  Serial.println("Timers set up");
   
   setup_Plugin ();
   Serial.println("Plugins started");

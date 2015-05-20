@@ -1,3 +1,10 @@
+const int PixelPIN_enablebyte = 8; 
+const int PixelCount_enablebyte = 9;
+
+const int PixelPIN_address = 204;
+const int PixelCount_address = 208;
+
+
 void handle_root () {
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
@@ -16,11 +23,19 @@ void setup_Plugin () {
 
   server.on("/ws2812", handle_WS2812);
 
+    //if (EEPROM.read(PixelCount_enablebyte) == flagvalue) EepromUtil::eeprom_read_string(PixelCount_address, deviceid, BUFSIZE);
+    //  if (EEPROM.read(PixelPIN_address) == flagvalue) {
+
+    //    pixelPIN = EEPROM.read(PixelPIN_address);
+//}
+
+
+
   initiateWS2812();
 
   // timer.setInterval(30, run_animations);
 
-  timer.setTimeout(10000, OnceOnlyTask);
+  //timer.setTimeout(10000, OnceOnlyTask);
 
 }
 
@@ -41,17 +56,17 @@ void loop_Plugin () {
    //FadeInFadeOutRinseRepeat(192);
   
   // start animating
- if (!strip.IsAnimating()) {
+ if (!strip->IsAnimating()) {
 	    ws2812();
-		strip.StartAnimating();
+		strip->StartAnimating();
  }
   
   
   // wait until no more animations are running
-  while (strip.IsAnimating())
+  while (strip->IsAnimating())
   {
-    strip.UpdateAnimations();
-    strip.Show();
+    strip->UpdateAnimations();
+    strip->Show();
     //delay(31); // ~30hz change cycle
   }
 
