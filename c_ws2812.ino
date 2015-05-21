@@ -25,7 +25,6 @@ uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 
 
-
 void handle_WS2812 () { // handles the web commands...
  boolean updateLEDs = false;
  //Serial.println("WS2812 - Web page called.");
@@ -109,24 +108,24 @@ void WS2812_dim_string (String Value)
         Serial.println("Brightness Darken by: " + String(DiffDim));
 
         for (int i = 0; i < pixelCount; i++) {
-          prevColor = strip->GetPixelColor(i);
+          //prevColor = strip->GetPixelColor(i);
           prevColor.Darken(DiffDim);
-          strip->SetPixelColor(i,prevColor);
+          ////strip->SetPixelColor(i,prevColor);
         }
       } else if (DiffDim < 0) { 
         DiffDim = DiffDim * -1;
         Serial.println("Brightness Lighten by: " + String(DiffDim));
           for (int i = 0; i < pixelCount; i++) {
-          prevColor = strip->GetPixelColor(i);
+          //prevColor = strip->GetPixelColor(i);
           prevColor.Lighten(DiffDim);
-          strip->SetPixelColor(i,prevColor);       
+          //strip->SetPixelColor(i,prevColor);       
         }
       } 
 
 
 
 
-          strip->Show();
+          //strip->Show();
 ;
 
 }
@@ -184,7 +183,7 @@ if (Value.indexOf("rgb") >= 0)
   Serial.println("RGB command recieved: " + instruction);
   NewColour = HEXtoRGB(instruction);
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
-      strip->LinearFadePixelColor(1000, pixel, NewColour);
+      //strip->LinearFadePixelColor(1000, pixel, NewColour);
     }
 }
 
@@ -246,14 +245,14 @@ void StripOFF() {
 void initiateWS2812 ()
 
 {
+opState = OFF;
+  ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
 
-  //ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
-
-  //strip->Begin();
-  //StripOFF();
+  strip->Begin();
+  StripOFF();
   
   // 
-  
+
   SetRandomSeed();
 
 }
@@ -277,14 +276,13 @@ void ws2812 ()  // put switch cases here...
 switch (opState)
    {
    case OFF:
-      StripOFF();
+      //if (strip) StripOFF();
       break;
    case RAINBOW:
       rainbow();
       break;
-    case COLOR:
+   case COLOR:
       strip->Show();
-;
       break;
    case ChaseRainbow:
       //TuneP();
@@ -337,7 +335,7 @@ void setcolour () {
 
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
 
-      strip->LinearFadePixelColor(5000, pixel, NewColour);
+      //strip->LinearFadePixelColor(5000, pixel, NewColour);
 
     }
 
@@ -377,7 +375,7 @@ void PickRandom(uint8_t peak)
     uint8_t pixel = random(pixelCount);
     
     // configure the animations
-    RgbColor color; // = strip->getPixelColor(pixel);
+    RgbColor color; // = //strip->getPixelColor(pixel);
 
     color = RgbColor(random(peak), random(peak), random(peak));
 
@@ -426,6 +424,7 @@ void LoopAround(uint8_t peak, uint16_t speed)
   // fade current one light
   strip->LinearFadePixelColor(speed, effectState, RgbColor(random(peak), random(peak), random(peak)));
   effectState = (effectState + 1) % pixelCount;
+  
 }
 
 void SetRandomSeed()
@@ -473,7 +472,7 @@ RgbColor col = Wheel(j);
 //int col = 200; 
 
 for (int i=0; i < pixelCount; i++) {
-          strip->SetPixelColor(i, col);    //turn every third pixel on
+    strip->SetPixelColor(i, col);    //turn every third pixel on
         }
 
 ApplyPixels();
@@ -491,7 +490,6 @@ void ApplyPixels () {
 
 
     strip->Show();
-;
 }
 
  void rainbow() {
@@ -503,15 +501,15 @@ void ApplyPixels () {
   //pixelsNUM = 60;
   //for(j=0; j<256; j++) { v
     for(i=0; i<pixelCount; i++) {
-      //RgbColor tempcolour = Wheel(i+wsPoint);
-      strip->SetPixelColor(i, Wheel(i+wsPoint));
+    RgbColor tempcolour = Wheel(i+wsPoint);
+    strip->SetPixelColor(i, Wheel(i+wsPoint));
     }
     ApplyPixels();
       if (wsPoint==256) wsPoint=0; 
     wsPoint++;
     lasteffectupdate = millis();
 }
-    // Serial.println("Colours Updated..." + String(strip->numPixels()));
+    // Serial.println("Colours Updated..." + String(//strip->numPixels()));
 
 }   // END OF 
 
@@ -599,12 +597,12 @@ static boolean Adalight_configured;
     while(!Serial.available());
     b = Serial.read();
    
-    strip->SetPixelColor(i, RgbColor(r,g,b));
+    //strip->SetPixelColor(i, RgbColor(r,g,b));
 
   } */ 
 
 
-strip->Show();
+//strip->Show();
 
 
 
@@ -617,7 +615,7 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)
 {
     if (strip)
     {
-        StripOFF();
+        //StripOFF();
 
         delete strip;
     }

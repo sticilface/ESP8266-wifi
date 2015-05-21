@@ -56,10 +56,12 @@ void loop_Plugin () {
    //FadeInFadeOutRinseRepeat(192);
   
   // start animating
+ 
+
  if (!strip->IsAnimating()) {
 	    ws2812();
 		strip->StartAnimating();
- }
+ } 
   
   
   // wait until no more animations are running
