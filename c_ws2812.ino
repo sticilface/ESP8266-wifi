@@ -7,7 +7,7 @@ String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colo
 
 int lasteffectupdate; 
 int WS2812interval = 2000; 
-int CurrentBrightness = 255; 
+//int CurrentBrightness = 255; 
 int WS2812timerID = -1; // make sure timer is put to off....
 
 int spectrumValue[7];
@@ -95,6 +95,7 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 void WS2812_dim_string (String Value)
 {
 
+/*
   RgbColor prevColor;
 
       int dim = Value.toInt();
@@ -122,11 +123,18 @@ void WS2812_dim_string (String Value)
         }
       } 
 
+*/
+//  
+      int a = Value.toInt();
+      if (a > 255) a = 255;
+      if (a < 0) a = 0;
 
+      CurrentBrightness  = a;
+
+      Serial.println("Brightness set to: " + String(CurrentBrightness));
 
 
           //strip->Show();
-;
 
 }
 
@@ -190,16 +198,20 @@ if (Value.indexOf("rgb") >= 0)
 } */
 
 
+RgbColor dim(RgbColor value) {
+    int amounttodarken = 255 - CurrentBrightness;
+    value.Darken(amounttodarken);
+    return value;
+}
+
 void SetRGBcolour (RgbColor value) {
-
-   int amounttodarken = 255 - CurrentBrightness;
-
-   value.Darken(amounttodarken);
-   
+    //RgbColor Newvalue = dim(value);
+  value = dim(value);
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
-
-        strip->LinearFadePixelColor(1000, pixel, value);
+        strip->SetPixelColor(pixel,value);
     }
+
+ApplyPixels();
 
 }
 
@@ -283,7 +295,7 @@ switch (opState)
       rainbow();
       break;
    case COLOR:
-      strip->Show();
+      SetRGBcolour(NewColour);
       break;
    case ChaseRainbow:
       //TuneP();
@@ -473,7 +485,7 @@ RgbColor col = Wheel(j);
 //int col = 200; 
 
 for (int i=0; i < pixelCount; i++) {
-    strip->SetPixelColor(i, col);    //turn every third pixel on
+    strip->SetPixelColor(i, dim(col));    //turn every third pixel on
         }
 
 ApplyPixels();
@@ -502,8 +514,8 @@ void ApplyPixels () {
   //pixelsNUM = 60;
   //for(j=0; j<256; j++) { v
     for(i=0; i<pixelCount; i++) {
-    RgbColor tempcolour = Wheel(i+wsPoint);
-    strip->SetPixelColor(i, Wheel(i+wsPoint));
+    //RgbColor tempcolour = Wheel(i+wsPoint);
+    strip->SetPixelColor(i, dim(Wheel(i+wsPoint)));
     }
     ApplyPixels();
       if (wsPoint==256) wsPoint=0; 

@@ -107,3 +107,4 @@ operatingState LastOpState = LOOPAROUND;
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
+uint8_t CurrentBrightness; 

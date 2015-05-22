@@ -8,6 +8,8 @@ const int PixelCount_address = 208;
 
 void handle_root () {
 
+  handle_WS2812();
+  /*
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
 
   httpbuf += "<p> Heap Size = " + String(ESP.getFreeHeap()) + " </p>";
@@ -17,7 +19,7 @@ void handle_root () {
   httpbuf += htmlendstring; 
 
   server.send(200, "text/html", httpbuf);
-  
+  */
 }
 
 void setup_Plugin () {
@@ -28,34 +30,29 @@ void setup_Plugin () {
     if (EEPROM.read(PixelPIN_enablebyte) == flagvalue) {
 
       Serial.println("PixelPIN_byte HIT");
-
-
-
       pixelPIN = EEPROM.read(PixelPIN_address);
-
       Serial.println("EEprom Read: PixelPIN = " + String(pixelPIN));
-    
-
       if (isnan(pixelPIN)) pixelPIN = 2;
 }
 
+    CurrentBrightness = EEPROM.read(PixelCount_address + 2);
+    if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
-    
+///  Need to implement storing larger numbers in EEPROM...
+
+    //WS2812interval = EEPROM.read(PixelCount_address + 3);
+
+    //if (isnan(WS2812interval)) WS2812interval = 2000
       
     if (EEPROM.read(PixelCount_enablebyte) == flagvalue) 
      {     
-
-
         pixelCount = EEPROM.read(PixelCount_address);
         //int b=EEPROM.read(PixelCount_address+1);
         //Serial.println("Reading a = " + String(a));
         //int c = 0;
         //int test = c * 256;
         //pixelCount = a*256+b;
-
       if (isnan(pixelCount)) pixelCount = 20;
-
-
       } 
 
 // save value
