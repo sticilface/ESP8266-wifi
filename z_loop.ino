@@ -23,6 +23,7 @@ loop_Plugin();
 }
 
 void ws2812_animating () {
+	
  if (strip->IsAnimating())
   {
 

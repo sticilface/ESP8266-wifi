@@ -88,7 +88,7 @@ void handle_WS2812 () { // handles the web commands...
   
   server.send(200, "text/html", httpbuf);
 
-if (updateLEDs) initiateWS2812();
+if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 }
 
@@ -277,6 +277,7 @@ switch (opState)
    {
    case OFF:
       //if (strip) StripOFF();
+   StripOFF();
       break;
    case RAINBOW:
       rainbow();
@@ -613,11 +614,55 @@ static boolean Adalight_configured;
 // called to change the number of pixels
 void ChangeNeoPixels(uint16_t count, uint8_t pin)
 {
+  
+ bool commitchanges = false; 
+
+    Serial.println("Change Neopixels called"); 
+
+
+        int pixelPINstored = EEPROM.read(PixelPIN_address);    
+        int pixelCountstored = EEPROM.read(PixelCount_address);
+        //int b=EEPROM.read(PixelCount_address+1);
+        //nt pixelCountstored = a*256+b;
+
+
+    if (count != pixelCountstored) {
+    Serial.println("Pixel count changed..."); 
+
+      //int a = pixelCount/256;
+      //Serial.print(a);
+      //int b = pixelCount % 256;
+      //Serial.print(b);
+        EEPROM.write(PixelCount_address,(byte)count);
+        //EEPROM.write(PixelCount_address+1,b);
+        commitchanges = true;
+
+    if (EEPROM.read(PixelCount_enablebyte) != flagvalue) EEPROM.write(PixelCount_enablebyte,flagvalue) ;
+     Serial.println("pixel count byte updated");
+    }
+
+    if (pin != pixelPINstored) {
+    Serial.println("Change Neopixels PIN called"); 
+
+        EEPROM.write(PixelPIN_address, (byte)pin);
+    if (EEPROM.read(PixelPIN_enablebyte) != flagvalue) EEPROM.write(PixelPIN_enablebyte,flagvalue) ;
+     
+     commitchanges = true;
+
+    }
+
+    if (commitchanges == true) {
+      EEPROM.commit();
+          Serial.println("Changes committed"); 
+        }
+
+
     if (strip)
     {
         //StripOFF();
 
         delete strip;
     }
+
     strip = new NeoPixelBus(count, pin);
 }

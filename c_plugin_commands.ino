@@ -5,6 +5,7 @@ const int PixelPIN_address = 204;
 const int PixelCount_address = 208;
 
 
+
 void handle_root () {
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
@@ -23,12 +24,57 @@ void setup_Plugin () {
 
   server.on("/ws2812", handle_WS2812);
 
-    //if (EEPROM.read(PixelCount_enablebyte) == flagvalue) EepromUtil::eeprom_read_string(PixelCount_address, deviceid, BUFSIZE);
-    //  if (EEPROM.read(PixelPIN_address) == flagvalue) {
 
-    //    pixelPIN = EEPROM.read(PixelPIN_address);
-//}
+    if (EEPROM.read(PixelPIN_enablebyte) == flagvalue) {
 
+      Serial.println("PixelPIN_byte HIT");
+
+
+
+      pixelPIN = EEPROM.read(PixelPIN_address);
+
+      Serial.println("EEprom Read: PixelPIN = " + String(pixelPIN));
+    
+
+      if (isnan(pixelPIN)) pixelPIN = 2;
+}
+
+
+    
+      
+    if (EEPROM.read(PixelCount_enablebyte) == flagvalue) 
+     {     
+
+
+        pixelCount = EEPROM.read(PixelCount_address);
+        //int b=EEPROM.read(PixelCount_address+1);
+        //Serial.println("Reading a = " + String(a));
+        //int c = 0;
+        //int test = c * 256;
+        //pixelCount = a*256+b;
+
+      if (isnan(pixelCount)) pixelCount = 20;
+
+
+      } 
+
+// save value
+/*
+int a = value/256;
+int b = value % 256;
+
+EEPROM.write(0,a);
+EEPROM.write(1,b);
+
+// read value
+
+int a=EEPROM.read(0);
+int b=EEPROM.read(1);
+
+value = a*256+b;
+
+
+*/
 
 
   initiateWS2812();
