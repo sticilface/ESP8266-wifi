@@ -8,18 +8,13 @@ String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colo
 int lasteffectupdate; 
 int WS2812interval = 2000; 
 //int CurrentBrightness = 255; 
-int WS2812timerID = -1; // make sure timer is put to off....
 
+
+int WS2812timerID = -1; // make sure timer is put to off....
 int spectrumValue[7];
 int filter=80;
 
-
-
-
 uint16_t effectState = 0;
-
-RgbColor NewColour;
-
 
 uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
@@ -27,7 +22,7 @@ uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 void handle_WS2812 () { // handles the web commands...
  boolean updateLEDs = false;
-   int power = getPixelPower();
+ int power = getPixelPower();
  //Serial.println("WS2812 - Web page called.");
  //= 0;
 //String CurrentRGBcolour = "00000";
@@ -133,6 +128,12 @@ void WS2812_dim_string (String Value)
 
       CurrentBrightness  = a;
 
+      EEPROM.write(PixelCount_address + 2, CurrentBrightness);
+
+      EEPROM.commit();
+     
+      // if (isnan(CurrentBrightness)) CurrentBrightness = 255;
+
       Serial.println("Brightness set to: " + String(CurrentBrightness));
 
 
@@ -158,18 +159,29 @@ void WS2812_mode_string (String Value)
   if (Value == "udp") { opState = UDP; LastOpState = UDP;  }; 
 
 
+
+
   if (Value.indexOf("rgb") >= 0) 
     {
-      opState = COLOR;
+      opState = LastOpState = COLOR;
       String instruction = Value.substring(4,Value.length()+1 );
       Serial.println("RGB command recieved: " + instruction);
       CurrentRGBcolour = instruction;
       NewColour = HEXtoRGB(instruction);
+
+      EEPROM.write(PixelCount_address + 4, NewColour.R);
+      EEPROM.write(PixelCount_address + 5, NewColour.G);
+      EEPROM.write(PixelCount_address + 6, NewColour.B);
+      EEPROM.commit();
+
+
       SetRGBcolour(NewColour);
 
   }
 
- 
+  EEPROM.write(PixelCount_address + 3, LastOpState);
+
+  EEPROM.commit();
 //send_mqtt_msg( "mode", currentstate);                
 
 }
@@ -251,8 +263,7 @@ void StripOFF() {
   {
     strip->SetPixelColor(i,0);
   }
-  strip->Show();
-;
+  
 
 }
 
@@ -261,14 +272,10 @@ void StripOFF() {
 void initiateWS2812 ()
 
 {
-opState = OFF;
+  opState = OFF;
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
-
   strip->Begin();
   StripOFF();
-  
-  // 
-
   SetRandomSeed();
 
 }
@@ -483,10 +490,11 @@ RgbColor Wheel (byte WheelPos) {
 
 void Fade() {
 
+
 static int j;
 if (millis() > (lasteffectupdate + WS2812interval) ){
 
-  Serial.println("Fade updaed");
+  //Serial.println("Fade updaed");
 if (j > 256) j = 0; 
 RgbColor col = Wheel(j);
 //int col = 200; 
@@ -513,6 +521,7 @@ void ApplyPixels () {
 }
 
  void rainbow() {
+
 
  if (millis() > (lasteffectupdate + WS2812interval) ){
 
@@ -704,31 +713,16 @@ int packetSize = Udp.parsePacket();
 
   if(Udp.available())
   {
-
-//Udp.read(packetBuffer,UDP_TX_PACKET_MAX_SIZE);
-int currentpixel = 0;
-
-
-// for (int i = 0; i < 7; i++ ) Udp.read();
-
-
- for (int i = 0; i < packetSize; i = i + 3) {
-  RgbColor col;
-  col.R = Udp.read();
-  col.G = Udp.read();
-  col.B = Udp.read();
-
-  //Serial.print(currentpixel);
-  //Serial.print(": ");
-  //Serial.write(col.R);
-  //Serial.print(", ");
-  //Serial.write(col.G);
-  //Serial.print(", ");
-  //Serial.write(col.B);
-  //Serial.println(); 
-  strip->SetPixelColor(currentpixel,col);
- currentpixel++;
- }
+    RgbColor col;
+    int currentpixel = 0;
+    for (int i = 0; i < packetSize; i = i + 3) {
+      if (currentpixel > pixelCount) break;
+        col.R = Udp.read();
+        col.G = Udp.read();
+        col.B = Udp.read();
+        strip->SetPixelColor(currentpixel,col);
+        currentpixel++;
+      }
 
 strip->Show();
 
@@ -742,11 +736,6 @@ int getPixelPower () {
  int brightnesstally = 0;
  for (int i = 0;i < pixelCount; i++) {
   RgbColor colour = strip->GetPixelColor(i);
-
-  byte r = colour.R;
-  byte g = colour.G;
-  byte b = colour.B;
-
   int brightness = colour.CalculateBrightness();
   brightness = map(brightness,0,255,0,60);
   brightnesstally = brightnesstally + brightness;

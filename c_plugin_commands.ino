@@ -38,6 +38,12 @@ void setup_Plugin () {
     CurrentBrightness = EEPROM.read(PixelCount_address + 2);
     if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
+
+    uint8_t temp = EEPROM.read(PixelCount_address + 3);
+
+    if (isnan(temp)) temp = 0;
+    LastOpState = (operatingState)temp;
+
 ///  Need to implement storing larger numbers in EEPROM...
 
     //WS2812interval = EEPROM.read(PixelCount_address + 3);
@@ -66,6 +72,14 @@ void setup_Plugin () {
 
 
       } 
+
+      Serial.print("/n Saved Colours are: ");
+      uint8_t R = EEPROM.read(PixelCount_address + 4);
+      uint8_t G = EEPROM.read(PixelCount_address + 5);
+      uint8_t B = EEPROM.read(PixelCount_address + 6);
+      Serial.print(R);  Serial.print(G); Serial.println(B);
+
+      NewColour = RgbColor(R,G,B);
 
 // save value
 /*
@@ -112,6 +126,7 @@ void loop_Plugin () {
   
   // start animating
  
+if (strip) strip->Show();
 
  if (!strip->IsAnimating()) {
 	    ws2812();

@@ -103,11 +103,12 @@ const int bitaddress = 500;
 
 enum operatingState { OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,COOLBLOBS,UDP};
 operatingState opState = OFF;
-operatingState LastOpState = LOOPAROUND;
+operatingState LastOpState = OFF;
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness; 
+RgbColor NewColour;
 
 
 unsigned int localPort = 8888;      // local port to listen on
