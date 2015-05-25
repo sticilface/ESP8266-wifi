@@ -39,28 +39,14 @@ void setup_Plugin () {
     if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
 
-    uint8_t temp = EEPROM.read(PixelCount_address + 3);
+    uint8_t c = EEPROM.read(PixelCount_address + 3);
 
-    if (isnan(temp)) temp = 0;
-    LastOpState = (operatingState)temp;
+    if (isnan(c)) c = 0;
+    LastOpState = (operatingState)c;
 
-///  Need to implement storing larger numbers in EEPROM...
-
-    //WS2812interval = EEPROM.read(PixelCount_address + 3);
-
-    //if (isnan(WS2812interval)) WS2812interval = 2000
       
     if (EEPROM.read(PixelCount_enablebyte) == flagvalue) 
      {     
-        //pixelCount = EEPROM.read(PixelCount_address);
-        //int b=EEPROM.read(PixelCount_address+1);
-        //Serial.println("Reading a = " + String(a));
-        //int c = 0;
-        //int test = c * 256;
-        //pixelCount = a*256+b;
-      //if (isnan(pixelCount)) pixelCount = 20;
-
-
 
         int a = EEPROM.read(PixelCount_address);
         int b = EEPROM.read(PixelCount_address+1);
@@ -81,23 +67,6 @@ void setup_Plugin () {
 
       NewColour = RgbColor(R,G,B);
 
-// save value
-/*
-int a = value/256;
-int b = value % 256;
-
-EEPROM.write(0,a);
-EEPROM.write(1,b);
-
-// read value
-
-int a=EEPROM.read(0);
-int b=EEPROM.read(1);
-
-value = a*256+b;
-
-
-*/
 
 
   initiateWS2812();

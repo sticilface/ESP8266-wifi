@@ -74,13 +74,15 @@ if (mqttbuf.indexOf('=') > 0)
          if (instruction == "deviceid") deviceid_command(value);
          if (instruction == "mqttserver") mqttserver_command(value);
          if (instruction == "serial") Serial_Command(value);
-
          if (instruction == "debug") debug_command(value);       
         
        //action_handler ();
         if (networkrestart) restartNetworking(); 
         if (mqttreload) mqttreloadfunc();
        
+
+        if (instruction == "mode")  WS2812_mode_string(value);
+
        
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////// -----   EPROM UPDATE CALL ------- ////////////////////////////////////////////////////////////////////////
