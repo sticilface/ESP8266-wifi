@@ -27,6 +27,7 @@ uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 void handle_WS2812 () { // handles the web commands...
  boolean updateLEDs = false;
+   int power = getPixelPower();
  //Serial.println("WS2812 - Web page called.");
  //= 0;
 //String CurrentRGBcolour = "00000";
@@ -60,7 +61,7 @@ void handle_WS2812 () { // handles the web commands...
   httpbuf += "<br> <a href='/ws2812?mode=off'>off</a>  <a href='/ws2812?mode=on'>on</a> ";
   httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
   httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
-  httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>" ; 
+  httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
   httpbuf += "<p><form name=frmTest action='/ws2812' method='POST'>\n";
   httpbuf += "<p> Select Mode <select name='mode' onChange='frmTest.submit();'>";
   httpbuf += "<option value='Colour'>Colour</option>";
@@ -84,6 +85,7 @@ void handle_WS2812 () { // handles the web commands...
   httpbuf += "\n\nPIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "'>";
   httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
   httpbuf += "</form></p>"; 
+  httpbuf += "<br> Power = " + String(power) + "mA"; 
   httpbuf += htmlendstring; 
   
   server.send(200, "text/html", httpbuf);
@@ -153,6 +155,8 @@ void WS2812_mode_string (String Value)
   if (Value == "rainbow") { opState = RAINBOW; LastOpState = RAINBOW; }; 
   if (Value == "adalight") { LastOpState = opState; opState = ADALIGHT;  }; 
   if (Value == "coolblobs") { opState = COOLBLOBS; LastOpState = COOLBLOBS;  }; 
+  if (Value == "udp") { opState = UDP; LastOpState = UDP;  }; 
+
 
   if (Value.indexOf("rgb") >= 0) 
     {
@@ -321,6 +325,9 @@ switch (opState)
      case COOLBLOBS:
       CoolBlobs();
       break;    
+     case UDP:
+     UDPfunc();
+     break;
    }
 
 
@@ -645,8 +652,15 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)
       //Serial.print(a);
       //int b = pixelCount % 256;
       //Serial.print(b);
-        EEPROM.write(PixelCount_address,(byte)count);
+        //EEPROM.write(PixelCount_address,(byte)count);
         //EEPROM.write(PixelCount_address+1,b);
+
+
+      int a = pixelCount/256;
+      int b = pixelCount % 256;        
+        EEPROM.write(PixelCount_address,a);
+        EEPROM.write(PixelCount_address+1,b);
+
         commitchanges = true;
 
     if (EEPROM.read(PixelCount_enablebyte) != flagvalue) EEPROM.write(PixelCount_enablebyte,flagvalue) ;
@@ -678,3 +692,70 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)
 
     strip = new NeoPixelBus(count, pin);
 }
+
+void UDPfunc () {
+static boolean Adalight_configured;
+
+ if (!Adalight_configured) {
+    Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
+    Adalight_configured = true;
+    } 
+int packetSize = Udp.parsePacket();
+
+  if(Udp.available())
+  {
+
+//Udp.read(packetBuffer,UDP_TX_PACKET_MAX_SIZE);
+int currentpixel = 0;
+
+
+// for (int i = 0; i < 7; i++ ) Udp.read();
+
+
+ for (int i = 0; i < packetSize; i = i + 3) {
+  RgbColor col;
+  col.R = Udp.read();
+  col.G = Udp.read();
+  col.B = Udp.read();
+
+  //Serial.print(currentpixel);
+  //Serial.print(": ");
+  //Serial.write(col.R);
+  //Serial.print(", ");
+  //Serial.write(col.G);
+  //Serial.print(", ");
+  //Serial.write(col.B);
+  //Serial.println(); 
+  strip->SetPixelColor(currentpixel,col);
+ currentpixel++;
+ }
+
+strip->Show();
+
+}
+
+
+
+}
+
+int getPixelPower () {
+ int brightnesstally = 0;
+ for (int i = 0;i < pixelCount; i++) {
+  RgbColor colour = strip->GetPixelColor(i);
+
+  byte r = colour.R;
+  byte g = colour.G;
+  byte b = colour.B;
+
+  int brightness = colour.CalculateBrightness();
+  brightness = map(brightness,0,255,0,60);
+  brightnesstally = brightnesstally + brightness;
+}
+
+int brightness = brightnesstally;
+
+return brightness;
+} 
+
+
+

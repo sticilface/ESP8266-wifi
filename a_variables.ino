@@ -101,10 +101,14 @@ const int bitaddress = 500;
 #define PIN_7 0x40
 #define PIN_8 0x80
 
-enum operatingState { OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,COOLBLOBS};
+enum operatingState { OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,COOLBLOBS,UDP};
 operatingState opState = OFF;
 operatingState LastOpState = LOOPAROUND;
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness; 
+
+
+unsigned int localPort = 8888;      // local port to listen on
+

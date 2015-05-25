@@ -46,13 +46,25 @@ void setup_Plugin () {
       
     if (EEPROM.read(PixelCount_enablebyte) == flagvalue) 
      {     
-        pixelCount = EEPROM.read(PixelCount_address);
+        //pixelCount = EEPROM.read(PixelCount_address);
         //int b=EEPROM.read(PixelCount_address+1);
         //Serial.println("Reading a = " + String(a));
         //int c = 0;
         //int test = c * 256;
         //pixelCount = a*256+b;
-      if (isnan(pixelCount)) pixelCount = 20;
+      //if (isnan(pixelCount)) pixelCount = 20;
+
+
+
+        int a = EEPROM.read(PixelCount_address);
+        int b = EEPROM.read(PixelCount_address+1);
+        if(isnan(a)) a = 0;
+        if(isnan(b)) b = 0;
+        pixelCount = a*256+b;
+
+      if (pixelCount > 400) pixelCount = 20;
+
+
       } 
 
 // save value

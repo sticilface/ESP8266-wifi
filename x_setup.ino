@@ -84,7 +84,8 @@ void setup() {
   //server.on("/temperature", handle_temperature);
 
   // Start the server 
-
+  Udp.begin(localPort);
+  
   server.begin();
 
   Serial.println("HTTP server started");
