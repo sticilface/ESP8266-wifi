@@ -1,8 +1,8 @@
-const int PixelPIN_enablebyte = 8; 
-const int PixelCount_enablebyte = 9;
+const int PixelPIN_enablebyte = 9; 
+const int PixelCount_enablebyte = 10;
 
-const int PixelPIN_address = 204;
-const int PixelCount_address = 208;
+const int PixelPIN_address = 240;
+const int PixelCount_address = 248;
 
 
 

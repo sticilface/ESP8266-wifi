@@ -154,7 +154,7 @@ void WS2812_mode_string (String Value)
   if (Value == "fadeinfadeout") { opState = FADEINFADEOUT; LastOpState = FADEINFADEOUT; }; 
   if (Value == "fade") { opState = FADE; LastOpState = FADE; }; 
   if (Value == "rainbow") { opState = RAINBOW; LastOpState = RAINBOW; }; 
-  if (Value == "adalight") { LastOpState = opState; opState = ADALIGHT;  }; 
+  if (Value == "adalight") { LastOpState =  opState = ADALIGHT;}; 
   if (Value == "coolblobs") { opState = COOLBLOBS; LastOpState = COOLBLOBS;  }; 
   if (Value == "udp") { opState = UDP; LastOpState = UDP;  }; 
 
@@ -545,8 +545,8 @@ void ApplyPixels () {
 
 void Adalight () { //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 static boolean Adalight_configured;
- uint8_t effectbuf[600];
- uint8_t pixelbuf[3*pixelCount];
+ static uint8_t effectbuf[600];
+ //uint8_t pixelbuf[3*pixelCount];
 static uint16_t effectbuf_position = 0;
 
  if (!Adalight_configured) {
@@ -575,10 +575,11 @@ static uint16_t effectbuf_position = 0;
     Adalight_configured = true;
     }
 
-size_t len = Serial.available();
-if(len){
-    effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
-  }
+//size_t len = Serial.available();
+
+//if(len){
+//    effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
+//  }
 /*
 if (effectbuf_position > 10) {
   Serial.println();
@@ -596,97 +597,109 @@ RgbColor Adalight_color;
 int r,g,b;
 static uint16_t currentpixel;
 static int effect_timeout;
-
-if (effectbuf_position == 3) {
+static uint8_t prefixcount = 0;
+size_t len; 
+static unsigned long pixellatchtime;
+static const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
   //Serial.println();
   //Serial.write(effectbuf, effectbuf_position);
+
+if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
+//if (millis() > pixellatchtime + serialTimeout) {
+  //Serial.println("15 Second gap... pixels turned off");
+  pixellatchtime = 0; // reset counter / latch to zero should only fire when show pixls has been called!
+  StripOFF();  // turn off pixels... 
+ state = MODE_HEADER;  // resume header search....
+}
 
   switch (state) {
 
     case MODE_HEADER:
-      currentpixel = 0;
-      if (effectbuf[0] == 'A' && effectbuf[1] == 'd' && effectbuf[2] == 'a') {
-      effect_timeout = millis();
-      Serial.println("Prefix found") ;
-      state = MODE_CHECKSUM;
-      }
+
+      currentpixel = 0; // resest current pixel to 0, safety guard...
+      effectbuf_position = 0; // reset the buffer position for DATA collection...
+      //if (effectbuf_position == 3) { // look for a buffer with 3 in it....
+
+          if(Serial.available()) {
+            if (Serial.read() == prefix[prefixcount]) {
+              prefixcount++;
+            } else prefixcount = 0;
+            }
+            
+            if (prefixcount == 3) {
+            effect_timeout = millis(); // generates START TIME.....
+            //Serial.println("Prefix found..") ;
+            state = MODE_CHECKSUM;
+            prefixcount =0;
+            }
+
     break;
 
     case MODE_CHECKSUM:
 
-          hi  = effectbuf[0];
-          lo  = effectbuf[1];
-          chk = effectbuf[2];
+
+        if (Serial.available() >= 3) {
+          hi  = Serial.read();
+          lo  = Serial.read();
+          chk = Serial.read();
+        
           /*Serial.print("hi = ");
           Serial.write(hi);
           Serial.print(" lo = ");
           Serial.write(lo);    
           Serial.print(" chk = ");
-          Serial.write(chk);  */
+          Serial.write(chk);   */
           if(chk == (hi ^ lo ^ 0x55)) {
-            Serial.println("..CHECK SUM MATCHES");
+            //Serial.print("..CHECK SUM MATCHES");
             state = MODE_DATA;
           } else {
-            Serial.println(" .. Does not match");
+            //Serial.print(" .. Does not match");
             state = MODE_HEADER; // ELSE RESET.......
           }
+          //Serial.println();
+        }
       break;
 
     case MODE_DATA:
 
-      //Serial.println("DATA MODE:");
+    len = Serial.available();
 
-        //a = RgbColor(effectbuf[0], effectbuf[1],effectbuf[2]);
+      if(len){
+      effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
+      }
 
-        //Adalight_color.R = effectbuf[0];
-        //Adalight_color.G = effectbuf[1];
-        //Adalight_color.B = effectbuf[2];
+      if (effectbuf_position >= 3*pixelCount) { // goto show when buffer has recieved enough data...
+        state = MODE_SHOW;
+        break;
+      } //else if (millis() > effect_timeout + 1000) { // bail and return to header seek if not enought date...
+        //state = MODE_HEADER;
+      //}
 
-        //r = effectbuf[0];
-        //g = effectbuf[1];
-        //b = effectbuf[2];       
-       
-        for (int i =0; i < 3; i++)
-        {
-          pixelbuf[(currentpixel*3)+i] = (byte)effectbuf[i];
-        }
-       
-        //strip->SetPixelColor(currentpixel,Adalight_color);
 
-        
-        /*Serial.print(currentpixel);
-        Serial.print("  ");
-        Serial.print(r,HEX);
-        Serial.print(":");
-        Serial.print(g,HEX);
-        Serial.print(":");
-        Serial.print(b,HEX);   
-        Serial.println();    */
-         
-        currentpixel++;
 
-        if (currentpixel == pixelCount - 1) state = MODE_SHOW;
       break;
 
     case MODE_SHOW:
-      Serial.println("MODE = SHOW");
-      Serial.write(pixelbuf, sizeof pixelbuf);
+
+      //Serial.println("MODE = SHOW");
+      //Serial.write(effectbuf, effectbuf_position);
+
       currentpixel = 0; 
 
-      for (int i=0; i < sizeof pixelbuf; ) {
+      for (int i=0; i < effectbuf_position; ) {
        
-        Adalight_color.R = r = pixelbuf[i++];
-        Adalight_color.G = g = pixelbuf[i++];
-        Adalight_color.B = b = pixelbuf[i++];
+        Adalight_color.R = r = effectbuf[i++];
+        Adalight_color.G = g = effectbuf[i++];
+        Adalight_color.B = b = effectbuf[i++];
 
-        Serial.print(currentpixel);
+        /*Serial.print(currentpixel);
         Serial.print("  ");
         Serial.print(r,DEC);
         Serial.print(":");
         Serial.print(g,DEC);
         Serial.print(":");
         Serial.print(b,DEC);   
-        Serial.println();  
+        Serial.println();   */
 
        strip->SetPixelColor(currentpixel++,Adalight_color); 
        //currentpixel++;
@@ -695,15 +708,17 @@ if (effectbuf_position == 3) {
 
 
       //Serial.println("Pixels shown = " + String(currentpixel));
+      //effectbuf_position = 0;
       strip->Show();
+      pixellatchtime = millis();
       state = MODE_HEADER;
       break;
 }
 
 
 
-  memset(effectbuf, 0, sizeof effectbuf);
-  effectbuf_position = 0;
+ // memset(effectbuf, 0, sizeof effectbuf);
+ // effectbuf_position = 0;
 
 /*
 if (effectbuf[0] == 'A' & effectbuf[1] == 'd' & effectbuf[2] == 'a') {
@@ -722,7 +737,7 @@ Serial.println("Magic Word found");
 
 }
 */
-}
+
 
 /*
 

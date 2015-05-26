@@ -39,3 +39,14 @@ void LoadParams()
 
 }
 
+
+void EEPROM_wipe() {
+
+for (int i = 0; i < 512; i++) EEPROM.write(i,0);
+EEPROM.commit();
+Serial.print("EEPROM WIPED");
+}
+
+
+
+
