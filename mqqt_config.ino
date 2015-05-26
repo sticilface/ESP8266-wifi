@@ -82,6 +82,8 @@ if (mqttbuf.indexOf('=') > 0)
        
 
         if (instruction == "mode")  WS2812_mode_string(value);
+        if (instruction == "timer")  WS2812timer_command_string(value);
+        if (instruction == "brightness")  WS2812_dim_string(value);
 
        
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

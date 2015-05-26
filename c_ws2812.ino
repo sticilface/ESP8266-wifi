@@ -545,8 +545,13 @@ void ApplyPixels () {
 
 void Adalight () { //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 static boolean Adalight_configured;
+ uint8_t effectbuf[600];
+ uint8_t pixelbuf[3*pixelCount];
+static uint16_t effectbuf_position = 0;
 
  if (!Adalight_configured) {
+
+  /* 
     delay(500);
     for(i=0; i<pixelCount; i++) {
       strip->SetPixelColor(i, RgbColor(255,0,0));
@@ -564,30 +569,215 @@ static boolean Adalight_configured;
       strip->SetPixelColor(i, RgbColor(0,0,255));
     }
     strip->Show();
-    Serial.println();
+    Serial.println(); 
+    */
     Serial.print("Ada\n"); // Send "Magic Word" string to host
     Adalight_configured = true;
     }
 
- //if(Serial.read() > 0 ) Serial.println("Serial Contect Recieved...");
-
+size_t len = Serial.available();
+if(len){
+    effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
+  }
 /*
-
-    if(Serial.available()) {
-          Serial.println("Serial Contect Recieved...");
-          for(i = 0; i < sizeof prefix; ++i) {
-            if(prefix[i] == Serial.read()) 
-                { 
-                  Serial.println("Prefix found");   
-                      } 
-                }
-
-          }
-        
+if (effectbuf_position > 10) {
+  Serial.println();
+  Serial.write(effectbuf, effectbuf_position);
+  memset(effectbuf, 0, sizeof effectbuf);
+  effectbuf_position = 0;
+}
 */
-    
+      bool prefixfound = false; 
+
+enum mode { MODE_HEADER = 0, MODE_CHECKSUM, MODE_DATA, MODE_SHOW};
+static mode state = MODE_HEADER;
+RgbColor Adalight_color;
+//RgbColor a; 
+int r,g,b;
+static uint16_t currentpixel;
+static int effect_timeout;
+
+if (effectbuf_position == 3) {
+  //Serial.println();
+  //Serial.write(effectbuf, effectbuf_position);
+
+  switch (state) {
+
+    case MODE_HEADER:
+      currentpixel = 0;
+      if (effectbuf[0] == 'A' && effectbuf[1] == 'd' && effectbuf[2] == 'a') {
+      effect_timeout = millis();
+      Serial.println("Prefix found") ;
+      state = MODE_CHECKSUM;
+      }
+    break;
+
+    case MODE_CHECKSUM:
+
+          hi  = effectbuf[0];
+          lo  = effectbuf[1];
+          chk = effectbuf[2];
+          /*Serial.print("hi = ");
+          Serial.write(hi);
+          Serial.print(" lo = ");
+          Serial.write(lo);    
+          Serial.print(" chk = ");
+          Serial.write(chk);  */
+          if(chk == (hi ^ lo ^ 0x55)) {
+            Serial.println("..CHECK SUM MATCHES");
+            state = MODE_DATA;
+          } else {
+            Serial.println(" .. Does not match");
+            state = MODE_HEADER; // ELSE RESET.......
+          }
+      break;
+
+    case MODE_DATA:
+
+      //Serial.println("DATA MODE:");
+
+        //a = RgbColor(effectbuf[0], effectbuf[1],effectbuf[2]);
+
+        //Adalight_color.R = effectbuf[0];
+        //Adalight_color.G = effectbuf[1];
+        //Adalight_color.B = effectbuf[2];
+
+        //r = effectbuf[0];
+        //g = effectbuf[1];
+        //b = effectbuf[2];       
+       
+        for (int i =0; i < 3; i++)
+        {
+          pixelbuf[(currentpixel*3)+i] = (byte)effectbuf[i];
+        }
+       
+        //strip->SetPixelColor(currentpixel,Adalight_color);
+
+        
+        /*Serial.print(currentpixel);
+        Serial.print("  ");
+        Serial.print(r,HEX);
+        Serial.print(":");
+        Serial.print(g,HEX);
+        Serial.print(":");
+        Serial.print(b,HEX);   
+        Serial.println();    */
+         
+        currentpixel++;
+
+        if (currentpixel == pixelCount - 1) state = MODE_SHOW;
+      break;
+
+    case MODE_SHOW:
+      Serial.println("MODE = SHOW");
+      Serial.write(pixelbuf, sizeof pixelbuf);
+      currentpixel = 0; 
+
+      for (int i=0; i < sizeof pixelbuf; ) {
+       
+        Adalight_color.R = r = pixelbuf[i++];
+        Adalight_color.G = g = pixelbuf[i++];
+        Adalight_color.B = b = pixelbuf[i++];
+
+        Serial.print(currentpixel);
+        Serial.print("  ");
+        Serial.print(r,DEC);
+        Serial.print(":");
+        Serial.print(g,DEC);
+        Serial.print(":");
+        Serial.print(b,DEC);   
+        Serial.println();  
+
+       strip->SetPixelColor(currentpixel++,Adalight_color); 
+       //currentpixel++;
+      }
+
+
+
+      //Serial.println("Pixels shown = " + String(currentpixel));
+      strip->Show();
+      state = MODE_HEADER;
+      break;
+}
+
+
+
+  memset(effectbuf, 0, sizeof effectbuf);
+  effectbuf_position = 0;
+
+/*
+if (effectbuf[0] == 'A' & effectbuf[1] == 'd' & effectbuf[2] == 'a') {
+
+Serial.println("Magic Word found");
+          hi  = effectbuf[3];
+          lo  = effectbuf[4];
+          chk = effectbuf[5];
+          Serial.print("hi = ");
+          Serial.write(hi);
+          Serial.print(" lo = ");
+          Serial.write(lo);    
+          Serial.print(" chk = ");
+          Serial.write(chk);              
+
+
+}
+*/
+}
+
 /*
 
+    if(effectbuf_position == sizeof prefix) {
+          // Magic word matches.  Now how about the checksum?
+      for(i = 0; i < sizeof prefix; ++i) {
+         if(prefix[i] == effectbuf[i])  { 
+          Serial.print("Match: ");
+          Serial.write(prefix[i]);
+          Serial.print("=");
+          Serial.write(effectbuf[i]);
+          Serial.println();
+          //effectbuf_position++;
+          if (i == 2) {
+            prefixfound = true;
+            Serial.println("prefix found set to true");
+          continue;
+       } else break;
+
+       //break;
+     }
+
+  memset(effectbuf, 0, sizeof effectbuf);
+  effectbuf_position = 0;
+
+}
+}
+
+    if(effectbuf_position == sizeof prefix) {
+
+if (prefixfound == true) {
+          Serial.println("FOUND MAGIC WORD");
+          Serial.write(effectbuf, effectbuf_position);
+
+          hi  = effectbuf[0];
+          lo  = effectbuf[1];
+          chk = effectbuf[2];
+          Serial.print("hi = ");
+          Serial.write(hi);
+          Serial.print(" lo = ");
+          Serial.write(lo);    
+          Serial.print(" chk = ");
+          Serial.write(chk);     
+          if(chk == (hi ^ lo ^ 0x55)) {
+            Serial.println("..CHECK SUM MATCHES");
+          } else {
+            Serial.println(" .. Does not match");
+          }
+          
+          prefixfound = false;
+          
+          }
+
+} */
+/*
 
 
 

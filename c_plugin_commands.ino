@@ -73,7 +73,7 @@ void setup_Plugin () {
 
   // timer.setInterval(30, run_animations);
 
-  //timer.setTimeout(10000, OnceOnlyTask);
+  timer.setTimeout(100, OnceOnlyTask);
 
 }
 
