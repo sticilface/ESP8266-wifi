@@ -320,19 +320,41 @@ void handle_test() {
 void handle_misc ()
 
 {
+          //  EEPROM WIPE 
+         if (server.arg("eeprom") == "wipe") EEPROM_wipe();
+          // UPDATE SERIAL SPEED...  requires reboot to work...
+         if (server.arg("serial").length() != 0) {
+            String a = server.arg("serial");
+            Serial.println("Serial mode recieved: " + a);
+            int selected = a.toInt();
+            EEPROM.write(SERIALspeedbyte, selected);
+            EEPROM.commit();
+            Serial.println("Serial speed updated to: " + String(baudrates[selected]));
+         }
+         
+  int currentspeed = EEPROM.read(SERIALspeedbyte); //SERIALspeedbyte
+  //currentspeed = 4;
+  String selected; 
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
-
   httpbuf += "<p> Heap Size = " + String(ESP.getFreeHeap()) ; // + "</br>";
   httpbuf += "<br> Flash Size = " + String(ESP.getFlashChipSize()) ;
   httpbuf += "<br> Flash ID = " + String(ESP.getFlashChipId()) ;
   httpbuf += "<br> Chip ID = " + String(ESP.getChipId()) + "</p>";
-
-
+  httpbuf += "<p><form action='/misc' method='POST'>\n";
+  httpbuf += "<p> Select Speed <select name='serial' onchange='this.form.submit();'>";
+  for (int i=0; i < numberofbaudrates; i ++ ) {
+    if (currentspeed == i) { 
+        selected = "' selected "; 
+      } else selected = "' "; 
+    httpbuf += "<option value='" + String(i) + selected + ">" + String(baudrates[i]) + "</option>";
+  }
+  httpbuf += "</select>";
+  httpbuf += "</form></p>";
 
   httpbuf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
-  httpbuf += "<br><a href='/wifi?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
-  httpbuf += "<br><a href='/wifi?eeprom=wipe'> EEPROM FORMAT </a>";
+  httpbuf += "<br><a href='/misc?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
+  httpbuf += "<br><a href='/misc?eeprom=wipe'> EEPROM FORMAT </a>";
   httpbuf += htmlendstring; 
 
   server.send(200, "text/html", httpbuf);

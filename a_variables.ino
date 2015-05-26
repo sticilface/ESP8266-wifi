@@ -40,6 +40,7 @@ const int deviceidAddress = 32;
 const int ssidAddress = 64;
 const int passwordAddress = 96;
 const int mqttAddress = 128;  // ends at 144 so begin new data at 208?  gives space for another 2 variables 
+const int serialspeed_address = 208;  // next slot 240
 
 const int deviceidAddressbyte = 1;
 const int ssidAddressbyte = 2;
@@ -48,8 +49,9 @@ const int mqttAddressbyte = 4;
 const int APbyte = 5; // Used to set emergency access mode...
 const int MQTTenabledbyte = 6;
 const int DEBUGenabledbyte = 7;
-const int Temperature_enablebyte = 8; 
-const int Humidity_enablebyte = 9;
+const int SERIALspeedbyte = 8;
+
+
 
 //boolean MQTTenabled;
 
@@ -83,8 +85,10 @@ String mqttserver;
 //const char* commands[numberofcommands] = {"setpoint","kd","ki","kp","state","ssid","password","eeprom","deviceid","mqttserver","restart", "send","test"};
 
 
-String htmlendstring = "<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a>";
-
+String htmlendstring = "<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a> <a href='/ws2812'>WS2812</a>";
+#define numberofbaudrates 6
+#define defaultserialspeed 1
+const long baudrates[numberofbaudrates] = {9600,115200,256000,460800,921600,2000000};
 
 
 boolean light_status = false;
@@ -101,4 +105,16 @@ const int bitaddress = 500;
 #define PIN_6 0x20
 #define PIN_7 0x40
 #define PIN_8 0x80
+
+enum operatingState { OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,COOLBLOBS,UDP};
+operatingState opState = OFF;
+operatingState LastOpState = OFF;
+
+uint16_t pixelCount = 40;
+uint8_t pixelPIN = 2;
+uint8_t CurrentBrightness; 
+RgbColor NewColour;
+
+
+unsigned int localPort = 8888;      // local port to listen on
 

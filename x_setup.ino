@@ -1,15 +1,32 @@
 
 void setup() {
   // put your setup code here, to run once:
-  
-  Serial.begin(115200);
-  Serial.setDebugOutput(true);
-  Serial.setDebugOutput(false);
+  EEPROM.begin(512);
+
+  long serialspeed;
+  uint8_t currentspeed = EEPROM.read(SERIALspeedbyte);
+
+  if (currentspeed < 0 || currentspeed > numberofbaudrates) {
+    currentspeed = defaultserialspeed;
+    EEPROM.write(SERIALspeedbyte, currentspeed);
+    EEPROM.commit();
+    }  
+
+    //currentspeed = 2;
+
+  for (int i = 0; i < numberofbaudrates; i++) {
+    if(currentspeed == i) serialspeed = baudrates[i];
+  }
+
+  //serialspeed = 115200;
+
+  Serial.begin(serialspeed); // 921600 460800 115200
+  //Serial.setDebugOutput(true);
+  //Serial.setDebugOutput(false);
   delay(10);
   Serial.println();
   Serial.println("Welcome to Andrew Melvin's ESP Software");
   
-  EEPROM.begin(512);
   
   
   // Serial.print("Emergency Byte Value: ");
@@ -44,7 +61,7 @@ void setup() {
 
 
   restartNetworking();
-  
+  /*
    if (!mdns.begin(deviceid, WiFi.localIP())) {
     Serial.print("Error setting up MDNS responder!....(");
     
@@ -53,6 +70,8 @@ void setup() {
     }
   }
   Serial.print("mDNS responder started.........(");
+*/
+    
   Serial.print(deviceid);
   Serial.println(".local)");
   
@@ -82,18 +101,21 @@ void setup() {
   //server.on("/temperature", handle_temperature);
 
   // Start the server 
-
+  Udp.begin(localPort);
+  
   server.begin();
 
   Serial.println("HTTP server started");
 
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
-    timer.setInterval(Uptimer_timeout, uptime);
+    //timer.setInterval(Uptimer_timeout, uptime);
 
+  Serial.println("Timers set up");
   
   setup_Plugin ();
   Serial.println("Plugins started");
+    //timer.setInterval(32,ws2812_animating);
 
 
 }

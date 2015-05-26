@@ -1,71 +1,62 @@
-#ifdef WS2812_DEVICE
-
-NeoPixelBus* strip = NULL; // dynamic
-
-//Adafruit_ILI9341 tft = Adafruit_ILI9341();
 
 
-enum operatingState { OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, ADALIGHT, AUTO};
-operatingState opState = OFF;
-operatingState LastOpState = OFF;
+//NeoPixelBus* strip = NULL; // dynamic
 
-int WS2812interval = 2000; // default interval...  
+
+String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colour is changed...
+
+int lasteffectupdate; 
+int WS2812interval = 2000; 
+//int CurrentBrightness = 255; 
+
+
 int WS2812timerID = -1; // make sure timer is put to off....
-
 int spectrumValue[7];
 int filter=80;
-uint32_t NewColor;
-String CurrentRGBcolour;
-int CurrentBrightness = 255;
-//char pixels[24 * 3];
-int DiffDim;
 
-//#define resetPin 5
-//#define strobePin 4
-//#define WS2812PIN 2
-
-//ESP_WS2812 strip = ESP_WS2812(16, WS2812PIN, NEO_GRB + NEO_KHZ800);
-
-uint16_t countPixels = 8;
-uint8_t pinPixels = 2;
 uint16_t effectState = 0;
-boolean Adalight_enabled;
+
 uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 
+
 void handle_WS2812 () { // handles the web commands...
-//Serial.println("WS2812 - Web page called.");
+ boolean updateLEDs = false;
+ int power = getPixelPower();
+ //Serial.println("WS2812 - Web page called.");
+ //= 0;
+//String CurrentRGBcolour = "00000";
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
  if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command")); 
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
- if ((server.arg("rgb") != CurrentRGBcolour) && (server.arg("rgb").length() != 0)) 
-  { WS2812_command_string("rgb " + server.arg("rgb"));
-    //Serial.println("RGB command: " + server.arg("rgb"));
-  }
  if (server.arg("rgbpicker").length() != 0) 
-  { WS2812_command_string("rgb " + server.arg("rgbpicker"));
-    //Serial.println("RGB picker command: " + server.arg("rgbpicker"));
+  { 
+    WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
+
+    Serial.println("RGB picker command: " + server.arg("rgbpicker"));
   }
 
   if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
+
+  if (server.arg("leds").length() != 0) {
+    pixelCount = server.arg("leds").toInt();
+    updateLEDs = true;
+  }
+
+   if (server.arg("ledpin").length() != 0) {
+    pixelPIN = server.arg("ledpin").toInt();
+    updateLEDs = true;
+  }
  
 
 
-httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> WS2812 </h1>\n";
-  //httpbuf += "<p>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
-  //httpbuf += "<br>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
-   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
-  httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='command' value='on'>    <input type='submit' name='command' value='off'></form>"; 
- 
- //<option selected>
-
-//Serial.println("Stored Color variable: " + CurrentRGBcolour);
-//Serial.println("Stored brightness: " + String(CurrentBrightness));
-//Serial.println("Stored Interval: " + String(WS2812interval));
-
-// + ". Status is " + mqttconnected ;
-  httpbuf += "<a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a> <a href='/ws2812?command=off'>off</a>  <a href='/ws2812?command=on'>on</a>";
+  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> WS2812 </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
+  httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
+  httpbuf += "<br> <a href='/ws2812?mode=off'>off</a>  <a href='/ws2812?mode=on'>on</a> ";
+  httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
+  httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
+  httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
   httpbuf += "<p><form name=frmTest action='/ws2812' method='POST'>\n";
   httpbuf += "<p> Select Mode <select name='mode' onChange='frmTest.submit();'>";
   httpbuf += "<option value='Colour'>Colour</option>";
@@ -75,118 +66,122 @@ httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='vi
   httpbuf += "</select>";
   httpbuf += "</form></p>";
   httpbuf += "<p><form action='/ws2812' method='POST'";
-
-  //httpbuf += "HEX Color CODE: <input type='color' name='rgb'>";
   httpbuf += "<p>HEX Color CODE: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "'>";
-  //httpbuf += "<br>  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
   httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
-
   httpbuf += "</form></p>"; 
-
   httpbuf += "<p><form name=sliders action='/ws2812' method='POST'>\n";
   httpbuf += "<p>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "'  > ";
   httpbuf += "<p>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' > ";
-
-  //httpbuf += "\n\nTemp: <input type='text' id='setpoint' name='setpoint' value='" + String(Setpoint) + "'><br>";
-  //httpbuf += "\n\nKp: <input type='text' id='kp' name='kp' value='" + String(Kp) + "'>  (850)<br>";
-  //httpbuf += "\n\nKi: <input type='text' id='kp' name='ki' value='" + String(Ki) + "'>  (0.5)<br>";
-  //httpbuf += "\n\nKd: <input type='text' id='kp' name='kd' value='" + String(Kd) + "'>  (0.1)<br>";  
-  //httpbuf += "\n\nWindow: <input type='text' id='window' name='window' value='" + String(WindowSize) + "'>  (10000)<br>";    
-  // working httpbuf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-    httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
-
+  httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
   httpbuf += "</form></p>"; 
-
-  //httpbuf += "<p> Heap Size = " + String(system_get_free_heap_size()) + "</p>";
-  //httpbuf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
-  //httpbuf += "<br><a href='/wifi?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
-  //httpbuf += "<br><a href='/wifi?eeprom=wipe'> EEPROM FORMAT </a>";
+  httpbuf += "<p><form action='/ws2812' method='POST'";
+  httpbuf += "<form action='/ws2812' method='POST'>";    
+  httpbuf += "\n\nNumber of LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "'>";
+  httpbuf += "\n\nPIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "'>";
+  httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
+  httpbuf += "</form></p>"; 
+  httpbuf += "<br> Power = " + String(power) + "mA"; 
   httpbuf += htmlendstring; 
   
   server.send(200, "text/html", httpbuf);
 
-
+if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 }
 
 void WS2812_dim_string (String Value)
 {
-  //RgbColor prevColor;
-
-int dim = Value.toInt();
-if (dim > 255) dim = 255;
-if (dim < 0) dim = 0;
-
-DiffDim = 255 - dim;
-CurrentBrightness  = dim; 
-
-//if (diff > 0) {
-  //diff = diff * -1;
-/*for (int i; i < countPixels; i++)
-{
-  prevColor = strip->GetPixelColor(i);
-  prevColor.Darken(diff);
-  strip->SetPixelColor(i,prevColor);
-}
-
-} else if (diff > 0) {
-
-;
-
-
-
-} */ 
 
 /*
-RgbColor test = RgbColor(dim);
-CurrentBrightness  = dim; 
-//strip.setBrightness(dim);
+  RgbColor prevColor;
 
-  for(int i=0;i<countPixels; i++) {
-    strip->SetPixelColor(i,test);
-  } */
+      int dim = Value.toInt();
+      if (dim > 255) dim = 255;
+      if (dim < 0) dim = 0;
 
-strip->Show();
+      int DiffDim = CurrentBrightness - dim;
+      CurrentBrightness  = dim; 
 
-Serial.print("Brightness updated to :" + Value);
-//send_mqtt_msg( "Brightness", Value);                
+      if (DiffDim > 0) {  
+        Serial.println("Brightness Darken by: " + String(DiffDim));
 
+        for (int i = 0; i < pixelCount; i++) {
+          //prevColor = strip->GetPixelColor(i);
+          prevColor.Darken(DiffDim);
+          ////strip->SetPixelColor(i,prevColor);
+        }
+      } else if (DiffDim < 0) { 
+        DiffDim = DiffDim * -1;
+        Serial.println("Brightness Lighten by: " + String(DiffDim));
+          for (int i = 0; i < pixelCount; i++) {
+          //prevColor = strip->GetPixelColor(i);
+          prevColor.Lighten(DiffDim);
+          //strip->SetPixelColor(i,prevColor);       
+        }
+      } 
+
+*/
+//  
+      int a = Value.toInt();
+      if (a > 255) a = 255;
+      if (a < 0) a = 0;
+
+      CurrentBrightness  = a;
+
+      EEPROM.write(PixelCount_address + 2, CurrentBrightness);
+
+      EEPROM.commit();
+     
+      // if (isnan(CurrentBrightness)) CurrentBrightness = 255;
+
+      Serial.println("Brightness set to: " + String(CurrentBrightness));
+
+
+          //strip->Show();
 
 }
 
 void WS2812_mode_string (String Value)
 
 {
-String currentstate;
-if (Value == "Rainbow") { opState = RAINBOW; currentstate = "Rainbow";}
-if (Value == "Colour") { opState = COLOR; currentstate = "Colour"; }
-if (Value == "ChaseRainbow")  {opState = ChaseRainbow; currentstate = "ChaseRainbow"; }
-if (Value == "Fade")  {opState = FADE; currentstate = "Fade"; }
+  Serial.print("MODE recieved: " + Value);
+  Value.toLowerCase();
+
+  if (Value == "off" | Value == "OFF") { if (opState != OFF) { LastOpState = opState; opState = OFF; } ;};
+  if (Value == "on" | Value == "ON") opState = LastOpState;
+  if (Value == "looparound") { opState = LOOPAROUND; LastOpState = LOOPAROUND;};
+  if (Value == "pickrandom") { opState = PICKRANDOM; LastOpState = PICKRANDOM; } ;
+  if (Value == "fadeinfadeout") { opState = FADEINFADEOUT; LastOpState = FADEINFADEOUT; }; 
+  if (Value == "fade") { opState = FADE; LastOpState = FADE; }; 
+  if (Value == "rainbow") { opState = RAINBOW; LastOpState = RAINBOW; }; 
+  if (Value == "adalight") { LastOpState =  opState = ADALIGHT;}; 
+  if (Value == "coolblobs") { opState = COOLBLOBS; LastOpState = COOLBLOBS;  }; 
+  if (Value == "udp") { opState = UDP; LastOpState = UDP;  }; 
 
 
-if (Value != "off" && WS2812timerID == -1) {
-  WS2812timerID = timer.setInterval(WS2812interval, ws2812);
-  //Serial.println("WS2812timer Enabled ID: " + String(WS2812timerID));
-  //WS2812_command_string (Value);
-}
 
-if (Value == "off") 
-{
 
-  if (opState != OFF) LastOpState = opState;
+  if (Value.indexOf("rgb") >= 0) 
+    {
+      opState = LastOpState = COLOR;
+      String instruction = Value.substring(4,Value.length()+1 );
+      Serial.println("RGB command recieved: " + instruction);
+      CurrentRGBcolour = instruction;
+      NewColour = HEXtoRGB(instruction);
 
-  opState = OFF;
-  //stripoff();
+      EEPROM.write(PixelCount_address + 4, NewColour.R);
+      EEPROM.write(PixelCount_address + 5, NewColour.G);
+      EEPROM.write(PixelCount_address + 6, NewColour.B);
+      EEPROM.commit();
 
-  if (Value == "on")
-{
- opState = LastOpState;
 
-}
+      SetRGBcolour(NewColour);
 
-}
-ws2812(); //just call the statemachine to update state ASAP...
+  }
 
+  EEPROM.write(PixelCount_address + 3, LastOpState);
+
+  EEPROM.commit();
 //send_mqtt_msg( "mode", currentstate);                
 
 }
@@ -197,286 +192,49 @@ void WS2812timer_command_string (String Value)
 {
 
 WS2812interval = Value.toInt();
-if (WS2812timerID > -1) {
-  timer.deleteTimer(WS2812timerID);
-  WS2812timerID = timer.setInterval(WS2812interval, ws2812);
-  Serial.println("WS2812 Timer change to: " + String(WS2812interval));
-} else {
-  Serial.println("Timer not active, but WS2812interval has been changed");
-}
 
 }
 
 
-void WS2812_command_string (String Value)
-
-{
-//Serial.println("WS2812 command: " + Value);
-//Serial.println("Current OpState = " + String(opState));
-//Serial.println("Last OpState = " + String(LastOpState));
-
-//Serial.print("Index of RGB: " + String(Value.indexOf("rgb")));
-//Serial.println("PRE WS2812timerID: " + String(WS2812timerID));
-
-if (Value != "off" && WS2812timerID == -1) {
-  WS2812timerID = timer.setInterval(WS2812interval, ws2812);
-  //Serial.println("WS2812timer Enabled ID: " + String(WS2812timerID));
+void WS2812_command_string (String Value) {
 }
-
+/*
 
 if (Value.indexOf("rgb") >= 0) 
 {
   opState = COLOR;
-  //send_mqtt_msg( "mode", "Colour");                
-
   String instruction = Value.substring(4,Value.length()+1 );
-  CurrentRGBcolour = instruction;
-  //Serial.println("RGB command recieved: " + instruction);
-  //Serial.print("Example of colour in 32bit: ");
-  //Serial.println(strip.getPixelColor(1));
-  //uint32_t 
-  NewColor = hexToDec(instruction);
-
-  //color(NewColor);
-
-
-}
-
-if (Value == "off") 
-{
-
-  if (opState != OFF) LastOpState = opState;
-
-  opState = OFF;
-  //stripoff();
-}
-
-if (Value == "on")
-{
- opState = LastOpState;
-
-}
-
-if (Value == "toggle")
-{
-if (opState == OFF ) {
-  opState = LastOpState;
-} else if (opState != OFF)
-{
-  LastOpState = opState;
-  opState = OFF;
-}
-
-
-
-}
-
-
-ws2812(); //just call the statemachine to update state ASAP...
-
-}
-
-
-
-
-
-
-void initiateWS2812 ()
-
-{
-
-   //strip.begin();
-   //strip->clear();
-   //strip.show(); 
-   //strip.show(); 
-
-   Serial.println("WS2812  started");
-
-  ChangeNeoPixels(countPixels, pinPixels); // initial setup
-   
-     // ---  subscribe to all esp messages 
-  strip->Show();
-      //ws2812_int.attach_ms(100, show);
-
-
-}
-
-uint32_t StripColor; 
-
-void color(uint32_t color)
-
-{
-  StripColor = color;
-int r = StripColor >> 16;
-int g = StripColor >> 8 & 0xFF;
-int b = StripColor & 0xFF;
-
-   for(int i=0;i<countPixels; i++) {
-    RgbColor NewColor = RgbColor(r,g,b);
-    NewColor.Darken(DiffDim);
-    strip->SetPixelColor(i,NewColor);
-  } 
-      //strip.setPixelColor(0,0);
-
-  strip->Show();
-
-}
-
-//void color(String color)
-
-//{
-  //Serial.println("Colour = " + color);
-  //String r = color.substring(0,2 );
-  //String g = color.substring(2,4 );
-  //String b = color.substring(4,6 );
-
-
-
-  //Serial.println("NEW colour as INT: (" + r + "," + g + "," + b + ")");
-  //uint16_t i; // , j;
-
-
-  //color(NewColor)
-
-
-//}
-
- void rainbow() {
- 
-  
-  static int wsPoint ;
-  uint16_t i; // , j;
-  //pixelsNUM = 60;
-  //for(j=0; j<256; j++) { v
-    for(i=0; i<countPixels; i++) {
-      strip->SetPixelColor(i, Wheel((i+wsPoint) & 255));
+  Serial.println("RGB command recieved: " + instruction);
+  NewColour = HEXtoRGB(instruction);
+    for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
+      //strip->LinearFadePixelColor(1000, pixel, NewColour);
     }
-    //strip.setPixelColor(0,0);
-    strip->Show();
-    //delay(wait);
-  //}
-    if (wsPoint==256) wsPoint=0; 
-    wsPoint++;
-    // Serial.println("Colours Updated..." + String(strip.numPixels()));
-
-}   // END OF 
-
-void Fade() {
-
-static int j;
- 
-if (j > 256) j = 0; 
-RgbColor col = Wheel(j);
-//int col = 200; 
-
-for (int i=0; i < countPixels; i++) {
-          strip->SetPixelColor(i, col);    //turn every third pixel on
-        }
-        //strip.setPixelColor(0,0);
-
-        strip->Show();
-
-
-
-j++;
 }
 
-////////////////////////
-
-void theaterChaseRainbow() {
- 
-  static int j; 
-  static int q;
-  if (j > 256) j = 0; 
-  if (q > 3) {q = 0; j++;}
-  //for (int j=0; j < 256; j++) {  // cycle all 256 colors in the wheel
-
-    //for (int q=0; q < 3; q++) {
-
-        for (int i=0; i < countPixels; i=i+3) {
-          strip->SetPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
-        }
-        //strip.setPixelColor(0,0);
-        strip->Show();
-       
-        //delay(1000);
-       
-        for (int i=0; i < countPixels; i=i+3) {
-          strip->SetPixelColor(i+q, 0);        //turn every third pixel off
-        }
-    //}
+} */
 
 
-
-    q++;
-    // j++;
-
-  //}
+RgbColor dim(RgbColor value) {
+    int amounttodarken = 255 - CurrentBrightness;
+    value.Darken(amounttodarken);
+    return value;
 }
- //End of chase the rainbow
 
+void SetRGBcolour (RgbColor value) {
+    //RgbColor Newvalue = dim(value);
+  value = dim(value);
+    for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
+        strip->SetPixelColor(pixel,value);
+    }
 
-void ws2812 ()  // put switch cases here...
+ApplyPixels();
 
+}
+
+RgbColor HEXtoRGB (String hexString) // Converts HEX to RBG object....
 
 {
 
-  //Serial.print("ws2812 called case = " + String(opState));
-  //wsPoint += 1;
-
-switch (opState)
-   {
-   case OFF:
-      stripoff();
-      break;
-   case RAINBOW:
-      rainbow();
-      break;
-    case COLOR:
-      color(StripColor);
-      break;
-   case ChaseRainbow:
-      theaterChaseRainbow();
-      //TuneP();
-      break;
-   case FADE:
-      Fade();
-      //TuneI();
-      break;
-   case ADALIGHT:
-      //TuneD();
-      if (Adalight_enabled != true)  initialiseAdalight;
-      Adalight();
-      break;
-   }
-
-
-
-}
-
-void stripoff ()
-
-{
-      //stripOFFcalled = true;
-  //Serial.println("off statement processed");
-  if (WS2812timerID > -1 ) {
-    timer.deleteTimer(WS2812timerID);
-    WS2812timerID = -1;
-  }
-
-  //Serial.println("stripoff CALLED");
-      //strip->clear();
-    for(int i=0;i<countPixels; i++) {
-    //strip->SetPixelColor(i,RgbColor(0)); 
-  }
-      strip->Show();
-      delay(1); 
-      strip->Show();
-
-}
-
-uint32_t hexToDec(String hexString) {
-  
   uint32_t decValue = 0;
   int nextInt;
   
@@ -491,102 +249,232 @@ uint32_t hexToDec(String hexString) {
     decValue = (decValue * 16) + nextInt;
   }
   
-  return decValue;
+    int r = decValue >> 16;
+    int g = decValue >> 8 & 0xFF;
+    int b = decValue & 0xFF;
+
+    return RgbColor(r,g,b);
+
+}
+
+void StripOFF() {
+
+  for (int i = 0; i < pixelCount; i++)
+  {
+    strip->SetPixelColor(i,0);
+  }
+  
+
+}
+
+
+
+void initiateWS2812 ()
+
+{
+  opState = OFF;
+  ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
+  strip->Begin();
+  StripOFF();
+  SetRandomSeed();
+
 }
 
 
 
 
+////////////////////////
 
 
 
 
+void ws2812 ()  // put switch cases here...
 
 
-uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
-  return ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b;
+{
+
+  //Serial.print("ws2812 called case = " + String(opState));
+  //wsPoint += 1;
+
+switch (opState)
+   {
+   case OFF:
+      //if (strip) StripOFF();
+   StripOFF();
+      break;
+   case RAINBOW:
+      rainbow();
+      break;
+   case COLOR:
+      SetRGBcolour(NewColour);
+      break;
+   case ChaseRainbow:
+      //TuneP();
+      break;
+   case FADE:
+      Fade();
+      break;
+   case ADALIGHT:
+      Adalight();
+      break;
+   case TEST:
+      //test();
+      break;
+   case LOOPAROUND:
+      LoopAround(192, 200);
+      break;
+   case PICKRANDOM:
+      PickRandom(128);
+      break;
+   case FADEINFADEOUT:
+      FadeInFadeOutRinseRepeat(192);
+      break;
+     case COOLBLOBS:
+      CoolBlobs();
+      break;    
+     case UDP:
+     UDPfunc();
+     break;
+   }
+
+
+
 }
 
+void CoolBlobs() {
 
+    if (millis() > (lasteffectupdate + WS2812interval) ){
+      
+
+
+
+
+
+    } // end of timer if
+
+} // end of coolblobs
+
+
+//////// i nserted
 /*
-// Set pixel color from 'packed' 32-bit RGB color:
-void setPixelColor32(uint16_t n, uint32_t c) {
-  if(n < countPixels) {
-    uint8_t
-      r = (uint8_t)(c >> 16),
-      g = (uint8_t)(c >>  8),
-      b = (uint8_t)c;
-    
 
-    if(brightness) { // See notes in setBrightness()
-      r = (r * brightness) >> 8;
-      g = (g * brightness) >> 8;
-      b = (b * brightness) >> 8;
+void setcolour () {
+
+    for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
+
+      //strip->LinearFadePixelColor(5000, pixel, NewColour);
+
     }
-    uint8_t *p = &pixels[n * 3];
-    p[rOffset] = r;
-    p[gOffset] = g;
-    p[bOffset] = b;
-  }
+
 }
+
 */
 
-/*
-
-void read_EQ ()
-
+void FadeInFadeOutRinseRepeat(uint8_t peak)
 {
-
-digitalWrite(resetPin, HIGH);
-delayMicroseconds(20);
-digitalWrite(resetPin, LOW);
-
-  for (int i=0;i<7;i++){
-    digitalWrite(strobePin, LOW);
-    delay(5);
-    spectrumValue[i]=analogRead(0); //analogRead(0)
-    //spectrumValue[i]=constrain(spectrumValue[i], filter, 1023);
-    //spectrumValue[i]=map(spectrumValue[i], filter,1023,0,255);
-    Serial.print(spectrumValue[i]);
-    Serial.print(" ");
-    digitalWrite(strobePin, HIGH);
-  }
-  Serial.println();
-
-}
-*/ 
-/*
-void initiate_EQ ()
-
-{
-
-
-//  pinMode(analogPin, INPUT);
-  pinMode(strobePin, OUTPUT);
-  pinMode(resetPin, OUTPUT);
-  //pinMode(ledred, OUTPUT);
-  //pinMode(ledblue, OUTPUT);
-  //pinMode(ledgreen, OUTPUT);
-  digitalWrite(resetPin, LOW);
-  digitalWrite(strobePin, HIGH);
-
-}
-*/
-
-// called to change the number of pixels
-void ChangeNeoPixels(uint16_t count, uint8_t pin)
-{
-    if (strip)
+  if (effectState == 0)
+  {
+    for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
     {
-        delete strip;
+      uint16_t time = random(800,100);
+      strip->LinearFadePixelColor(time, pixel, RgbColor(random(peak), random(peak), random(peak)));
     }
-    strip = new NeoPixelBus(count, pin);
-    strip->Begin();
+  }
+  else if (effectState == 1)
+  {
+    for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
+    {
+      uint16_t time = random(600,700);
+      strip->LinearFadePixelColor(time, pixel, RgbColor(0, 0, 0));
+    }
+  }
+  effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
+  
+}
+
+void PickRandom(uint8_t peak)
+{
+
+  // pick random set of pixels to animate
+  uint8_t count = random(pixelCount);
+  while (count > 0)
+  {
+    uint8_t pixel = random(pixelCount);
+    
+    // configure the animations
+    RgbColor color; // = //strip->getPixelColor(pixel);
+
+    color = RgbColor(random(peak), random(peak), random(peak));
+
+    
+    uint16_t time = random(100,400);
+    strip->LinearFadePixelColor( time, pixel, color);
+    
+    count--;
+  }
+}
+
+void LoopAround(uint8_t peak, uint16_t speed)
+{
+  // Looping around the ring sample
+  uint16_t prevPixel;
+  RgbColor prevColor;
+  
+  // fade previous one dark
+  prevPixel = (effectState + (pixelCount - 5)) % pixelCount; 
+  strip->LinearFadePixelColor(speed, prevPixel, RgbColor(0, 0, 0));
+  
+  // fade previous one dark
+  prevPixel = (effectState + (pixelCount - 4)) % pixelCount; 
+  prevColor = strip->GetPixelColor( prevPixel );
+  prevColor.Darken(prevColor.CalculateBrightness() / 2);
+  strip->LinearFadePixelColor(speed, prevPixel, prevColor);
+  
+  // fade previous one dark
+  prevPixel = (effectState + (pixelCount - 3)) % pixelCount; 
+  prevColor = strip->GetPixelColor( prevPixel );
+  prevColor.Darken(prevColor.CalculateBrightness() / 2);
+  strip->LinearFadePixelColor(speed, prevPixel, prevColor);
+  
+  // fade previous one dark
+  prevPixel = (effectState + (pixelCount - 2)) % pixelCount; 
+  prevColor = strip->GetPixelColor( prevPixel );
+  prevColor.Darken(prevColor.CalculateBrightness() / 2);
+  strip->LinearFadePixelColor(speed, prevPixel, prevColor);
+  
+  // fade previous one dark
+  prevPixel = (effectState + (pixelCount - 1)) % pixelCount; 
+  prevColor = strip->GetPixelColor( prevPixel );
+  prevColor.Darken(prevColor.CalculateBrightness() / 2);
+  strip->LinearFadePixelColor(speed, prevPixel, prevColor);
+  
+  // fade current one light
+  strip->LinearFadePixelColor(speed, effectState, RgbColor(random(peak), random(peak), random(peak)));
+  effectState = (effectState + 1) % pixelCount;
+  
+}
+
+void SetRandomSeed()
+{
+  uint32_t seed;
+  
+  // random works best with a seed that can use 31 bits
+  // analogRead on a unconnected pin tends toward less than four bits
+  seed = analogRead(0);
+  delay(1);
+  
+  for (int shifts = 3; shifts < 31; shifts += 3)
+  {
+    seed ^= analogRead(0) << shifts;
+    delay(1);
+  }
+  
+  // Serial.println(seed);
+  randomSeed(seed);
 }
 
 
-
-  RgbColor Wheel (byte WheelPos) {
+RgbColor Wheel (byte WheelPos) {
   WheelPos = 255 - WheelPos;
   if(WheelPos < 85) {
    return  RgbColor(255 - WheelPos * 3, 0, WheelPos * 3);
@@ -597,29 +485,329 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)
    WheelPos -= 170;
    return  RgbColor(WheelPos * 3, 255 - WheelPos * 3, 0);
   }
-}  
+} 
 
-void initialiseAdalight (){
 
+void Fade() {
+
+
+static int j;
+if (millis() > (lasteffectupdate + WS2812interval) ){
+
+  //Serial.println("Fade updaed");
+if (j > 256) j = 0; 
+RgbColor col = Wheel(j);
+//int col = 200; 
+
+for (int i=0; i < pixelCount; i++) {
+    strip->SetPixelColor(i, dim(col));    //turn every third pixel on
+        }
+
+ApplyPixels();
+
+j++;
+lasteffectupdate = millis();
+
+}
+
+}
+
+void ApplyPixels () {
+   
+
+
+
+    strip->Show();
+}
+
+ void rainbow() {
+
+
+ if (millis() > (lasteffectupdate + WS2812interval) ){
+
+  static int wsPoint ;
+  uint16_t i; // , j;
+  //pixelsNUM = 60;
+  //for(j=0; j<256; j++) { v
+    for(i=0; i<pixelCount; i++) {
+    //RgbColor tempcolour = Wheel(i+wsPoint);
+    strip->SetPixelColor(i, dim(Wheel(i+wsPoint)));
+    }
+    ApplyPixels();
+      if (wsPoint==256) wsPoint=0; 
+    wsPoint++;
+    lasteffectupdate = millis();
+}
+    // Serial.println("Colours Updated..." + String(//strip->numPixels()));
+
+}   // END OF 
+
+
+void Adalight () { //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+static boolean Adalight_configured;
+ static uint8_t effectbuf[600];
+ //uint8_t pixelbuf[3*pixelCount];
+static uint16_t effectbuf_position = 0;
+
+ if (!Adalight_configured) {
+
+  /* 
+    delay(500);
+    for(i=0; i<pixelCount; i++) {
+      strip->SetPixelColor(i, RgbColor(255,0,0));
+    }
+    strip->Show();
+;
+    delay(500);
+    for(i=0; i<pixelCount; i++) {
+      strip->SetPixelColor(i, RgbColor(0,255,0));
+    }
+    strip->Show();
+;
+    delay(500);
+    for(i=0; i<pixelCount; i++) {
+      strip->SetPixelColor(i, RgbColor(0,0,255));
+    }
+    strip->Show();
+    Serial.println(); 
+    */
     Serial.print("Ada\n"); // Send "Magic Word" string to host
-    Adalight_enabled = true;
+    Adalight_configured = true;
+    }
+
+//size_t len = Serial.available();
+
+//if(len){
+//    effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
+//  }
+/*
+if (effectbuf_position > 10) {
+  Serial.println();
+  Serial.write(effectbuf, effectbuf_position);
+  memset(effectbuf, 0, sizeof effectbuf);
+  effectbuf_position = 0;
+}
+*/
+      bool prefixfound = false; 
+
+enum mode { MODE_HEADER = 0, MODE_CHECKSUM, MODE_DATA, MODE_SHOW};
+static mode state = MODE_HEADER;
+RgbColor Adalight_color;
+//RgbColor a; 
+int r,g,b;
+static uint16_t currentpixel;
+static int effect_timeout;
+static uint8_t prefixcount = 0;
+size_t len; 
+static unsigned long pixellatchtime;
+static const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
+  //Serial.println();
+  //Serial.write(effectbuf, effectbuf_position);
+
+if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
+//if (millis() > pixellatchtime + serialTimeout) {
+  //Serial.println("15 Second gap... pixels turned off");
+  pixellatchtime = 0; // reset counter / latch to zero should only fire when show pixls has been called!
+  StripOFF();  // turn off pixels... 
+ state = MODE_HEADER;  // resume header search....
 }
 
-void Adalight () {
+  switch (state) {
+
+    case MODE_HEADER:
+
+      currentpixel = 0; // resest current pixel to 0, safety guard...
+      effectbuf_position = 0; // reset the buffer position for DATA collection...
+      //if (effectbuf_position == 3) { // look for a buffer with 3 in it....
+
+          if(Serial.available()) {
+            if (Serial.read() == prefix[prefixcount]) {
+              prefixcount++;
+            } else prefixcount = 0;
+            }
+            
+            if (prefixcount == 3) {
+            effect_timeout = millis(); // generates START TIME.....
+            //Serial.println("Prefix found..") ;
+            state = MODE_CHECKSUM;
+            prefixcount =0;
+            }
+
+    break;
+
+    case MODE_CHECKSUM:
+
+
+        if (Serial.available() >= 3) {
+          hi  = Serial.read();
+          lo  = Serial.read();
+          chk = Serial.read();
+        
+          /*Serial.print("hi = ");
+          Serial.write(hi);
+          Serial.print(" lo = ");
+          Serial.write(lo);    
+          Serial.print(" chk = ");
+          Serial.write(chk);   */
+          if(chk == (hi ^ lo ^ 0x55)) {
+            //Serial.print("..CHECK SUM MATCHES");
+            state = MODE_DATA;
+          } else {
+            //Serial.print(" .. Does not match");
+            state = MODE_HEADER; // ELSE RESET.......
+          }
+          //Serial.println();
+        }
+      break;
+
+    case MODE_DATA:
+
+    len = Serial.available();
+
+      if(len){
+      effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
+      }
+
+      if (effectbuf_position >= 3*pixelCount) { // goto show when buffer has recieved enough data...
+        state = MODE_SHOW;
+        break;
+      } //else if (millis() > effect_timeout + 1000) { // bail and return to header seek if not enought date...
+        //state = MODE_HEADER;
+      //}
+
+
+
+      break;
+
+    case MODE_SHOW:
+
+      //Serial.println("MODE = SHOW");
+      //Serial.write(effectbuf, effectbuf_position);
+
+      currentpixel = 0; 
+
+      for (int i=0; i < effectbuf_position; ) {
+       
+        Adalight_color.R = r = effectbuf[i++];
+        Adalight_color.G = g = effectbuf[i++];
+        Adalight_color.B = b = effectbuf[i++];
+
+        /*Serial.print(currentpixel);
+        Serial.print("  ");
+        Serial.print(r,DEC);
+        Serial.print(":");
+        Serial.print(g,DEC);
+        Serial.print(":");
+        Serial.print(b,DEC);   
+        Serial.println();   */
+
+       strip->SetPixelColor(currentpixel++,Adalight_color); 
+       //currentpixel++;
+      }
+
+
+
+      //Serial.println("Pixels shown = " + String(currentpixel));
+      //effectbuf_position = 0;
+      strip->Show();
+      pixellatchtime = millis();
+      state = MODE_HEADER;
+      break;
 }
+
+
+
+ // memset(effectbuf, 0, sizeof effectbuf);
+ // effectbuf_position = 0;
+
 /*
-  for(i = 0; i < sizeof prefix; ++i) {
-    //waitLoop: 
-    while (!Serial.available()) ;;
-    // Check next byte in Magic Word
-    if(prefix[i] == Serial.read()) continue;
+if (effectbuf[0] == 'A' & effectbuf[1] == 'd' & effectbuf[2] == 'a') {
+
+Serial.println("Magic Word found");
+          hi  = effectbuf[3];
+          lo  = effectbuf[4];
+          chk = effectbuf[5];
+          Serial.print("hi = ");
+          Serial.write(hi);
+          Serial.print(" lo = ");
+          Serial.write(lo);    
+          Serial.print(" chk = ");
+          Serial.write(chk);              
+
+
+}
+*/
+
+
+/*
+
+    if(effectbuf_position == sizeof prefix) {
+          // Magic word matches.  Now how about the checksum?
+      for(i = 0; i < sizeof prefix; ++i) {
+         if(prefix[i] == effectbuf[i])  { 
+          Serial.print("Match: ");
+          Serial.write(prefix[i]);
+          Serial.print("=");
+          Serial.write(effectbuf[i]);
+          Serial.println();
+          //effectbuf_position++;
+          if (i == 2) {
+            prefixfound = true;
+            Serial.println("prefix found set to true");
+          continue;
+       } else break;
+
+       //break;
+     }
+
+  memset(effectbuf, 0, sizeof effectbuf);
+  effectbuf_position = 0;
+
+}
+}
+
+    if(effectbuf_position == sizeof prefix) {
+
+if (prefixfound == true) {
+          Serial.println("FOUND MAGIC WORD");
+          Serial.write(effectbuf, effectbuf_position);
+
+          hi  = effectbuf[0];
+          lo  = effectbuf[1];
+          chk = effectbuf[2];
+          Serial.print("hi = ");
+          Serial.write(hi);
+          Serial.print(" lo = ");
+          Serial.write(lo);    
+          Serial.print(" chk = ");
+          Serial.write(chk);     
+          if(chk == (hi ^ lo ^ 0x55)) {
+            Serial.println("..CHECK SUM MATCHES");
+          } else {
+            Serial.println(" .. Does not match");
+          }
+          
+          prefixfound = false;
+          
+          }
+
+} */
+/*
+
+
+
+
+
+    for(i = 0; i < sizeof prefix; ++i) {
+        waitLoop: while (!Serial.available()) ;;
+        // Check next byte in Magic Word
+        if(prefix[i] == Serial.read()) continue;
     // otherwise, start over
     i = 0;
-    //goto waitLoop;
-  }
+    goto waitLoop;
+    }
 
-
-  while (!Serial.available()) ;;
+ while (!Serial.available()) ;;
   hi=Serial.read();
   while (!Serial.available()) ;;
   lo=Serial.read();
@@ -630,12 +818,11 @@ void Adalight () {
   if (chk != (hi ^ lo ^ 0x55))
   {
     i=0;
-    //goto waitLoop;
+    goto waitLoop;
   }
-  
-  memset(leds, 0, countPixels * sizeof(struct strip->));
-  // read the transmission data and set LED values
-  for (uint8_t i = 0; i < countPixels; i++) {
+
+
+  for (uint8_t i = 0; i < pixelCount; i++) {
     byte r, g, b;    
     while(!Serial.available());
     r = Serial.read();
@@ -643,15 +830,126 @@ void Adalight () {
     g = Serial.read();
     while(!Serial.available());
     b = Serial.read();
-    leds[i].r = r;
-    leds[i].g = g;
-    leds[i].b = b;
-  }
-  // shows new values
+   
+    //strip->SetPixelColor(i, RgbColor(r,g,b));
 
-         strip->Show();
+  } */ 
 
 
-} */
+//strip->Show();
 
-#endif
+
+
+
+}
+
+
+// called to change the number of pixels
+void ChangeNeoPixels(uint16_t count, uint8_t pin)
+{
+  
+ bool commitchanges = false; 
+
+    Serial.println("Change Neopixels called"); 
+
+
+        int pixelPINstored = EEPROM.read(PixelPIN_address);    
+        int pixelCountstored = EEPROM.read(PixelCount_address);
+        //int b=EEPROM.read(PixelCount_address+1);
+        //nt pixelCountstored = a*256+b;
+
+
+    if (count != pixelCountstored) {
+    Serial.println("Pixel count changed..."); 
+
+      //int a = pixelCount/256;
+      //Serial.print(a);
+      //int b = pixelCount % 256;
+      //Serial.print(b);
+        //EEPROM.write(PixelCount_address,(byte)count);
+        //EEPROM.write(PixelCount_address+1,b);
+
+
+      int a = pixelCount/256;
+      int b = pixelCount % 256;        
+        EEPROM.write(PixelCount_address,a);
+        EEPROM.write(PixelCount_address+1,b);
+
+        commitchanges = true;
+
+    if (EEPROM.read(PixelCount_enablebyte) != flagvalue) EEPROM.write(PixelCount_enablebyte,flagvalue) ;
+     Serial.println("pixel count byte updated");
+    }
+
+    if (pin != pixelPINstored) {
+    Serial.println("Change Neopixels PIN called"); 
+
+        EEPROM.write(PixelPIN_address, (byte)pin);
+    if (EEPROM.read(PixelPIN_enablebyte) != flagvalue) EEPROM.write(PixelPIN_enablebyte,flagvalue) ;
+     
+     commitchanges = true;
+
+    }
+
+    if (commitchanges == true) {
+      EEPROM.commit();
+          Serial.println("Changes committed"); 
+        }
+
+
+    if (strip)
+    {
+        //StripOFF();
+
+        delete strip;
+    }
+
+    strip = new NeoPixelBus(count, pin);
+}
+
+void UDPfunc () {
+static boolean Adalight_configured;
+
+ if (!Adalight_configured) {
+    Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
+    Adalight_configured = true;
+    } 
+int packetSize = Udp.parsePacket();
+
+  if(Udp.available())
+  {
+    RgbColor col;
+    int currentpixel = 0;
+    for (int i = 0; i < packetSize; i = i + 3) {
+      if (currentpixel > pixelCount) break;
+        col.R = Udp.read();
+        col.G = Udp.read();
+        col.B = Udp.read();
+        strip->SetPixelColor(currentpixel,col);
+        currentpixel++;
+      }
+
+strip->Show();
+
+}
+
+
+
+}
+
+int getPixelPower () {
+ int brightnesstally = 0;
+ for (int i = 0;i < pixelCount; i++) {
+  RgbColor colour = strip->GetPixelColor(i);
+  int brightness = colour.CalculateBrightness();
+  brightness = map(brightness,0,255,0,60);
+  brightnesstally = brightnesstally + brightness;
+}
+
+int brightness = brightnesstally;
+
+return brightness;
+} 
+
+
+
