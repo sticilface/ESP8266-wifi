@@ -106,10 +106,19 @@ const int bitaddress = 500;
 #define PIN_7 0x40
 #define PIN_8 0x80
 
-enum operatingState { OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,COOLBLOBS,UDP};
+enum operatingState { 
+OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, 
+ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
+COOLBLOBS,UDP,RAINBOWCYCLE
+};
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
-
+static const char *MODE_STRING[] = {
+"Off", "Rainbow", "Color", "Chase Rainbow", "Fade", 
+"AdaLight", "test", "Looparound", "Pick Random", "Fade in Fade Out", 
+"Cool Blobs", "UDP", "Rainbow Cycle" 
+};
+#define numberofmodes 13
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness; 

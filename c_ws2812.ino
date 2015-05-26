@@ -8,6 +8,7 @@ String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colo
 int lasteffectupdate; 
 int WS2812interval = 2000; 
 //int CurrentBrightness = 255; 
+  String selected;
 
 
 int WS2812timerID = -1; // make sure timer is put to off....
@@ -48,23 +49,42 @@ void handle_WS2812 () { // handles the web commands...
     pixelPIN = server.arg("ledpin").toInt();
     updateLEDs = true;
   }
- 
 
+  if ((server.arg("modedrop").length() != 0)) 
+    {
+      uint8_t a = server.arg("modedrop").toInt();
+      Serial.println("MODE DROP recieved: " + String(a));
+       opState = (operatingState)a;
+       if (a != 0) LastOpState = (operatingState)a;
+      }
 
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> WS2812 </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
-  httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
+  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
+  
+  //httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
   httpbuf += "<br> <a href='/ws2812?mode=off'>off</a>  <a href='/ws2812?mode=on'>on</a> ";
-  httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
-  httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
-  httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
+  //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
+  //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
+  //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
   httpbuf += "<p><form name=frmTest action='/ws2812' method='POST'>\n";
-  httpbuf += "<p> Select Mode <select name='mode' onChange='frmTest.submit();'>";
-  httpbuf += "<option value='Colour'>Colour</option>";
-  httpbuf += "<option value='Rainbow'>Rainbow</option>";
-  httpbuf += "<option value='Fade'>Fade</option>";
-  httpbuf += "<option value='ChaseRainbow'>ChaseRainbow</option>";
+  httpbuf += "<p> Select Mode <select name='modedrop' onchange='this.form.submit();'>";
+
+for (int k=0; k < numberofmodes; k++ ) {
+    if (opState == k) { 
+        selected = "' selected "; 
+      } else selected = "' "; 
+  httpbuf += "<option value='" + String(k) + selected + ">" + String(MODE_STRING[k]) + "</option>";
+   // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
+
+  }
+
+  //httpbuf += "<option value='Colour'>Colour</option>";
+  //httpbuf += "<option value='Rainbow'>Rainbow</option>";
+  //httpbuf += "<option value='Fade'>Fade</option>";
+  //httpbuf += "<option value='ChaseRainbow'>ChaseRainbow</option>";
+  
   httpbuf += "</select>";
   httpbuf += "</form></p>";
+
   httpbuf += "<p><form action='/ws2812' method='POST'";
   httpbuf += "<p>HEX Color CODE: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "'>";
   httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
@@ -76,8 +96,8 @@ void handle_WS2812 () { // handles the web commands...
   httpbuf += "</form></p>"; 
   httpbuf += "<p><form action='/ws2812' method='POST'";
   httpbuf += "<form action='/ws2812' method='POST'>";    
-  httpbuf += "\n\nNumber of LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "'>";
-  httpbuf += "\n\nPIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "'>";
+  httpbuf += "<p>Number of LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "'>";
+  httpbuf += "<p>PIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "'>";
   httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
   httpbuf += "</form></p>"; 
   httpbuf += "<br> Power = " + String(power) + "mA"; 
@@ -157,7 +177,8 @@ void WS2812_mode_string (String Value)
   if (Value == "adalight") { LastOpState =  opState = ADALIGHT;}; 
   if (Value == "coolblobs") { opState = COOLBLOBS; LastOpState = COOLBLOBS;  }; 
   if (Value == "udp") { opState = UDP; LastOpState = UDP;  }; 
-
+  if (Value == "colour") { opState = LastOpState = COLOR; }; 
+  if (Value == "chaserainbow") { opState = LastOpState = ChaseRainbow; }; 
 
 
 
@@ -329,12 +350,15 @@ switch (opState)
    case FADEINFADEOUT:
       FadeInFadeOutRinseRepeat(192);
       break;
-     case COOLBLOBS:
+   case COOLBLOBS:
       CoolBlobs();
       break;    
-     case UDP:
-     UDPfunc();
-     break;
+    case UDP:
+      UDPfunc();
+      break;
+    case RAINBOWCYCLE:
+      Rainbowcycle();
+      break;
    }
 
 
@@ -515,9 +539,42 @@ lasteffectupdate = millis();
 void ApplyPixels () {
    
 
-
-
     strip->Show();
+}
+
+
+void Rainbowcycle() {
+
+   static int wsPoint ;
+ 
+ if (millis() > (lasteffectupdate + WS2812interval) ){
+
+
+  uint16_t i; // , j;
+
+  //for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+
+
+    for(i=0; i< pixelCount; i++) {
+      strip->SetPixelColor(i, dim(Wheel(i * 256 / pixelCount + wsPoint)));
+    }
+
+    ApplyPixels();
+    if (wsPoint==256*5) wsPoint=0; 
+    wsPoint++;
+    lasteffectupdate = millis();
+    
+  //}
+}
+
+
+
+
+
+
+
+
+
 }
 
  void rainbow() {
@@ -575,19 +632,6 @@ static uint16_t effectbuf_position = 0;
     Adalight_configured = true;
     }
 
-//size_t len = Serial.available();
-
-//if(len){
-//    effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
-//  }
-/*
-if (effectbuf_position > 10) {
-  Serial.println();
-  Serial.write(effectbuf, effectbuf_position);
-  memset(effectbuf, 0, sizeof effectbuf);
-  effectbuf_position = 0;
-}
-*/
       bool prefixfound = false; 
 
 enum mode { MODE_HEADER = 0, MODE_CHECKSUM, MODE_DATA, MODE_SHOW};
@@ -714,132 +758,6 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
       state = MODE_HEADER;
       break;
 }
-
-
-
- // memset(effectbuf, 0, sizeof effectbuf);
- // effectbuf_position = 0;
-
-/*
-if (effectbuf[0] == 'A' & effectbuf[1] == 'd' & effectbuf[2] == 'a') {
-
-Serial.println("Magic Word found");
-          hi  = effectbuf[3];
-          lo  = effectbuf[4];
-          chk = effectbuf[5];
-          Serial.print("hi = ");
-          Serial.write(hi);
-          Serial.print(" lo = ");
-          Serial.write(lo);    
-          Serial.print(" chk = ");
-          Serial.write(chk);              
-
-
-}
-*/
-
-
-/*
-
-    if(effectbuf_position == sizeof prefix) {
-          // Magic word matches.  Now how about the checksum?
-      for(i = 0; i < sizeof prefix; ++i) {
-         if(prefix[i] == effectbuf[i])  { 
-          Serial.print("Match: ");
-          Serial.write(prefix[i]);
-          Serial.print("=");
-          Serial.write(effectbuf[i]);
-          Serial.println();
-          //effectbuf_position++;
-          if (i == 2) {
-            prefixfound = true;
-            Serial.println("prefix found set to true");
-          continue;
-       } else break;
-
-       //break;
-     }
-
-  memset(effectbuf, 0, sizeof effectbuf);
-  effectbuf_position = 0;
-
-}
-}
-
-    if(effectbuf_position == sizeof prefix) {
-
-if (prefixfound == true) {
-          Serial.println("FOUND MAGIC WORD");
-          Serial.write(effectbuf, effectbuf_position);
-
-          hi  = effectbuf[0];
-          lo  = effectbuf[1];
-          chk = effectbuf[2];
-          Serial.print("hi = ");
-          Serial.write(hi);
-          Serial.print(" lo = ");
-          Serial.write(lo);    
-          Serial.print(" chk = ");
-          Serial.write(chk);     
-          if(chk == (hi ^ lo ^ 0x55)) {
-            Serial.println("..CHECK SUM MATCHES");
-          } else {
-            Serial.println(" .. Does not match");
-          }
-          
-          prefixfound = false;
-          
-          }
-
-} */
-/*
-
-
-
-
-
-    for(i = 0; i < sizeof prefix; ++i) {
-        waitLoop: while (!Serial.available()) ;;
-        // Check next byte in Magic Word
-        if(prefix[i] == Serial.read()) continue;
-    // otherwise, start over
-    i = 0;
-    goto waitLoop;
-    }
-
- while (!Serial.available()) ;;
-  hi=Serial.read();
-  while (!Serial.available()) ;;
-  lo=Serial.read();
-  while (!Serial.available()) ;;
-  chk=Serial.read();
-  
-  // if checksum does not match go back to wait
-  if (chk != (hi ^ lo ^ 0x55))
-  {
-    i=0;
-    goto waitLoop;
-  }
-
-
-  for (uint8_t i = 0; i < pixelCount; i++) {
-    byte r, g, b;    
-    while(!Serial.available());
-    r = Serial.read();
-    while(!Serial.available());
-    g = Serial.read();
-    while(!Serial.available());
-    b = Serial.read();
-   
-    //strip->SetPixelColor(i, RgbColor(r,g,b));
-
-  } */ 
-
-
-//strip->Show();
-
-
-
 
 }
 
