@@ -109,16 +109,16 @@ const int bitaddress = 500;
 enum operatingState { 
 OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, 
 ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
-COOLBLOBS,UDP,RAINBOWCYCLE
+COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,TEST2,TEST3,TEST4
 };
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
 static const char *MODE_STRING[] = {
 "Off", "Rainbow", "Color", "Chase Rainbow", "Fade", 
 "AdaLight", "test", "Looparound", "Pick Random", "Fade in Fade Out", 
-"Cool Blobs", "UDP", "Rainbow Cycle" 
+"Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Test2","Test3","Test4" 
 };
-#define numberofmodes 13
+#define numberofmodes 17
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness; 

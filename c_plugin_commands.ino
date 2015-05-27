@@ -25,7 +25,7 @@ void handle_root () {
 void setup_Plugin () {
 
   server.on("/ws2812", handle_WS2812);
-
+  server.on("/lightsconfig", handle_lights_config);
 
     if (EEPROM.read(PixelPIN_enablebyte) == flagvalue) {
 
@@ -84,7 +84,7 @@ void setup_Plugin () {
 
 void OnceOnlyTask () {
 
-	opState = ADALIGHT;
+	opState = TEST;
 }
 
 void loop_Plugin () {

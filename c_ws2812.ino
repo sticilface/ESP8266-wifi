@@ -19,7 +19,7 @@ uint16_t effectState = 0;
 
 uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
-
+uint16_t var1,var2,var3,var4,var5,var6,var7,var8,var9,var10;
 
 void handle_WS2812 () { // handles the web commands...
  boolean updateLEDs = false;
@@ -62,7 +62,7 @@ void handle_WS2812 () { // handles the web commands...
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
   
   //httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
-  httpbuf += "<br> <a href='/ws2812?mode=off'>off</a>  <a href='/ws2812?mode=on'>on</a> ";
+  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   ( <a href='/lightsconfig'>CONFIG</a> ) ";
   //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
   //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
   //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
@@ -386,6 +386,18 @@ switch (opState)
     case RAINBOWCYCLE:
       Rainbowcycle();
       break;
+    case SPIRAL:
+      spiral();
+      break;
+    case TEST2:
+      test2();
+      break;
+    case TEST3:
+      test3();
+      break;
+    case TEST4:
+      test4();
+      break;
    }
 
 
@@ -604,21 +616,62 @@ void Rainbowcycle() {
 
 }
 
- void rainbow() {
+
+
+void test4() {
+
+
+
+
+}
+
+void test() {
 
 
  if (millis() > (lasteffectupdate + WS2812interval) ){
 
+  static int wsPoint = 0;
+
+    if (var3 ==0) var3 = 256;  // safety for map.....
+
+    for(int i=0; i<pixelCount; i++) {
+    //RgbColor tempcolour = Wheel(i+wsPoint);
+    int8_t point = map(i+wsPoint, 0, 256, var2, var3);
+
+    strip->SetPixelColor(i, dim(Wheel(point)));
+    }
+    ApplyPixels();
+      if (wsPoint==256) wsPoint=0; 
+    wsPoint++;
+    lasteffectupdate = millis();
+}
+
+
+
+}
+
+ void rainbow() {
+// Var 1 = timer interval
+// Var 2 = wsPoint Min
+// Var 3 = wsPoint Max
+// Var 4 = wsPoint step....  
+// Var 5 = pixel jump?  ie... instead of i++, do i =+ var 3... ? might need to turn of previous pixel
+// Var 6 = wheel multipler... or wheel map..  (wheel takes value.. returns color...)
+// try to constrain wspoint which is color generator... 
+ if(var3 == 0) var3 = 256; // MAKE sure that there is a +ve end point for the colour wheel... else wsPoint = var3;
+
+ if (millis() > (lasteffectupdate + WS2812interval) ){
+
   static int wsPoint ;
-  uint16_t i; // , j;
+  //uint16_t i; // , j;
   //pixelsNUM = 60;
   //for(j=0; j<256; j++) { v
-    for(i=0; i<pixelCount; i++) {
+    for(int i=0; i<pixelCount; i++) {
     //RgbColor tempcolour = Wheel(i+wsPoint);
     strip->SetPixelColor(i, dim(Wheel(i+wsPoint)));
     }
     ApplyPixels();
-      if (wsPoint==256) wsPoint=0; 
+      if (wsPoint==var3) wsPoint=var2; 
     wsPoint++;
     lasteffectupdate = millis();
 }
@@ -626,18 +679,49 @@ void Rainbowcycle() {
 
 }   // END OF RAINBOW
 
+void spiral() {
 
-void test () {
+static uint16_t currentcolor;
+
+  if (millis() > (lasteffectupdate + WS2812interval) ) 
+  { // effect update timer
+
+  uint8_t total_y = 11; 
+  uint8_t pitch = var7;
+  uint8_t x,y;
+    for (x = 0; x < pitch; x++) {
+      RgbColor colour = Wheel(( x * 256 / pitch + currentcolor) ); // i * 256 / pixelCount + wsPoint) 
+      for (y = 0; y < total_y; y++) {
+      strip->SetPixelColor(return_pixel( x, y, pitch), colour);
+      }
+    }
+  
+
+  if (currentcolor == 256) currentcolor = 0; else currentcolor++ ;// cycle through to next colour
+  lasteffectupdate = millis();
+
+  } // effect update timer
+
+ strip->Show();
+}
+
+
+void test3 () {
+// Var 1 = timer interval
+// Var 2 = color Min
+// Var 3 = color Max
+// Var 4 = wsPoint step....  
+// Var 5 = pixel jump?  ie... instead of i++, do i =+ var 3... ? might need to turn of previous pixel
+// Var 6 = wheel multipler... or wheel map..  (wheel takes value.. returns color...)
+// Var 7 = pitch try to constrain wspoint which is color generator... 
+
+
   static int wsPoint = 0;
   static int colortrack = 0; 
   //uint16_t i; // , j;
-  const uint8_t pitch = 12;
-
+  uint8_t pitch;
+  if (var7 == 0) pitch = 13; else pitch = var7;
     if (millis() > (lasteffectupdate + WS2812interval) ) {
-
-
-//    for(int i = 0; i < pitch; i++) {
-
       RgbColor col = Wheel(colortrack);
 
       for (int i = 0; i < pixelCount; i++) {
@@ -647,14 +731,12 @@ void test () {
       for (int j = 0; j < pitch; j++) {
       
       strip->SetPixelColor((pitch*j)+wsPoint, dim(col));
-
-     
- //     }
     }
 
 
     if (wsPoint== (pixelCount / pitch) ) wsPoint=0; 
     wsPoint++;
+    if (colortrack == var3) colortrack = var2;
     colortrack++;
     lasteffectupdate = millis();
     }
@@ -743,6 +825,7 @@ static uint16_t currentpixel;
 static int effect_timeout;
 static uint8_t prefixcount = 0;
 size_t len; 
+static unsigned long ada_sent; 
 static unsigned long pixellatchtime;
 static const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
   //Serial.println();
@@ -762,20 +845,30 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
 
       currentpixel = 0; // resest current pixel to 0, safety guard...
       effectbuf_position = 0; // reset the buffer position for DATA collection...
-      //if (effectbuf_position == 3) { // look for a buffer with 3 in it....
 
-          if(Serial.available()) {
-            if (Serial.read() == prefix[prefixcount]) {
-              prefixcount++;
-            } else prefixcount = 0;
-            }
-            
+          if(Serial.available()) { // if there is serial available... process it... could be 1  could be 100....
+               
+            for (int i = 0; i < Serial.available(); i++) {  // go through Every character in serial buffer looking for prefix...
+
+              if (Serial.read() == prefix[prefixcount]) { // if character is found... then look for next...
+                  prefixcount++;
+              } else prefixcount = 0;  //  otherwise reset....  ////
+
+
+
             if (prefixcount == 3) {
             effect_timeout = millis(); // generates START TIME.....
             //Serial.println("Prefix found..") ;
             state = MODE_CHECKSUM;
             prefixcount =0;
-            }
+            break; 
+            } // end of if prefix == 3
+            } // end of for loop going through serial....
+            } else if (!Serial.available() && (ada_sent + 5000) < millis()) {
+                  Serial.print("Ada\n"); // Send "Magic Word" string to host
+                  ada_sent = millis(); 
+            } // end of serial available....
+
 
     break;
 
@@ -802,6 +895,9 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
           }
           //Serial.println();
         }
+
+      if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
+
       break;
 
     case MODE_DATA:
@@ -819,8 +915,8 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
         //state = MODE_HEADER;
       //}
 
-
-
+        if (effectbuf_position >= 590) state = MODE_HEADER; // RESET IF BUFFER HAS FILLED UP FOR WHAT EVER REASON.          
+        if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
       break;
 
     case MODE_SHOW:
@@ -853,6 +949,7 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
 
       //Serial.println("Pixels shown = " + String(currentpixel));
       //effectbuf_position = 0;
+    Serial.print(".");
       strip->Show();
       pixellatchtime = millis();
       state = MODE_HEADER;
@@ -970,4 +1067,67 @@ return brightness;
 } 
 
 
+void stream_test () {
 
+uint8_t buffer[600];
+
+uint8_t* pixels = (uint8_t*)strip->Pixels();
+
+for (int I = 0; I < 3 * strip->PixelCount(); i =+ 3) {
+buffer[I] = pixels[I+1];       // Red
+buffer[I+1] = pixels [I];       // Green
+buffer[I+2] = pixels [I+2 ];      // Blue
+
+}
+
+
+
+
+}
+
+
+void handle_lights_config() {
+
+
+   if (server.arg("var1").length() != 0) WS2812interval = server.arg("var1").toInt();
+   if (server.arg("var2").length() != 0) var2 = server.arg("var2").toInt(); // colour point min
+   if (server.arg("var3").length() != 0) var3 = server.arg("var3").toInt(); // colour point max
+   if (server.arg("var4").length() != 0) var4 = server.arg("var4").toInt();
+   if (server.arg("var5").length() != 0) var5 = server.arg("var5").toInt();
+   if (server.arg("var6").length() != 0) var6 = server.arg("var6").toInt();
+   if (server.arg("var7").length() != 0) var7 = server.arg("var7").toInt();
+   if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
+   if (server.arg("var9").length() != 0) var9 = server.arg("var9").toInt();
+
+
+
+
+  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
+  httpbuf += "<form name=form action='/lightsconfig' method='POST'>\n";
+  //httpbuf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
+
+for (int k=1; k < 11; k++ ) {
+  //httpbuf += "<option value='" + String(k) + selected + ">" + String(MODE_STRING[k]) + "</option>";
+   // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
+    httpbuf += "Var" + String(k) + " : <input type='text' id='var" + String(k) + "' name='var" + String(k) + "' value=''><br>";
+  }
+  httpbuf += "  <input type='submit' value='Submit'/>" ; 
+  httpbuf += "</form></p>"; 
+  httpbuf += htmlendstring; 
+  
+  server.send(200, "text/html", httpbuf);
+
+}
+
+
+uint16_t return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
+  uint16_t a = (pitch * y) + x; 
+
+  return a; 
+}
+
+uint8_t return_total_y(uint8_t pitch) {
+ uint8_t total_y = pixelCount / pitch; 
+  return total_y;
+
+}
