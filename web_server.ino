@@ -44,7 +44,7 @@ void handle_bytedump() {
 
 
     server.send(200, "", bytedump);
-
+    //server.write(*bytedump, sizeof bytedump); 
 
     //bytedump = " ";
 

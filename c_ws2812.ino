@@ -31,6 +31,7 @@ void handle_WS2812 () { // handles the web commands...
  if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command")); 
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
+ 
  if (server.arg("rgbpicker").length() != 0) 
   { 
     WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
@@ -65,8 +66,8 @@ void handle_WS2812 () { // handles the web commands...
   //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
   //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
   //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
-  httpbuf += "<p><form name=frmTest action='/ws2812' method='POST'>\n";
-  httpbuf += "<p> Select Mode <select name='modedrop' onchange='this.form.submit();'>";
+  httpbuf += "<form name=frmTest action='/ws2812' method='POST'>\n";
+  httpbuf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
 for (int k=0; k < numberofmodes; k++ ) {
     if (opState == k) { 
@@ -84,23 +85,22 @@ for (int k=0; k < numberofmodes; k++ ) {
   
   httpbuf += "</select>";
   httpbuf += "</form></p>";
-
   httpbuf += "<p><form action='/ws2812' method='POST'";
-  httpbuf += "<p>HEX Color CODE: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "'>";
+  httpbuf += "<p>Color: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "' >";
   httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "</form></p>"; 
-  httpbuf += "<p><form name=sliders action='/ws2812' method='POST'>\n";
-  httpbuf += "<p>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "'  > ";
-  httpbuf += "<p>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' > ";
-  httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "</form></p>"; 
+  httpbuf += "</form>"; 
+  httpbuf += "<form name=sliders action='/ws2812' method='POST'>\n";
+  httpbuf += "<br>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "' onchange='this.form.submit();' > ";
+  httpbuf += "<br>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' onchange='this.form.submit();'> ";
+  //httpbuf += "<input type='submit' value='Submit'/>" ; 
+  httpbuf += "</form>"; 
   httpbuf += "<p><form action='/ws2812' method='POST'";
   httpbuf += "<form action='/ws2812' method='POST'>";    
-  httpbuf += "<p>Number of LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "'>";
-  httpbuf += "<p>PIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "'>";
+  httpbuf += "<p>LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "' >";
+  httpbuf += "<br>PIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "' >";
   httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "</form></p>"; 
-  httpbuf += "<br> Power = " + String(power) + "mA"; 
+  httpbuf += "</form>"; 
+  httpbuf += "Power = " + String(power) + "mA"; 
   httpbuf += htmlendstring; 
   
   server.send(200, "text/html", httpbuf);
@@ -179,22 +179,36 @@ void WS2812_mode_string (String Value)
   if (Value == "udp") { opState = UDP; LastOpState = UDP;  }; 
   if (Value == "colour") { opState = LastOpState = COLOR; }; 
   if (Value == "chaserainbow") { opState = LastOpState = ChaseRainbow; }; 
-
+  if (Value == "test") {opState = LastOpState = TEST; };
 
 
   if (Value.indexOf("rgb") >= 0) 
     {
       opState = LastOpState = COLOR;
       String instruction = Value.substring(4,Value.length()+1 );
-      Serial.println("RGB command recieved: " + instruction);
+      Serial.println("/n RGB command recieved: " + instruction);
       CurrentRGBcolour = instruction;
       NewColour = HEXtoRGB(instruction);
+
 
       EEPROM.write(PixelCount_address + 4, NewColour.R);
       EEPROM.write(PixelCount_address + 5, NewColour.G);
       EEPROM.write(PixelCount_address + 6, NewColour.B);
+
       EEPROM.commit();
 
+      Serial.print(" New colours written to EEPROM...");
+
+      Serial.print("Retrieved Colours are: ");
+      
+      uint8_t R = EEPROM.read(PixelCount_address + 4);
+      uint8_t G = EEPROM.read(PixelCount_address + 5);
+      uint8_t B = EEPROM.read(PixelCount_address + 6);
+      Serial.print(R);  
+      Serial.print(" ");
+      Serial.print(G); 
+      Serial.print(" ");
+      Serial.println(B);
 
       SetRGBcolour(NewColour);
 
@@ -265,6 +279,7 @@ RgbColor HEXtoRGB (String hexString) // Converts HEX to RBG object....
     if (nextInt >= 48 && nextInt <= 57) nextInt = map(nextInt, 48, 57, 0, 9);
     if (nextInt >= 65 && nextInt <= 70) nextInt = map(nextInt, 65, 70, 10, 15);
     if (nextInt >= 97 && nextInt <= 102) nextInt = map(nextInt, 97, 102, 10, 15);
+    
     nextInt = constrain(nextInt, 0, 15);
     
     decValue = (decValue * 16) + nextInt;
@@ -275,6 +290,18 @@ RgbColor HEXtoRGB (String hexString) // Converts HEX to RBG object....
     int b = decValue & 0xFF;
 
     return RgbColor(r,g,b);
+
+}
+
+
+String RGBtoHEX (RgbColor value) {
+
+  //char R[3]
+ //sprintf( R, "%X", value );
+
+
+
+
 
 }
 
@@ -339,7 +366,7 @@ switch (opState)
       Adalight();
       break;
    case TEST:
-      //test();
+      test();
       break;
    case LOOPAROUND:
       LoopAround(192, 200);
@@ -597,7 +624,80 @@ void Rainbowcycle() {
 }
     // Serial.println("Colours Updated..." + String(//strip->numPixels()));
 
-}   // END OF 
+}   // END OF RAINBOW
+
+
+void test () {
+  static int wsPoint = 0;
+  static int colortrack = 0; 
+  //uint16_t i; // , j;
+  const uint8_t pitch = 12;
+
+    if (millis() > (lasteffectupdate + WS2812interval) ) {
+
+
+//    for(int i = 0; i < pitch; i++) {
+
+      RgbColor col = Wheel(colortrack);
+
+      for (int i = 0; i < pixelCount; i++) {
+        strip->SetPixelColor(i,0);
+      }
+
+      for (int j = 0; j < pitch; j++) {
+      
+      strip->SetPixelColor((pitch*j)+wsPoint, dim(col));
+
+     
+ //     }
+    }
+
+
+    if (wsPoint== (pixelCount / pitch) ) wsPoint=0; 
+    wsPoint++;
+    colortrack++;
+    lasteffectupdate = millis();
+    }
+
+    ApplyPixels();
+
+
+} // end of test
+
+
+
+void test2 () {
+  static int wsPoint = 0;
+  //uint16_t i; // , j;
+  const uint8_t pitch = 12;
+
+    if (millis() > (lasteffectupdate + WS2812interval) ) {
+
+
+//    for(int i = 0; i < pitch; i++) {
+
+      RgbColor col = Wheel(random(255));
+
+      for (int i = 0; i < pixelCount; i++) {
+        strip->SetPixelColor(i,0);
+      }
+
+      for (int j = 0; j < pitch; j++) {
+      
+      strip->SetPixelColor((pitch*wsPoint)+j, dim(col));
+
+     
+ //     }
+    }
+
+    ApplyPixels();
+
+    if (wsPoint== (pixelCount / pitch) ) wsPoint=0; 
+    wsPoint++;
+    lasteffectupdate = millis();
+    }
+
+} // end of test
 
 
 void Adalight () { //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;

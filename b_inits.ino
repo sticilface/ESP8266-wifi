@@ -1,4 +1,4 @@
-#define PIN 15
+#define PIN 15 // not sure what this is for...
 ESP8266WebServer server(80);
 
 WiFiClient wifiClient;

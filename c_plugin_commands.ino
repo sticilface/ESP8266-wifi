@@ -60,10 +60,15 @@ void setup_Plugin () {
       } 
 
       Serial.print("/n Saved Colours are: ");
+      
       uint8_t R = EEPROM.read(PixelCount_address + 4);
       uint8_t G = EEPROM.read(PixelCount_address + 5);
       uint8_t B = EEPROM.read(PixelCount_address + 6);
-      Serial.print(R);  Serial.print(G); Serial.println(B);
+      Serial.print(R);  
+      Serial.print(" ");
+      Serial.print(G); 
+      Serial.print(" ");
+      Serial.println(B);
 
       NewColour = RgbColor(R,G,B);
 
