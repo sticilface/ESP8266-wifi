@@ -685,9 +685,9 @@ static uint16_t currentcolor;
 
   if (millis() > (lasteffectupdate + WS2812interval) ) 
   { // effect update timer
-
-  uint8_t total_y = 11; 
-  uint8_t pitch = var7;
+  uint8_t pitch
+  if (var7 == 0 ) pitch = 13; else pitch = var7;
+  uint8_t total_y = return_total_y(pitch); // get the number of rows.  rounds up...
   uint8_t x,y;
     for (x = 0; x < pitch; x++) {
       RgbColor colour = Wheel(( x * 256 / pitch + currentcolor) ); // i * 256 / pixelCount + wsPoint) 
@@ -903,8 +903,10 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
     case MODE_DATA:
 
     len = Serial.available();
-
-      if(len){
+    ////  this line is untested
+    //if (len + effectbuf_position > sizeof effectbuf) { effectbuf_position = 0; Serial.println("OVERRUN PREVENTED"); } // STOP BUFFER OVER RUN IF AMOUNT TO READ IS GREATER THAN CAN BE HELD...
+    ////  this line is untested...
+      if(len && len + effectbuf_position < sizeof effectbuf){
       effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
       }
 
@@ -949,7 +951,7 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
 
       //Serial.println("Pixels shown = " + String(currentpixel));
       //effectbuf_position = 0;
-    Serial.print(".");
+    //Serial.print(".");
       strip->Show();
       pixellatchtime = millis();
       state = MODE_HEADER;
@@ -1117,17 +1119,20 @@ for (int k=1; k < 11; k++ ) {
   
   server.send(200, "text/html", httpbuf);
 
+
+
 }
 
 
 uint16_t return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
   uint16_t a = (pitch * y) + x; 
-
   return a; 
 }
 
 uint8_t return_total_y(uint8_t pitch) {
  uint8_t total_y = pixelCount / pitch; 
+ float remainder = pixelCount % pitch;
+ if (remainder > 0) total_y++;
   return total_y;
 
 }
