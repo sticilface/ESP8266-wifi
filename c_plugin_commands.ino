@@ -115,16 +115,27 @@ void loop_Plugin () {
 
   //Serial.println("IsAnimating Time: " + String(elasped));
 
-if (strip->IsAnimating()) {
+
+//if (opState == OFF)  {
+//  for (int i = 0; i < pixelCount; i++) strip->SetPixelColor(i,0);
+//}
+
+
+    strip->Show();
+
+
+
+if (strip->IsAnimating() ) {
     strip->UpdateAnimations();
     strip->Show();
   }
 
+
    if (!(strip->IsAnimating())) {
-      ws2812();
     strip->StartAnimating();
  } 
 
+      ws2812();
 
 
 }

@@ -4,11 +4,13 @@
 
 
 String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colour is changed...
-
+bool effectbypass; 
 int lasteffectupdate; 
 int WS2812interval = 2000; 
 //int CurrentBrightness = 255; 
   String selected;
+
+ RgbColor colourset; // used to work out if to run dimming on set colour
 
 
 int WS2812timerID = -1; // make sure timer is put to off....
@@ -57,6 +59,7 @@ void  handle_WS2812 () { // handles the web commands...
       Serial.println("MODE DROP recieved: " + String(a));
        opState = (operatingState)a;
        if (a != 0) LastOpState = (operatingState)a;
+       if(opState == COLOR) effectbypass = true;
       }
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
@@ -258,28 +261,24 @@ RgbColor dim(RgbColor value) {
 }
 
 void SetRGBcolour (RgbColor value) {
-    //RgbColor Newvalue = dim(value);
-
-static RgbColor colourset;
-
-//if (colourset.R != value.R && colourset.B != value.B && colourset.B != value.B) {
+    
+  value = dim(value);
 
   int time = var9; 
   
-  if (time == 0) time = 5000; 
+  if (time == 0) time = 20000; 
+
+   if (!(strip->IsAnimating())) {
 
     for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
        // strip->SetPixelColor(pixel,value);
         strip->LinearFadePixelColor(time, pixel, value);
     }
 
- colourset = value; 
-
-//}
+}
 
   //ESP.wdtEnable();
 
-//ApplyPixels();
 
 }
 
@@ -326,7 +325,7 @@ void StripOFF() {
 
   for (uint16_t i = 0; i < pixelCount; i++)
   {
-    strip->SetPixelColor(i,0);
+    strip->SetPixelColor(i,RgbColor(0,0,0));
   }
   
 
@@ -410,6 +409,8 @@ switch (opState)
       test4();
       break;
    }
+
+delay(1);
 
 strip->Show();
 
@@ -1126,13 +1127,11 @@ void handle_lights_config() {
    if (server.arg("var6").length() != 0) var6 = server.arg("var6").toInt();
    if (server.arg("var7").length() != 0) var7 = server.arg("var7").toInt();
    if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
-   if (server.arg("var9").length() != 0) {
+   if (server.arg("var9").length() != 0) var9 = server.arg("var9").toInt();
    // String a = ESP.getFlashChipSizeByChipId(); 
-    Serial.print("flash size: " );
-    Serial.println(ESP.getFlashChipSizeByChipId());
-    var9 = server.arg("var9").toInt();
 
-}
+
+
 
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
@@ -1144,6 +1143,7 @@ void handle_lights_config() {
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
     httpbuf += "Var" + String(k) + " : <input type='text' id='var" + String(k) + "' name='var" + String(k) + "' value=''><br>";
   }
+
   httpbuf += "  <input type='submit' value='Submit'/>" ; 
   httpbuf += "</form></p>"; 
   httpbuf += htmlendstring; 
