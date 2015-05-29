@@ -847,6 +847,7 @@ static uint16_t currentpixel;
 static int effect_timeout;
 static uint8_t prefixcount = 0;
 size_t len; 
+static long now; 
 static unsigned long ada_sent; 
 static unsigned long pixellatchtime;
 static const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
@@ -870,7 +871,7 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
 
           if(Serial.available()) { // if there is serial available... process it... could be 1  could be 100....
                
-            for (int i = 0; i < Serial.available(); i++) {  // go through Every character in serial buffer looking for prefix...
+            for (int i = 0; i < Serial.available(); i++) {  // go through every character in serial buffer looking for prefix...
 
               if (Serial.read() == prefix[prefixcount]) { // if character is found... then look for next...
                   prefixcount++;
@@ -882,6 +883,7 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
             effect_timeout = millis(); // generates START TIME.....
             //Serial.println("Prefix found..") ;
             state = MODE_CHECKSUM;
+            now = micros();
             prefixcount =0;
             break; 
             } // end of if prefix == 3
@@ -911,6 +913,7 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
           if(chk == (hi ^ lo ^ 0x55)) {
             //Serial.print("..CHECK SUM MATCHES");
             state = MODE_DATA;
+
           } else {
             //Serial.print(" .. Does not match");
             state = MODE_HEADER; // ELSE RESET.......
@@ -924,7 +927,7 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
 
     case MODE_DATA:
 
-    len = Serial.available();
+////////    len = Serial.available(); // needed for old way....
     ////  this line is untested
     //if (len + effectbuf_position > sizeof effectbuf) { effectbuf_position = 0; Serial.println("OVERRUN PREVENTED"); } // STOP BUFFER OVER RUN IF AMOUNT TO READ IS GREATER THAN CAN BE HELD...
     ////  this line is untested...
@@ -937,9 +940,9 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
 
       //if(len) {
 
-        while (Serial.available()) {
+        while (Serial.available() && effectbuf_position <= 3 * strip->PixelCount()) {
           pixelsPOINT[effectbuf_position++] = Serial.read();
-          if (effectbuf_position == 3 * strip->PixelCount()) break; 
+          //if (effectbuf_position == 3 * strip->PixelCount()) break; 
         }
 
 
@@ -959,11 +962,11 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
       break;
 
     case MODE_SHOW:
-      float now = micros();
+      //float now = micros();
 
       //Serial.println("MODE = SHOW");
 
-      currentpixel = 0; 
+      //currentpixel = 0; 
 ///////////////
 //      for (int i=0; i < effectbuf_position; ) {
 //       
@@ -1004,7 +1007,7 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
       //Serial.println();
       //Serial.write(effectbuf, effectbuf_position);
       //Serial.println();
-
+/*
       for (int i = 0; i < 3 * strip->PixelCount(); i++) {
       Serial.print(pixelsPOINT[i]);
       Serial.print(" ");
@@ -1012,14 +1015,14 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
       
       Serial.println();
       
- 
+ */
 
 
       //Serial.println("Pixels shown = " + String(currentpixel));
       //effectbuf_position = 0;
       //Serial.print("."); 
-      // strip->Dirty(); // MUST CALL if you're using the direct buffer copy... 
-      strip->SetPixelColor(0,0);
+      strip->Dirty(); // MUST CALL if you're using the direct buffer copy... 
+      //strip->SetPixelColor(0,0);
       strip->Show();
       pixellatchtime = millis();
       state = MODE_HEADER;

@@ -131,14 +131,14 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   int mqttconnected = mqttclient.connected();
   
 
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>Wifi Configuration</title></head>\n<body><h1>Wifi Config</h1>\n";
+  httpbuf = F("<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>Wifi Configuration</title></head>\n<body><h1>Wifi Config</h1>\n");
   httpbuf += "<p>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
   httpbuf += "<br>Current SSID is: " + String(ssid);
   httpbuf += "<br>Current MQTT Server is: " + String(mqttserver) + "..." + ((mqttconnected)?"Connected":"Disconnected");
   httpbuf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
-  httpbuf += "<br><form action='/wifi' method='POST'>\n";
-  httpbuf += "\n\nNew Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>";
-  httpbuf += "\n\nMQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>";
+  httpbuf += F("<br><form action='/wifi' method='POST'>\n");
+  httpbuf += F("\n\nNew Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");
+  httpbuf += F("\n\nMQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>");
 
   //httpbuf += "<input type='radio' name='state' value='1' checked>On<input type='radio' name='state' value='0'>Off<\p>"; 
   httpbuf += "\n\n<p>Please Select Wifi Network...</p>";
@@ -156,14 +156,14 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   }
   
   //httpbuf += "\n\nSSID: <input type='text' id='ssid' name='ssid' value=''><br/>";
-  httpbuf += "\nPassword: <input type='text' name='password' value=''><br/></p>";
+  httpbuf += F("\nPassword: <input type='text' name='password' value=''><br/></p>");
   //httpbuf += "<input type='submit' value='Submit'></form>"; 
-  httpbuf += "<input type='submit' name='reboot' value='Reboot!'/>\n";
-  httpbuf += "  <input type='submit' name ='scan' value='Scan'/>";   
+  httpbuf += F("<input type='submit' name='reboot' value='Reboot!'/>\n");
+  httpbuf += F("  <input type='submit' name ='scan' value='Scan'/>");   
     // working httpbuf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-  httpbuf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
-  httpbuf += "  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "</form></p>"; 
+  httpbuf += F("  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n") ;
+  httpbuf += F("  <input type='submit' value='Submit'/>") ; 
+  httpbuf += F("</form></p>"); 
 
   httpbuf += htmlendstring; 
 
@@ -299,14 +299,14 @@ void ICACHE_FLASH_ATTR handle_test() {
          }
   
   
-    httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>MQTT Configuration</title></head>\n<body><h1>MQTT Page of ESP</h1>\n";
-    httpbuf += "<form action='/test' method='POST'> ENABLE: <input type='radio' onChange='this.form.submit();' name='enabled' value='NO' checked> NO <input type='radio' onChange='this.form.submit();' name='enabled' value='YES'> YES" ;  
-    httpbuf += "</form>";
+    httpbuf = F("<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>MQTT Configuration</title></head>\n<body><h1>MQTT Page of ESP</h1>\n");
+    httpbuf += F("<form action='/test' method='POST'> ENABLE: <input type='radio' onChange='this.form.submit();' name='enabled' value='NO' checked> NO <input type='radio' onChange='this.form.submit();' name='enabled' value='YES'> YES") ;  
+    httpbuf += F("</form>");
 
-    httpbuf += "<form>";
-    httpbuf += "<label for='flip-checkbox-1'>Flip toggle switch checkbox:</label>";
-    httpbuf += "<input type='checkbox' data-role='flipswitch' name='flip-checkbox-1' id='flip-checkbox-1'>";
-    httpbuf += "</form>";
+    httpbuf += F("<form>");
+    httpbuf += F("<label for='flip-checkbox-1'>Flip toggle switch checkbox:</label>");
+    httpbuf += F("<input type='checkbox' data-role='flipswitch' name='flip-checkbox-1' id='flip-checkbox-1'>");
+    httpbuf += F("</form>");
 
 
   
