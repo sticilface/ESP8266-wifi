@@ -54,7 +54,7 @@ void setup_Plugin () {
         if(isnan(b)) b = 0;
         pixelCount = a*256+b;
 
-      //if (pixelCount > 400) pixelCount = 20;
+      if (pixelCount > 600) pixelCount = 20;
 
 
       } 
@@ -100,25 +100,31 @@ void loop_Plugin () {
   
   // start animating
  
-if (strip) strip->Show();
 
- if (!strip->IsAnimating()) {
-	    ws2812();
-		strip->StartAnimating();
- } 
+
   
   
   // wait until no more animations are running
+/*
   while (strip->IsAnimating())
   {
     strip->UpdateAnimations();
     strip->Show();
     //delay(31); // ~30hz change cycle
-  }
+  } */
 
   //Serial.println("IsAnimating Time: " + String(elasped));
 
- 
-  
+if (strip->IsAnimating()) {
+    strip->UpdateAnimations();
+    strip->Show();
+  }
+
+   if (!(strip->IsAnimating())) {
+      ws2812();
+    strip->StartAnimating();
+ } 
+
+
 
 }
