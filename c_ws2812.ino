@@ -21,7 +21,7 @@ uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 uint16_t var1,var2,var3,var4,var5,var6,var7,var8,var9,var10;
 
-void handle_WS2812 () { // handles the web commands...
+void ICACHE_FLASH_ATTR handle_WS2812 () { // handles the web commands...
  boolean updateLEDs = false;
  int power = getPixelPower();
  //Serial.println("WS2812 - Web page called.");
@@ -109,7 +109,7 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 }
 
-void WS2812_dim_string (String Value)
+void  ICACHE_FLASH_ATTR  WS2812_dim_string (String Value)
 {
 
 /*
@@ -161,7 +161,7 @@ void WS2812_dim_string (String Value)
 
 }
 
-void WS2812_mode_string (String Value)
+void ICACHE_FLASH_ATTR WS2812_mode_string (String Value)
 
 {
   Serial.print("MODE recieved: " + Value);
@@ -222,7 +222,7 @@ void WS2812_mode_string (String Value)
 }
 
 
-void WS2812timer_command_string (String Value)
+void ICACHE_FLASH_ATTR WS2812timer_command_string (String Value)
 
 {
 
@@ -231,7 +231,7 @@ WS2812interval = Value.toInt();
 }
 
 
-void WS2812_command_string (String Value) {
+void ICACHE_FLASH_ATTR WS2812_command_string (String Value) {
 }
 /*
 
@@ -255,7 +255,7 @@ RgbColor dim(RgbColor value) {
     return value;
 }
 
-void SetRGBcolour (RgbColor value) {
+void ICACHE_FLASH_ATTR SetRGBcolour (RgbColor value) {
     //RgbColor Newvalue = dim(value);
   value = dim(value);
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
@@ -266,7 +266,7 @@ ApplyPixels();
 
 }
 
-RgbColor HEXtoRGB (String hexString) // Converts HEX to RBG object....
+RgbColor ICACHE_FLASH_ATTR HEXtoRGB (String hexString) // Converts HEX to RBG object....
 
 {
 
@@ -305,7 +305,7 @@ String RGBtoHEX (RgbColor value) {
 
 }
 
-void StripOFF() {
+void ICACHE_FLASH_ATTR  StripOFF() {
 
   for (int i = 0; i < pixelCount; i++)
   {
@@ -317,7 +317,7 @@ void StripOFF() {
 
 
 
-void initiateWS2812 ()
+void ICACHE_FLASH_ATTR initiateWS2812 ()
 
 {
   opState = OFF;
@@ -336,7 +336,7 @@ void initiateWS2812 ()
 
 
 
-void ws2812 ()  // put switch cases here...
+void ICACHE_FLASH_ATTR ws2812 ()  // put switch cases here...
 
 
 {
@@ -404,7 +404,7 @@ switch (opState)
 
 }
 
-void CoolBlobs() {
+void ICACHE_FLASH_ATTR CoolBlobs() {
 
     if (millis() > (lasteffectupdate + WS2812interval) ){
       
@@ -433,7 +433,7 @@ void setcolour () {
 
 */
 
-void FadeInFadeOutRinseRepeat(uint8_t peak)
+void ICACHE_FLASH_ATTR  FadeInFadeOutRinseRepeat(uint8_t peak)
 {
   if (effectState == 0)
   {
@@ -455,7 +455,7 @@ void FadeInFadeOutRinseRepeat(uint8_t peak)
   
 }
 
-void PickRandom(uint8_t peak)
+void ICACHE_FLASH_ATTR PickRandom(uint8_t peak)
 {
 
   // pick random set of pixels to animate
@@ -477,7 +477,7 @@ void PickRandom(uint8_t peak)
   }
 }
 
-void LoopAround(uint8_t peak, uint16_t speed)
+void ICACHE_FLASH_ATTR LoopAround(uint8_t peak, uint16_t speed)
 {
   // Looping around the ring sample
   uint16_t prevPixel;
@@ -517,7 +517,7 @@ void LoopAround(uint8_t peak, uint16_t speed)
   
 }
 
-void SetRandomSeed()
+void ICACHE_FLASH_ATTR SetRandomSeed()
 {
   uint32_t seed;
   
@@ -537,7 +537,7 @@ void SetRandomSeed()
 }
 
 
-RgbColor Wheel (byte WheelPos) {
+RgbColor ICACHE_FLASH_ATTR Wheel (byte WheelPos) {
   WheelPos = 255 - WheelPos;
   if(WheelPos < 85) {
    return  RgbColor(255 - WheelPos * 3, 0, WheelPos * 3);
@@ -551,7 +551,7 @@ RgbColor Wheel (byte WheelPos) {
 } 
 
 
-void Fade() {
+void ICACHE_FLASH_ATTR Fade() {
 
 
 static int j;
@@ -575,14 +575,14 @@ lasteffectupdate = millis();
 
 }
 
-void ApplyPixels () {
+void ICACHE_FLASH_ATTR  ApplyPixels () {
    
 
     strip->Show();
 }
 
 
-void Rainbowcycle() {
+void ICACHE_FLASH_ATTR Rainbowcycle() {
 
    static int wsPoint ;
  
@@ -618,14 +618,14 @@ void Rainbowcycle() {
 
 
 
-void test4() {
+void ICACHE_FLASH_ATTR test4() {
 
 
 
 
 }
 
-void test() {
+void ICACHE_FLASH_ATTR test() {
 
 
  if (millis() > (lasteffectupdate + WS2812interval) ){
@@ -650,7 +650,7 @@ void test() {
 
 }
 
- void rainbow() {
+ void ICACHE_FLASH_ATTR rainbow() {
 // Var 1 = timer interval
 // Var 2 = wsPoint Min
 // Var 3 = wsPoint Max
@@ -679,13 +679,13 @@ void test() {
 
 }   // END OF RAINBOW
 
-void spiral() {
+void ICACHE_FLASH_ATTR spiral() {
 
 static uint16_t currentcolor;
 
   if (millis() > (lasteffectupdate + WS2812interval) ) 
   { // effect update timer
-  uint8_t pitch
+  uint8_t pitch;
   if (var7 == 0 ) pitch = 13; else pitch = var7;
   uint8_t total_y = return_total_y(pitch); // get the number of rows.  rounds up...
   uint8_t x,y;
@@ -706,7 +706,7 @@ static uint16_t currentcolor;
 }
 
 
-void test3 () {
+void ICACHE_FLASH_ATTR test3 () {
 // Var 1 = timer interval
 // Var 2 = color Min
 // Var 3 = color Max
@@ -748,36 +748,54 @@ void test3 () {
 
 
 
-void test2 () {
+void ICACHE_FLASH_ATTR  test2 () {
+
   static int wsPoint = 0;
-  //uint16_t i; // , j;
   const uint8_t pitch = 12;
+  
+  if (var8 == 0) var8 = 5;
+  if (var9 == 0) var9 = 13;  
+
+  uint8_t numberofpoints = var8; 
+  uint8_t x,y;
+  uint8_t total_y = return_total_y(var9); 
+  uint8_t total_x = var9; 
+
 
     if (millis() > (lasteffectupdate + WS2812interval) ) {
 
-
-//    for(int i = 0; i < pitch; i++) {
-
-      RgbColor col = Wheel(random(255));
-
-      for (int i = 0; i < pixelCount; i++) {
+      for(int i = 0; i < pixelCount; i++) // SET everything to black!  
+      {
         strip->SetPixelColor(i,0);
       }
 
-      for (int j = 0; j < pitch; j++) {
-      
-      strip->SetPixelColor((pitch*wsPoint)+j, dim(col));
+      for (int i = 0; i < numberofpoints; i++) {
 
-     
- //     }
+
+      uint8_t x_rand = random(total_x-2) + 1;
+      uint8_t y_rand = random(total_y-2) + 1;
+      RgbColor colour = RgbColor(random(255),random(255),random(255));
+
+      strip->SetPixelColor(return_pixel(x_rand,y_rand,total_x), colour);
+
+      colour.Darken(50);
+
+      strip->SetPixelColor(return_pixel(x_rand - 1,y_rand + 1,total_x), colour);
+      strip->SetPixelColor(return_pixel(x_rand - 1,y_rand,total_x), colour);
+      strip->SetPixelColor(return_pixel(x_rand - 1,y_rand - 1,total_x), colour);
+      strip->SetPixelColor(return_pixel(x_rand,y_rand,total_x + 1), colour);
+      strip->SetPixelColor(return_pixel(x_rand,y_rand,total_x - 1 ), colour);
+      strip->SetPixelColor(return_pixel(x_rand + 1,y_rand + 1,total_x), colour);
+      strip->SetPixelColor(return_pixel(x_rand + 1,y_rand,total_x), colour);
+      strip->SetPixelColor(return_pixel(x_rand + 1,y_rand - 1,total_x), colour);
+
+
     }
 
-    ApplyPixels();
-
-    if (wsPoint== (pixelCount / pitch) ) wsPoint=0; 
-    wsPoint++;
     lasteffectupdate = millis();
+
     }
+    strip->Show();
 
 } // end of test
 
@@ -787,6 +805,10 @@ static boolean Adalight_configured;
  static uint8_t effectbuf[600];
  //uint8_t pixelbuf[3*pixelCount];
 static uint16_t effectbuf_position = 0;
+
+
+uint8_t* pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
+
 
  if (!Adalight_configured) {
 
@@ -820,7 +842,7 @@ enum mode { MODE_HEADER = 0, MODE_CHECKSUM, MODE_DATA, MODE_SHOW};
 static mode state = MODE_HEADER;
 RgbColor Adalight_color;
 //RgbColor a; 
-int r,g,b;
+byte r,g,b;
 static uint16_t currentpixel;
 static int effect_timeout;
 static uint8_t prefixcount = 0;
@@ -906,10 +928,23 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
     ////  this line is untested
     //if (len + effectbuf_position > sizeof effectbuf) { effectbuf_position = 0; Serial.println("OVERRUN PREVENTED"); } // STOP BUFFER OVER RUN IF AMOUNT TO READ IS GREATER THAN CAN BE HELD...
     ////  this line is untested...
-      if(len && len + effectbuf_position < sizeof effectbuf){
-      effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
-      }
 
+//////////////////////////   - WORKING -------
+//      if(len && len + effectbuf_position < sizeof effectbuf){
+//      effectbuf_position+= Serial.readBytes(&effectbuf[effectbuf_position], len);
+//      }
+/////////////////////////// ----- TEST CODE BELOW
+
+      //if(len) {
+
+        while (Serial.available()) {
+          pixelsPOINT[effectbuf_position++] = Serial.read();
+          if (effectbuf_position == 3 * strip->PixelCount()) break; 
+        }
+
+
+     // }
+/////////////////////--- TEST CODE ABOVE
       if (effectbuf_position >= 3*pixelCount) { // goto show when buffer has recieved enough data...
         state = MODE_SHOW;
         break;
@@ -919,42 +954,77 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
 
         if (effectbuf_position >= 590) state = MODE_HEADER; // RESET IF BUFFER HAS FILLED UP FOR WHAT EVER REASON.          
         if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
+
+
       break;
 
     case MODE_SHOW:
+      float now = micros();
 
       //Serial.println("MODE = SHOW");
-      //Serial.write(effectbuf, effectbuf_position);
 
       currentpixel = 0; 
+///////////////
+//      for (int i=0; i < effectbuf_position; ) {
+//       
+//        Adalight_color.R = r = effectbuf[i++];
+//        Adalight_color.G = g = effectbuf[i++];
+//        Adalight_color.B = b = effectbuf[i++];
+//
+//       strip->SetPixelColor(currentpixel++,Adalight_color); 
+//     }
+////////////////// 
+      
 
-      for (int i=0; i < effectbuf_position; ) {
-       
-        Adalight_color.R = r = effectbuf[i++];
-        Adalight_color.G = g = effectbuf[i++];
-        Adalight_color.B = b = effectbuf[i++];
 
-        /*Serial.print(currentpixel);
-        Serial.print("  ");
-        Serial.print(r,DEC);
-        Serial.print(":");
-        Serial.print(g,DEC);
-        Serial.print(":");
-        Serial.print(b,DEC);   
-        Serial.println();   */
+ //OLD CODE ABOVE WORKING....
 
-       strip->SetPixelColor(currentpixel++,Adalight_color); 
-       //currentpixel++;
+/*
+          for (int index = 0; index < 3 * strip->PixelCount(); index += 3) {
+                 pixelsPOINT[index+1] =  r  = effectbuf[index]  ;  // Red
+                 pixelsPOINT[index]   =  g = effectbuf[index + 1]    ; // Green
+                 pixelsPOINT[index+2] =  b = effectbuf[index + 2 ]   ;// Blue       
+} */ /*
+          Serial.println();
+          Serial.print(index);
+          Serial.print(": ");
+          Serial.print(r);
+          Serial.print(" = ");
+          Serial.print(pixelsPOINT[index+1]);
+          Serial.print(" , ");
+          Serial.print(g);
+          Serial.print(" = ");
+          Serial.print(pixelsPOINT[index]);  
+          Serial.print(" , ");
+          Serial.print(b);
+          Serial.print(" = ");            
+          Serial.print(pixelsPOINT[index+3]);   
+
+          } */     
+      //Serial.println();
+      //Serial.write(effectbuf, effectbuf_position);
+      //Serial.println();
+
+      for (int i = 0; i < 3 * strip->PixelCount(); i++) {
+      Serial.print(pixelsPOINT[i]);
+      Serial.print(" ");
       }
-
+      
+      Serial.println();
+      
+ 
 
 
       //Serial.println("Pixels shown = " + String(currentpixel));
       //effectbuf_position = 0;
-    //Serial.print(".");
+      //Serial.print("."); 
+      // strip->Dirty(); // MUST CALL if you're using the direct buffer copy... 
+      strip->SetPixelColor(0,0);
       strip->Show();
       pixellatchtime = millis();
       state = MODE_HEADER;
+      float timetaken = micros() - now; 
+      Serial.println("Time Taken = " + String(timetaken));
       break;
 }
 
@@ -1088,7 +1158,7 @@ buffer[I+2] = pixels [I+2 ];      // Blue
 }
 
 
-void handle_lights_config() {
+void ICACHE_FLASH_ATTR  handle_lights_config() {
 
 
    if (server.arg("var1").length() != 0) WS2812interval = server.arg("var1").toInt();
@@ -1099,9 +1169,13 @@ void handle_lights_config() {
    if (server.arg("var6").length() != 0) var6 = server.arg("var6").toInt();
    if (server.arg("var7").length() != 0) var7 = server.arg("var7").toInt();
    if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
-   if (server.arg("var9").length() != 0) var9 = server.arg("var9").toInt();
+   if (server.arg("var9").length() != 0) {
+   // String a = ESP.getFlashChipSizeByChipId(); 
+    Serial.print("flash size: " );
+    Serial.println(ESP.getFlashChipSizeByChipId());
+    var9 = server.arg("var9").toInt();
 
-
+}
 
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   

@@ -78,13 +78,13 @@ void setup_Plugin () {
 
   // timer.setInterval(30, run_animations);
 
-  //timer.setTimeout(100, OnceOnlyTask);
+  timer.setTimeout(100, OnceOnlyTask);
 
 }
 
 void OnceOnlyTask () {
 
-	opState = TEST;
+	opState = ADALIGHT;
 }
 
 void loop_Plugin () {

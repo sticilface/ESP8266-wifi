@@ -1,4 +1,4 @@
-String macToStr(const uint8_t* mac)
+String ICACHE_FLASH_ATTR macToStr(const uint8_t* mac)
 {
   String result;
   for (int i = 0; i < 2; ++i) {
@@ -9,14 +9,14 @@ String macToStr(const uint8_t* mac)
   return result;
 }
 
-void clearbufchar()
+void ICACHE_FLASH_ATTR clearbufchar()
 {
  for (int i = 0; i < BUFSIZE; i++) {
     bufchar[i] = 0;
   }
 }
 
-void updateIPaddress()
+void ICACHE_FLASH_ATTR updateIPaddress()
 {
   LocalIP = "";
   IPAddress myaddr = WiFi.localIP();
@@ -27,7 +27,7 @@ void updateIPaddress()
   }
 }
 
- void getdeviceID()
+ void ICACHE_FLASH_ATTR getdeviceID()
 {
   
   Serial.println();  
@@ -51,7 +51,7 @@ void updateIPaddress()
 
 
 
-void restartNetworking() 
+void ICACHE_FLASH_ATTR restartNetworking() 
 {
   networkrestart = false;
   AP_STA_timer = millis();
@@ -97,7 +97,7 @@ void restartNetworking()
   }
 
 
-void deactivateAP()
+void ICACHE_FLASH_ATTR deactivateAP()
 {
   //Serial.println("Deactivate AP Called");
 
@@ -130,7 +130,7 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
           }
 } 
 
- void scannetworks()
+ void ICACHE_FLASH_ATTR scannetworks()
 {
   Serial.println("Scanning for Networks");
   wifinetworksfound = WiFi.scanNetworks();
@@ -139,7 +139,7 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
 
 
 
-double os_atof(const char* s)
+double ICACHE_FLASH_ATTR os_atof(const char* s)
 {
 	double rez = 0, fact = 1;
 	while (*s && (*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n'))
@@ -180,7 +180,7 @@ void New_random_function ()
 }
 
 
-void Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
+void ICACHE_FLASH_ATTR Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
 
 {
 
@@ -225,7 +225,7 @@ void uptime ()
 
 //This function will write a 4 byte (32bit) long to the eeprom at
 //the specified address to adress + 3.
-void EEPROMWritelong(int address, long value)
+void ICACHE_FLASH_ATTR EEPROMWritelong(int address, long value)
       {
       //Decomposition from a long to 4 bytes by using bitshift.
       //One = Most significant -> Four = Least significant byte
@@ -241,7 +241,7 @@ void EEPROMWritelong(int address, long value)
       EEPROM.write(address + 3, one);
       }
 
-long EEPROMReadlong(long address)
+long ICACHE_FLASH_ATTR EEPROMReadlong(long address)
       {
       //Read the 4 bytes from the eeprom memory.
       long four = EEPROM.read(address);

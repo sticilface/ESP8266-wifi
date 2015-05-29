@@ -5,7 +5,7 @@
 
 //void callback(char* mqtttopic, byte* payload, unsigned int length) {
 
-void callback(const MQTT::Publish& pub) {
+void ICACHE_FLASH_ATTR callback(const MQTT::Publish& pub) {
 
   Serial.print("MQTT Message Recieved: ");
   Serial.print(pub.topic());
@@ -109,7 +109,7 @@ if (mqttbuf.indexOf('=') > 0)
 
 
 
-void initiatemqqt ()
+void ICACHE_FLASH_ATTR  initiatemqqt ()
     {
       //IPAddress MQTTserver(0,0,0,0);
 
@@ -170,7 +170,7 @@ void initiatemqqt ()
   } 
 
 
-void send_mqtt_msg (String topic, String message, int type )
+void ICACHE_FLASH_ATTR send_mqtt_msg (String topic, String message, int type )
 
 {
   if (!MQTT_enabled) return;
@@ -198,7 +198,7 @@ void send_mqtt_msg (String topic, String message, int type )
     
 }
 
-void send_mqtt_msg (String topic, String message ) // overloading functon to allow default msg send...
+void ICACHE_FLASH_ATTR send_mqtt_msg (String topic, String message ) // overloading functon to allow default msg send...
 {
   
   send_mqtt_msg ( topic, message, 1); 
@@ -206,7 +206,7 @@ void send_mqtt_msg (String topic, String message ) // overloading functon to all
 }
 
 
-void handle_mqtt() {
+void ICACHE_FLASH_ATTR handle_mqtt() {
  if (server.arg("mqttserver").length() != 0) mqttserver_command(server.arg("mqttserver")); 
  if (server.arg("reboot").length() != 0) ESP.reset(); // abort();
 

@@ -1,5 +1,5 @@
 ////// ----- SSID Handle ---------
-void ssid_command (String value)
+void ICACHE_FLASH_ATTR ssid_command (String value)
 {
           Serial.print("*SSID recieved....");
           String buf;
@@ -33,7 +33,7 @@ void ssid_command (String value)
 ////// ----- SSID Handle ---------
 
 
-void password_command (String value)
+void ICACHE_FLASH_ATTR password_command (String value)
 {
           Serial.print("*Password recieved....");
           String buf;
@@ -60,7 +60,7 @@ void password_command (String value)
             }
    }
 
-void deviceid_command (String value)
+void ICACHE_FLASH_ATTR deviceid_command (String value)
 {
           Serial.print("*Deviceid recieved....");
           String buf;
@@ -86,7 +86,7 @@ void deviceid_command (String value)
    
  /// -- MQTT Server ----
  
-void mqttserver_command (String value)
+void ICACHE_FLASH_ATTR mqttserver_command (String value)
 {
           Serial.print("*MQTTServer recieved....");
           Serial.println(value);
@@ -152,7 +152,7 @@ mqttreload = true;
             } */
    }
    
-void debug_command (String value)
+void ICACHE_FLASH_ATTR debug_command (String value)
 
 {
  Serial.println("DEBUG COMMAND IS CALLED");
@@ -196,7 +196,7 @@ void debug_command (String value)
 
 
   
-void mqttreloadfunc ()
+void ICACHE_FLASH_ATTR mqttreloadfunc ()
 
 {
 
@@ -220,7 +220,7 @@ void mqttreloadfunc ()
        
 }
   
-void Serial_Command (String value)
+void ICACHE_FLASH_ATTR Serial_Command (String value)
 
 {
   Serial.println("#" + value);

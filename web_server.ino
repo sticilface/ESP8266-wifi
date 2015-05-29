@@ -6,7 +6,7 @@
 Byte DUMP EEPROM to HTML.... Main Page 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
-void handle_bytedump() {
+void ICACHE_FLASH_ATTR handle_bytedump() {
   // your 32s are : 31,63,95,127,159,191,223,255,287,319,351,383,415,447,479,511
   Serial.println("Begining html dump of EEPROM.");
 
@@ -115,7 +115,7 @@ Wifi Config Page
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
 
-void handle_wifi() {
+void ICACHE_FLASH_ATTR handle_wifi() {
 
  
  if (server.arg("ssid").length() != 0) ssid_command(server.arg("ssid"));
@@ -183,14 +183,14 @@ void handle_wifi() {
 
 
 
-void handle_io() {
+void ICACHE_FLASH_ATTR handle_io() {
   
     server.send(200, "text", "IO comming soon");
 
 }
 
 
-void handle_test() {
+void ICACHE_FLASH_ATTR handle_test() {
     byte addressarray[8] = {PIN_1,PIN_2,PIN_3,PIN_4,PIN_5,PIN_6,PIN_7,PIN_8};
 
        if (server.arg("binary") == "test") 
@@ -317,7 +317,7 @@ void handle_test() {
 }
 
 
-void handle_misc ()
+void ICACHE_FLASH_ATTR handle_misc ()
 
 {
           //  EEPROM WIPE 
@@ -339,6 +339,8 @@ void handle_misc ()
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
   httpbuf += "<p> Heap Size = " + String(ESP.getFreeHeap()) ; // + "</br>";
   httpbuf += "<br> Flash Size = " + String(ESP.getFlashChipSize()) ;
+  httpbuf += "<br> Flash Size by ID = " + String(ESP.getFlashChipSizeByChipId()) ;
+
   httpbuf += "<br> Flash ID = " + String(ESP.getFlashChipId()) ;
   httpbuf += "<br> Chip ID = " + String(ESP.getChipId()) + "</p>";
   httpbuf += "<p><form action='/misc' method='POST'>\n";
