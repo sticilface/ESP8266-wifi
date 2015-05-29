@@ -54,7 +54,7 @@ void setup_Plugin () {
         if(isnan(b)) b = 0;
         pixelCount = a*256+b;
 
-      if (pixelCount > 400) pixelCount = 20;
+      //if (pixelCount > 400) pixelCount = 20;
 
 
       } 

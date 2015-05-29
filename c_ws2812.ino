@@ -955,7 +955,7 @@ if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
         //state = MODE_HEADER;
       //}
 
-        if (effectbuf_position >= 590) state = MODE_HEADER; // RESET IF BUFFER HAS FILLED UP FOR WHAT EVER REASON.          
+        //if (effectbuf_position >= 590) state = MODE_HEADER; // RESET IF BUFFER HAS FILLED UP FOR WHAT EVER REASON.          
         if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
 
 
