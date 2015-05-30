@@ -78,7 +78,7 @@ void setup_Plugin () {
 
   // timer.setInterval(30, run_animations);
 
-  timer.setTimeout(100, OnceOnlyTask);
+  //timer.setTimeout(100, OnceOnlyTask);
 
 }
 
@@ -89,51 +89,7 @@ void OnceOnlyTask () {
 
 void loop_Plugin () {
 
-//Adalight();
-	
-	//if(!strip.IsAnimating()) ws2812();
-	//opState = LOOPAROUND;
-	  
-	   //LoopAround(192, 200); // very interesting on rings of NeoPixels
-  //PickRandom(128);
-   //FadeInFadeOutRinseRepeat(192);
-  
-  // start animating
- 
 
-
-  
-  
-  // wait until no more animations are running
-/*
-  while (strip->IsAnimating())
-  {
-    strip->UpdateAnimations();
-    strip->Show();
-    //delay(31); // ~30hz change cycle
-  } */
-
-  //Serial.println("IsAnimating Time: " + String(elasped));
-
-
-//if (opState == OFF)  {
-//  for (int i = 0; i < pixelCount; i++) strip->SetPixelColor(i,0);
-//}
-
-
-    strip->Show();
-
-
-
-if (strip->IsAnimating() ) {
-    strip->UpdateAnimations();
-    strip->Show();
-  }
-
-
-   if (!(strip->IsAnimating())) {
-    strip->StartAnimating();
- } 
 
       ws2812();
 

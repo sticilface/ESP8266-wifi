@@ -9,6 +9,8 @@ void loop() {
  
 
  ////////////// -------- PLUGIN CONTROLs -----------------------
+  
+
    timer.run();
 
  
@@ -22,13 +24,3 @@ loop_Plugin();
 
 }
 
-void ws2812_animating () {
-	
- if (strip->IsAnimating())
-  {
-
-  
-    strip->UpdateAnimations();
-    strip->Show();
-}
-}

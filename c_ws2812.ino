@@ -55,6 +55,7 @@ void  handle_WS2812 () { // handles the web commands...
 
   if ((server.arg("modedrop").length() != 0)) 
     {
+      lasteffectupdate = 0;
       uint8_t a = server.arg("modedrop").toInt();
       Serial.println("MODE DROP recieved: " + String(a));
        opState = (operatingState)a;
@@ -263,21 +264,18 @@ RgbColor dim(RgbColor value) {
 void SetRGBcolour (RgbColor value) {
     
   value = dim(value);
-
-  int time = var9; 
+  int time = WS2812interval; 
   
-  if (time == 0) time = 20000; 
+  if (time == 0) time = 2000; 
 
-   if (!(strip->IsAnimating())) {
+      if (!(strip->IsAnimating())) {
 
-    for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
+          for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
        // strip->SetPixelColor(pixel,value);
-        strip->LinearFadePixelColor(time, pixel, value);
+          strip->LinearFadePixelColor(time, pixel, value);
     }
-
-}
-
-  //ESP.wdtEnable();
+    strip->StartAnimating(); // start animations
+  }
 
 
 }
@@ -328,6 +326,7 @@ void StripOFF() {
     strip->SetPixelColor(i,RgbColor(0,0,0));
   }
   
+strip->Dirty();
 
 }
 
@@ -410,9 +409,19 @@ switch (opState)
       break;
    }
 
-delay(1);
 
-strip->Show();
+
+static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
+
+
+if (millis() > update_strip_time + 10) {
+    if (strip->IsAnimating()) strip->UpdateAnimations(); 
+    strip->Show();
+    update_strip_time = millis();
+}
+
+
+
 
 }
 
@@ -753,20 +762,19 @@ void  test3 () {
 void   test2 () {
 
   static int wsPoint = 0;
-  const uint8_t pitch = 12;
   
   if (var8 == 0) var8 = 5;
-  if (var9 == 0) var9 = 13;  
+  if (var7 == 0) var7 = 13;  
 
-  uint8_t numberofpoints = var8; 
+  uint8_t numberofpoints = var8; // default 5
   uint8_t x,y;
-  uint8_t total_y = return_total_y(var9); 
-  uint8_t total_x = var9; 
-  if (var6 == 0) var6 = 5; 
-  int time = var9; 
+  uint8_t total_y = return_total_y(var7); 
+  uint8_t total_x = var7; 
 
-    if (millis() > (lasteffectupdate + WS2812interval) ) {
+  int time = 5000; 
 
+    if ( (millis() > (lasteffectupdate + (WS2812interval*10))) && (!strip->IsAnimating()) ) {
+      Serial.println("TEST2: New animation configured:");
       for(int i = 0; i < pixelCount; i++) // SET everything to black!  
       {
         //strip->SetPixelColor(i,0);
@@ -776,8 +784,8 @@ void   test2 () {
       for (int i = 0; i < numberofpoints; i++) {
 
 
-      uint8_t x_rand = random(total_x-2) + 1; 
-      uint8_t y_rand = random(total_y-2) + 1;
+      uint8_t x_rand = random(1, total_x-2) ; 
+      uint8_t y_rand = random(1, total_y-2) ;
       RgbColor colour = RgbColor(random(255),random(255),random(255));
 
       //strip->SetPixelColor(return_pixel(x_rand,y_rand,total_x), colour);
@@ -795,19 +803,20 @@ void   test2 () {
       strip->SetPixelColor(return_pixel(x_rand + 1,y_rand,total_x), colour);
       strip->SetPixelColor(return_pixel(x_rand + 1,y_rand - 1,total_x), colour); */
 
-      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1,y_rand + 1,total_x), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1,y_rand,total_x), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1,y_rand - 1,total_x), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand,y_rand,total_x + 1), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand,y_rand,total_x - 1 ), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1,y_rand + 1,total_x), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1,y_rand,total_x), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1,y_rand - 1,total_x), colour);       
+      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1 , y_rand + 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1 , y_rand     , total_x     ), colour);
+      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1 , y_rand - 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(time, return_pixel(x_rand     , y_rand + 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(time, return_pixel(x_rand     , y_rand - 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1 , y_rand + 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1 , y_rand     , total_x     ), colour);
+      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1 , y_rand - 1 , total_x     ), colour);       
 
 
     }
 
     lasteffectupdate = millis();
+    strip->StartAnimating(); // start animations
 
     }
 
