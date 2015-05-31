@@ -1,10 +1,12 @@
-
+// TODO.... 
+// 1.  fix MQTT instructions... currently does not work through opState... and extra effects don't work... must integrate MODEDROP....
+// 2. spotty pixel... 
 
 //NeoPixelBus* strip = NULL; // dynamic
 
 
 String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colour is changed...
-bool effectbypass; 
+//bool effectbypass; 
 int lasteffectupdate; 
 int WS2812interval = 2000; 
 //int CurrentBrightness = 255; 
@@ -33,7 +35,11 @@ void  handle_WS2812 () { // handles the web commands...
  if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command")); 
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
+ if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  CurrentAnimationSpeed = server.arg("anispeed").toInt();
+
  
+
+
  if (server.arg("rgbpicker").length() != 0) 
   { 
     WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
@@ -60,7 +66,11 @@ void  handle_WS2812 () { // handles the web commands...
       Serial.println("MODE DROP recieved: " + String(a));
        opState = (operatingState)a;
        if (a != 0) LastOpState = (operatingState)a;
-       if(opState == COLOR) effectbypass = true;
+       //if(opState == COLOR) effectbypass = true;
+
+    EEPROM.write(PixelCount_address + 3, LastOpState);
+    EEPROM.commit();
+
       }
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
@@ -94,6 +104,7 @@ for (int k=0; k < numberofmodes; k++ ) {
   httpbuf += F("<br>  <input type='submit' value='Submit'/>" ); 
   httpbuf += F("</form>"); 
   httpbuf += F("<form name=sliders action='/ws2812' method='POST'>\n");
+  httpbuf += "<br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='" + String(CurrentAnimationSpeed) + "' onchange='this.form.submit();' > ";
   httpbuf += "<br>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "' onchange='this.form.submit();' > ";
   httpbuf += "<br>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' onchange='this.form.submit();'> ";
   //httpbuf += "<input type='submit' value='Submit'/>" ; 
@@ -264,15 +275,12 @@ RgbColor dim(RgbColor value) {
 void SetRGBcolour (RgbColor value) {
     
   value = dim(value);
-  int time = WS2812interval; 
   
-  if (time == 0) time = 2000; 
-
       if (!(strip->IsAnimating())) {
 
           for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
        // strip->SetPixelColor(pixel,value);
-          strip->LinearFadePixelColor(time, pixel, value);
+          strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel, value);
     }
     strip->StartAnimating(); // start animations
   }
@@ -321,11 +329,16 @@ String RGBtoHEX (RgbColor value) {
 
 void StripOFF() {
 
-  for (uint16_t i = 0; i < pixelCount; i++)
+ /* for (uint16_t i = 0; i < pixelCount; i++)
   {
     strip->SetPixelColor(i,RgbColor(0,0,0));
-  }
+  } */
   
+
+ // memset(pixelsPOINT, 0, 3 * strip->PixelCount() ); 
+
+ clearpixels();
+
 strip->Dirty();
 
 }
@@ -349,6 +362,7 @@ void ws2812 ()  // put switch cases here...
 
 
 {
+static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
 
   //Serial.print("ws2812 called case = " + String(opState));
   //wsPoint += 1;
@@ -407,14 +421,16 @@ switch (opState)
     case TEST4:
       test4();
       break;
+    case SQUARES:
+      Squares();
+      break;
    }
 
 
 
-static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
 
 
-if (millis() > update_strip_time + 10) {
+if (millis() > update_strip_time + 30) {
     if (strip->IsAnimating()) strip->UpdateAnimations(); 
     strip->Show();
     update_strip_time = millis();
@@ -692,6 +708,13 @@ void  test() {
 
 }   // END OF RAINBOW
 
+void clearpixels() {
+
+    memset(pixelsPOINT, 0, 3 * strip->PixelCount() );   // clear current without... 
+
+
+}
+
 void  spiral() {
 
 static uint16_t currentcolor;
@@ -699,10 +722,14 @@ static uint16_t currentcolor;
   if (millis() > (lasteffectupdate + WS2812interval) ) 
   { // effect update timer
   uint8_t pitch;
+  
   if (var7 == 0 ) pitch = 13; else pitch = var7;
   uint8_t total_y = return_total_y(pitch); // get the number of rows.  rounds up...
   uint8_t x,y;
-    for (x = 0; x < pitch; x++) {
+
+ clearpixels();
+
+    for (x = 0; x < pitch; x+=2) {
       RgbColor colour = Wheel(( x * 256 / pitch + currentcolor) ); // i * 256 / pixelCount + wsPoint) 
       for (y = 0; y < total_y; y++) {
       strip->SetPixelColor(return_pixel( x, y, pitch), colour);
@@ -717,49 +744,152 @@ static uint16_t currentcolor;
 
 }
 
-
+// FACES ALGO....
 void  test3 () {
-// Var 1 = timer interval
-// Var 2 = color Min
-// Var 3 = color Max
-// Var 4 = wsPoint step....  
-// Var 5 = pixel jump?  ie... instead of i++, do i =+ var 3... ? might need to turn of previous pixel
-// Var 6 = wheel multipler... or wheel map..  (wheel takes value.. returns color...)
-// Var 7 = pitch try to constrain wspoint which is color generator... 
+
+ uint8_t x,y, total_y;
+
+  uint8_t total_x = var7; 
+  uint8_t square_size = var10;
+  uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
 
 
-  static int wsPoint = 0;
-  static int colortrack = 0; 
-  //uint16_t i; // , j;
-  uint8_t pitch;
-  if (var7 == 0) pitch = 13; else pitch = var7;
-    if (millis() > (lasteffectupdate + WS2812interval) ) {
-      RgbColor col = Wheel(colortrack);
+  if (square_size == 0) square_size = 3;  
+  if (numberofpoints == 0) numberofpoints = 5;
+  if (total_x == 0) total_x = 13; 
 
-      for (int i = 0; i < pixelCount; i++) {
-        strip->SetPixelColor(i,0);
+  total_y = return_total_y(total_x); 
+
+
+
+    if ( (millis() > (lasteffectupdate + (WS2812interval*10))) && (!strip->IsAnimating()) ) {
+
+      for(int i = 0; i < pixelCount; i++) // SET everything to black!  
+      {
+        strip->LinearFadePixelColor(CurrentAnimationSpeed, i, 0);
       }
 
-      for (int j = 0; j < pitch; j++) {
+      for (int i = 0; i < numberofpoints; i++) {
+
+      RgbColor colour = RgbColor(random(255),random(255),random(255));
+
+      if (square_size == 10) colour.Darken(random(0,200));
+
+      if (square_size == 10) square_size = random(3,7);
+
+
+      uint8_t x_rand = random(0, total_x - square_size ) ; 
+      uint8_t y_rand = random(0, total_y - square_size ) ;
+
+         
+
+
+      // strip->LinearFadePixelColor(time, return_shape_square(x_rand, y_rand, 4, square_size, total_y ) , colour);
+
+
+        
+
+        //Serial.println();
+
+      for (int j =0; j < (square_size * square_size) ; j++) {
+
+
+        //Serial.print("GRID " + String (square_size * square_size) + "... ");
+
+        int pixel1 = return_shape_face(x_rand, y_rand, j, square_size, total_x ); 
+
+        //Serial.print(pixel1);
+        //Serial.print(" ");
+
+        if (pixel1 <= pixelCount) strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel1 , dim(colour));
       
-      strip->SetPixelColor((pitch*j)+wsPoint, dim(col));
+      }
+
+
+    }
+
+    //Serial.println("------------------");
+
+    lasteffectupdate = millis() + CurrentAnimationSpeed;
+    strip->StartAnimating(); // start animations
+
     }
 
 
-    if (wsPoint== (pixelCount / pitch) ) wsPoint=0; 
-    wsPoint++;
-    if (colortrack == var3) colortrack = var2;
-    colortrack++;
-    lasteffectupdate = millis();
-    }
 
 
 
 } // end of test
 
 
+// Working 
+void  test2 () { // WORKING RANDOM SQUARE SIZES...
 
-void   test2 () {
+  
+
+  uint8_t x,y, total_y;
+
+  uint8_t total_x = var7; 
+  uint8_t square_size = var10;
+  uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
+
+
+  if (square_size == 0) square_size = 3;  
+  if (numberofpoints == 0) numberofpoints = 5;
+  if (total_x == 0) total_x = 13; 
+
+  total_y = return_total_y(total_x); 
+
+
+
+    if ( (millis() > (lasteffectupdate + (WS2812interval*10))) && (!strip->IsAnimating()) ) {
+
+      for(int i = 0; i < pixelCount; i++) // SET everything to black!  
+      {
+        strip->LinearFadePixelColor(CurrentAnimationSpeed, i, 0);
+      }
+
+      for (int i = 0; i < numberofpoints; i++) {
+
+      RgbColor colour = RgbColor(random(255),random(255),random(255));
+
+      if (square_size == 10) colour.Darken(random(0,200));
+
+      if (square_size == 10) square_size = random(1,7);
+
+
+      uint8_t x_rand = random(0, total_x - square_size ) ; 
+      uint8_t y_rand = random(0, total_y - square_size ) ;
+
+
+      for (int j =0; j < (square_size * square_size) ; j++) {
+
+
+        //Serial.print("GRID " + String (square_size * square_size) + "... ");
+
+        int pixel1 = return_shape_square(x_rand, y_rand, j, square_size, total_x ); 
+
+        if (pixel1 <= pixelCount) strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel1 , dim(colour));
+      
+     }
+
+
+    }
+
+    //Serial.println("------------------");
+
+    lasteffectupdate = millis() + CurrentAnimationSpeed;  // add time so that next sequence starts AFTER animations have finished...
+    strip->StartAnimating(); // start animations
+
+    }
+
+
+} 
+// end of test2
+
+
+
+void   Squares () {
 
   static int wsPoint = 0;
   
@@ -771,14 +901,12 @@ void   test2 () {
   uint8_t total_y = return_total_y(var7); 
   uint8_t total_x = var7; 
 
-  int time = 5000; 
 
     if ( (millis() > (lasteffectupdate + (WS2812interval*10))) && (!strip->IsAnimating()) ) {
-      Serial.println("TEST2: New animation configured:");
       for(int i = 0; i < pixelCount; i++) // SET everything to black!  
       {
         //strip->SetPixelColor(i,0);
-        strip->LinearFadePixelColor(time, i, 0);
+        strip->LinearFadePixelColor(CurrentAnimationSpeed, i, 0);
       }
 
       for (int i = 0; i < numberofpoints; i++) {
@@ -786,42 +914,36 @@ void   test2 () {
 
       uint8_t x_rand = random(1, total_x-2) ; 
       uint8_t y_rand = random(1, total_y-2) ;
+
       RgbColor colour = RgbColor(random(255),random(255),random(255));
 
-      //strip->SetPixelColor(return_pixel(x_rand,y_rand,total_x), colour);
-
-      strip->LinearFadePixelColor(time, return_pixel(x_rand,y_rand,total_x), colour);
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand,y_rand,total_x), dim(colour));
 
       colour.Darken(50);
 
-      /*strip->SetPixelColor(return_pixel(x_rand - 1,y_rand + 1,total_x), colour);
-      strip->SetPixelColor(return_pixel(x_rand - 1,y_rand,total_x), colour);
-      strip->SetPixelColor(return_pixel(x_rand - 1,y_rand - 1,total_x), colour);
-      strip->SetPixelColor(return_pixel(x_rand,y_rand,total_x + 1), colour);
-      strip->SetPixelColor(return_pixel(x_rand,y_rand,total_x - 1 ), colour);
-      strip->SetPixelColor(return_pixel(x_rand + 1,y_rand + 1,total_x), colour);
-      strip->SetPixelColor(return_pixel(x_rand + 1,y_rand,total_x), colour);
-      strip->SetPixelColor(return_pixel(x_rand + 1,y_rand - 1,total_x), colour); */
-
-      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1 , y_rand + 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1 , y_rand     , total_x     ), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand - 1 , y_rand - 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand     , y_rand + 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand     , y_rand - 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1 , y_rand + 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1 , y_rand     , total_x     ), colour);
-      strip->LinearFadePixelColor(time, return_pixel(x_rand + 1 , y_rand - 1 , total_x     ), colour);       
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand + 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand     , total_x     ), colour);
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand - 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand + 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand - 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand + 1 , total_x     ), colour);
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand     , total_x     ), colour);
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand - 1 , total_x     ), colour);       
 
 
     }
 
-    lasteffectupdate = millis();
+    lasteffectupdate = millis() + CurrentAnimationSpeed;
     strip->StartAnimating(); // start animations
 
     }
 
 
-} // end of test
+} // end of Squares
+
+
+
+
 
 
 void theatreChaseRainbow() {
@@ -984,8 +1106,6 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
       break;
 
 
-
-
 }
 
       //strip->Show();
@@ -997,8 +1117,7 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 
 // called to change the number of pixels
-void ChangeNeoPixels(uint16_t count, uint8_t pin)
-{
+void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   
  bool commitchanges = false; 
 
@@ -1062,6 +1181,7 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)
 }
 
 void UDPfunc () {
+
 static boolean Adalight_configured;
 
  if (!Adalight_configured) {
@@ -1106,23 +1226,7 @@ return brightness;
 } 
 
 
-void stream_test () {
 
-uint8_t buffer[600];
-
-uint8_t* pixels = (uint8_t*)strip->Pixels();
-
-for (int I = 0; I < 3 * strip->PixelCount(); i =+ 3) {
-buffer[I] = pixels[I+1];       // Red
-buffer[I+1] = pixels [I];       // Green
-buffer[I+2] = pixels [I+2 ];      // Blue
-
-}
-
-
-
-
-}
 
 
 void handle_lights_config() {
@@ -1137,6 +1241,8 @@ void handle_lights_config() {
    if (server.arg("var7").length() != 0) var7 = server.arg("var7").toInt();
    if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
    if (server.arg("var9").length() != 0) var9 = server.arg("var9").toInt();
+   if (server.arg("var10").length() != 0) var10 = server.arg("var10").toInt();
+
    // String a = ESP.getFlashChipSizeByChipId(); 
 
 
@@ -1164,10 +1270,12 @@ void handle_lights_config() {
 }
 
 
+
 uint16_t return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
   uint16_t a = (pitch * y) + x; 
   return a; 
 }
+
 
 uint8_t return_total_y(uint8_t pitch) {
  uint8_t total_y = pixelCount / pitch; 
@@ -1176,3 +1284,151 @@ uint8_t return_total_y(uint8_t pitch) {
   return total_y;
 
 }
+
+//  Returns a pixel number... starting in bottom left...
+uint16_t return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+
+  uint16_t pixel; 
+  uint8_t pixel_x, pixel_y, row, row_left ;
+  row = desired_pixel / grid_size; 
+  row_left = desired_pixel % grid_size;
+  pixel_y = first_pixel_y + row;  
+  pixel_x = first_pixel_x + row_left; 
+  pixel = return_pixel(pixel_x, pixel_y, total_in_row);
+  return pixel; 
+}
+
+
+uint16_t return_shape_ring(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+
+//
+//
+//
+//                                
+//      O         OO          OO  
+
+}
+
+uint16_t return_shape_x(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+
+
+
+
+}
+
+uint16_t return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+//                                     7
+//                           6
+//                  5               00   00
+//          4              00  00   00   00
+//   3            0   0                0    
+//        0  0      0        00       000 
+//  0 0    00       0            
+//   0                     0    0   0     0
+//  000   0000    00000    000000   0000000
+
+
+  uint16_t pixel; 
+  uint8_t pixel_x, pixel_y;
+
+//  GRID = 3 : 1  2  3  4  5  6  pixels 
+
+    if (grid_size == 3) {
+    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 4) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 1;};
+    if (desired_pixel == 5) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 2;};
+    if (desired_pixel == 6) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 2;};
+    }
+//  GRID = 4 : 1  2  3  4  5  6 7 8   pixels 
+    if (grid_size == 4) {
+    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 4) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 5) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 2;};
+    if (desired_pixel == 6) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 2;};
+    if (desired_pixel == 7) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 3;};
+    if (desired_pixel == 8) { pixel_x = first_pixel_x + 3; pixel_y = first_pixel_y + 3;};
+    }
+//  GRID = 5 : 1  2  3  4  5  6 7 8 9  pixels 
+
+    if (grid_size == 5) {
+    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 4) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 5) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 0;};
+
+    if (desired_pixel == 6) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 2;};
+    if (desired_pixel == 7) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 3;};
+
+    if (desired_pixel == 8) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 4;};
+    if (desired_pixel == 9) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 4;};
+
+    }
+//  GRID = 6 : 14   pixels 
+
+    if (grid_size == 6) {
+    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 4) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 5) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 6) { pixel_x = first_pixel_x + 6; pixel_y = first_pixel_y + 0;};
+
+    // mouth corners
+    if (desired_pixel == 7) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 1;};
+    if (desired_pixel == 8) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 1;};
+
+    // nose
+    if (desired_pixel == 9)  { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 3;};
+    if (desired_pixel == 10) { pixel_x = first_pixel_x + 3; pixel_y = first_pixel_y + 3;};
+    //eyes
+    if (desired_pixel == 11) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 5;};
+    if (desired_pixel == 12) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 5;};    
+    if (desired_pixel == 13) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 5;};
+    if (desired_pixel == 14) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 5;};  
+    }
+//  GRID = 7 : 21 pixels...
+    if (grid_size == 7) {
+    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 4) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 5) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 6) { pixel_x = first_pixel_x + 6; pixel_y = first_pixel_y + 0;};
+    if (desired_pixel == 7) { pixel_x = first_pixel_x + 7; pixel_y = first_pixel_y + 0;};
+
+    // mouth corners
+    if (desired_pixel == 8) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 1;};
+    if (desired_pixel == 9) { pixel_x = first_pixel_x + 6; pixel_y = first_pixel_y + 1;};
+
+    // nose
+    if (desired_pixel == 10) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 3;};
+    if (desired_pixel == 11) { pixel_x = first_pixel_x + 3; pixel_y = first_pixel_y + 3;};
+    if (desired_pixel == 12) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 3;};
+    if (desired_pixel == 13) { pixel_x = first_pixel_x + 3; pixel_y = first_pixel_y + 4;};
+
+
+    //eyes
+    if (desired_pixel == 14) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 5;};
+    if (desired_pixel == 15) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 5;};    
+    if (desired_pixel == 16) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 5;};
+    if (desired_pixel == 17) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 5;};  
+    if (desired_pixel == 18) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 6;};
+    if (desired_pixel == 19) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 6;};    
+    if (desired_pixel == 20) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 6;};
+    if (desired_pixel == 21) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 6;}; 
+
+
+    }
+
+
+  pixel = return_pixel(pixel_x, pixel_y, total_in_row);
+  return pixel; 
+}
+
+
+
