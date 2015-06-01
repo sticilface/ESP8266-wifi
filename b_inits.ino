@@ -23,6 +23,7 @@ const String version = "WS2812";
 
 
   //NeoPixelBus strip = NeoPixelBus(120, 2);
+
   NeoPixelBus* strip = NULL; // dynamic
  uint8_t* pixelsPOINT = NULL;
 

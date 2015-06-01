@@ -12,39 +12,8 @@ void callback(const MQTT::Publish& pub) {
   Serial.println(pub.payload_string());
 
 
-  //  mqttbufcharclear (); // Clear the MQTT buffer..
-/*
-    char messagerecieved[length];
-
-      for (int i = 0; i < length; i++)
-        {
-            messagerecieved[i] = payload[i];
-        }
-
-    String topicrecieved = String(mqtttopic);
-
-    
-      for (int i = 0; i < length; i++)
-        {
-            mqttcharbuf[i] = payload[i];
-        }
-        
-        mqttbuf = String(mqttcharbuf);  
-        Serial.println(mqttbuf);
-    
-        const char identify[] = "identify";
-*/
     String topicrecieved = pub.topic();
             mqttbuf = pub.payload_string();
-
-
-
-//   if (topicrecieved.indexOf("/WS2812period") > 0) WS2812timer_command_string(mqttbuf);
-//   if (topicrecieved.indexOf("/WS2812mode") > 0) WS2812_mode_string(mqttbuf);
-//   if (topicrecieved.indexOf("/WS2812dim") > 0) WS2812_dim_string(mqttbuf);
-//   if (topicrecieved.indexOf("/WS2812") > 0) WS2812_command_string(mqttbuf);
-//
-
 
    
  // -- 1) Identify ESP commands
@@ -98,12 +67,8 @@ if (mqttbuf.indexOf('=') > 0)
 
 void  initiatemqqt ()
     {
-      //IPAddress MQTTserver(0,0,0,0);
 
-      //PubSubClient mqttclient(MQTTserver);
         mqttclient.set_server(MQTTserver);
-
-
         mqttclient.set_callback(callback);
 
 

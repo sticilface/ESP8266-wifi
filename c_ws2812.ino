@@ -2,25 +2,26 @@
 // 1.  fix MQTT instructions... currently does not work through opState... and extra effects don't work... must integrate MODEDROP....
 // 2. spotty pixel... 
 
-//NeoPixelBus* strip = NULL; // dynamic
 
+// MEMORY ALLOCATIONS:
+
+// PixelCount_address + 0 =  
+// PixelCount_address + 1 =  
+// PixelCount_address + 2 =  
+// PixelCount_address + 3 =  LastOpState
 
 String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colour is changed...
-//bool effectbypass; 
+
 int lasteffectupdate; 
 int WS2812interval = 2000; 
-//int CurrentBrightness = 255; 
-
- //RgbColor colourset; // used to work out if to run dimming on set colour
 
 
-//int WS2812timerID = -1; // make sure timer is put to off....
+
 int spectrumValue[7];
 int filter=80;
 
 uint16_t effectState = 0;
 
-//uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 uint16_t 
 var1,var2,var3,var4,var5,
@@ -149,52 +150,17 @@ void WS2812_mode_number(String Value) {
 void    WS2812_dim_string (String Value)
 {
 
-/*
-  RgbColor prevColor;
-
-      int dim = Value.toInt();
-      if (dim > 255) dim = 255;
-      if (dim < 0) dim = 0;
-
-      int DiffDim = CurrentBrightness - dim;
-      CurrentBrightness  = dim; 
-
-      if (DiffDim > 0) {  
-        Serial.println("Brightness Darken by: " + String(DiffDim));
-
-        for (int i = 0; i < pixelCount; i++) {
-          //prevColor = strip->GetPixelColor(i);
-          prevColor.Darken(DiffDim);
-          ////strip->SetPixelColor(i,prevColor);
-        }
-      } else if (DiffDim < 0) { 
-        DiffDim = DiffDim * -1;
-        Serial.println("Brightness Lighten by: " + String(DiffDim));
-          for (int i = 0; i < pixelCount; i++) {
-          //prevColor = strip->GetPixelColor(i);
-          prevColor.Lighten(DiffDim);
-          //strip->SetPixelColor(i,prevColor);       
-        }
-      } 
-
-*/
-//  
       int a = Value.toInt();
       if (a > 255) a = 255;
       if (a < 0) a = 0;
 
       CurrentBrightness  = a;
-
       EEPROM.write(PixelCount_address + 2, CurrentBrightness);
-
       EEPROM.commit();
      
       // if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
       Serial.println("Brightness set to: " + String(CurrentBrightness));
-
-
-          //strip->Show();
 
 }
 
@@ -204,7 +170,7 @@ void  WS2812_mode_string (String Value)
 {
   
   lasteffectupdate = 0; // RESET EFFECT COUNTER
-  Serial.println("FUCKING ARSE");
+
   Serial.print("MODE recieved: " + Value);
   int willy = Value.length();
   Serial.println(" .." + String(willy));
@@ -273,10 +239,10 @@ void  WS2812_mode_string (String Value)
 
 }
 
+
   EEPROM.write(PixelCount_address + 3, LastOpState);
 
   EEPROM.commit();
-//send_mqtt_msg( "mode", currentstate);                
 
 }
 
