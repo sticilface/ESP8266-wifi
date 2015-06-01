@@ -253,11 +253,5 @@ long ICACHE_FLASH_ATTR EEPROMReadlong(long address)
       return ((four << 0) & 0xFF) + ((three << 8) & 0xFFFF) + ((two << 16) & 0xFFFFFF) + ((one << 24) & 0xFFFFFFFF);
       }
 
-bool isValidNumber(String str){
-   for(byte i=0;i<str.length();i++)
-   {
-      if(isDigit(str.charAt(i))) return true;
-        }
-   return false;
-}
+
 

@@ -26,7 +26,6 @@ void setup() {
   delay(10);
   Serial.println();
   Serial.println("Welcome to Andrew Melvin's ESP Software");
-  Serial.println("THIS IS THE SHIT");
   
   
   

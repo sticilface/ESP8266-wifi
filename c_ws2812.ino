@@ -171,16 +171,11 @@ void  WS2812_mode_string (String Value)
   
   lasteffectupdate = 0; // RESET EFFECT COUNTER
 
-  Serial.print("MODE recieved: " + Value);
-  int willy = Value.length();
-  Serial.println(" .." + String(willy));
-
-  if (isValidNumber(Value)) {
+  if (Value.toInt() != 0) {
 
       // WS2812_mode_number(Value); 
 
       uint8_t chosen_mode = Value.toInt();
-      Serial.println("MODE DROP recieved: " + Value);
       opState = (operatingState)chosen_mode;
       if (chosen_mode != 0) LastOpState = (operatingState)chosen_mode;
 
@@ -1133,7 +1128,7 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   
  bool commitchanges = false; 
 
-    Serial.println("Change Neopixels called"); 
+    //Serial.println("Change Neopixels called"); 
 
 
         int pixelPINstored = EEPROM.read(PixelPIN_address);    
@@ -1143,7 +1138,7 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
 
     if (count != pixelCountstored) {
-    Serial.println("Pixel count changed..."); 
+    //Serial.println("Pixel count changed..."); 
 
       //int a = pixelCount/256;
       //Serial.print(a);
@@ -1161,11 +1156,11 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
         commitchanges = true;
 
     if (EEPROM.read(PixelCount_enablebyte) != flagvalue) EEPROM.write(PixelCount_enablebyte,flagvalue) ;
-     Serial.println("pixel count byte updated");
+     //Serial.println("pixel count byte updated");
     }
 
     if (pin != pixelPINstored) {
-    Serial.println("Change Neopixels PIN called"); 
+    //Serial.println("Change Neopixels PIN called"); 
 
         EEPROM.write(PixelPIN_address, (byte)pin);
     if (EEPROM.read(PixelPIN_enablebyte) != flagvalue) EEPROM.write(PixelPIN_enablebyte,flagvalue) ;
@@ -1176,7 +1171,7 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
     if (commitchanges == true) {
       EEPROM.commit();
-          Serial.println("Changes committed"); 
+          Serial.println("WS2812 Settings Updated."); 
         }
 
 

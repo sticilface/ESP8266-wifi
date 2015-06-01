@@ -13,8 +13,8 @@ void LoadParams()
    
    mqttserver = String(MQTTserver[0]) + "." + String(MQTTserver[1]) + "." + String(MQTTserver[2]) + "." + String(MQTTserver[3]) ; 
 
-   Serial.print("SAVED MqqttServer: ");
-   Serial.println(mqttserver);
+   //Serial.print("SAVED MqqttServer: ");
+   //Serial.println(mqttserver);
   }
   
   if (EEPROM.read(MQTTenabledbyte) == flagvalue) {
