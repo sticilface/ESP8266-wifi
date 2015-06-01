@@ -4,20 +4,176 @@
 		"selected_items":
 		[
 			[
-				"up",
-				"updateLEDs"
+				"WS2812_",
+				"WS2812_mode_number"
+			],
+			[
+				"curr",
+				"CurrentAnimationSpeed"
 			],
 			[
 				"pixel",
 				"pixelCount"
 			],
 			[
-				"g",
-				"g"
+				"pixe",
+				"pixelCount"
+			],
+			[
+				"tot",
+				"total_y"
+			],
+			[
+				"row",
+				"row_left"
+			],
+			[
+				"return",
+				"return_shape_square"
+			],
+			[
+				"squ",
+				"square_size"
+			],
+			[
+				"fi",
+				"first_pixel_x"
+			],
+			[
+				"first",
+				"first_pixel_y"
+			],
+			[
+				"uint",
+				"uint32_t"
+			],
+			[
+				"upda",
+				"update_animation_time"
+			],
+			[
+				"up",
+				"update_animation_time"
+			],
+			[
+				"eff",
+				"effectbypass"
+			],
+			[
+				"op",
+				"opState"
+			],
+			[
+				"animations",
+				"animationstate"
+			],
+			[
+				"count",
+				"pixelCount"
+			],
+			[
+				"retu",
+				"return_total_y"
+			],
+			[
+				"MODE",
+				"MODE_HEADER"
+			],
+			[
+				"col",
+				"colortrack"
+			],
+			[
+				"ws",
+				"wsPoint"
+			],
+			[
+				"byt",
+				"bytedump"
+			],
+			[
+				"de",
+				"deviceid"
+			],
+			[
+				"k",
+				"k"
+			],
+			[
+				"las",
+				"LastOpState"
+			],
+			[
+				"St",
+				"StripOFF"
+			],
+			[
+				"ser",
+				"serialTimeout"
+			],
+			[
+				"prefix",
+				"prefixcount"
+			],
+			[
+				"pref",
+				"prefixcount"
+			],
+			[
+				"a",
+				"available"
+			],
+			[
+				"r",
+				"r"
+			],
+			[
+				"G",
+				"G"
+			],
+			[
+				"coun",
+				"pixelCount"
+			],
+			[
+				"cu",
+				"currentpixel"
 			],
 			[
 				"prefi",
-				"Prefix_count"
+				"prefixfound"
+			],
+			[
+				"effectbu",
+				"effectbuf_position"
+			],
+			[
+				"UDP",
+				"UDPfunc"
+			],
+			[
+				"Set",
+				"SetPixelColor"
+			],
+			[
+				"packet",
+				"packetSize"
+			],
+			[
+				"ge",
+				"GetPixelColor"
+			],
+			[
+				"br",
+				"brightnesstally"
+			],
+			[
+				"ra",
+				"RAINBOW"
+			],
+			[
+				"g",
+				"g"
 			],
 			[
 				"Pre",
@@ -52,10 +208,6 @@
 				"setcolour"
 			],
 			[
-				"op",
-				"opState"
-			],
-			[
 				"Las",
 				"LastOpState"
 			],
@@ -72,20 +224,8 @@
 				"topicrecieved"
 			],
 			[
-				"r",
-				"r"
-			],
-			[
 				"Se",
 				"SetPixelColor"
-			],
-			[
-				"cu",
-				"CurrentBrightness"
-			],
-			[
-				"count",
-				"countPixels"
 			],
 			[
 				"la",
@@ -159,23 +299,15 @@
 			"file": "c_ws2812.ino",
 			"settings":
 			{
-				"buffer_size": 15523,
+				"buffer_size": 42987,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "b_inits.ino",
+			"file": "mqqt_config.ino",
 			"settings":
 			{
-				"buffer_size": 532,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "c_plugin_commands.ino",
-			"settings":
-			{
-				"buffer_size": 1815,
+				"buffer_size": 9196,
 				"line_ending": "Unix"
 			}
 		},
@@ -183,7 +315,7 @@
 			"file": "misc_functions.ino",
 			"settings":
 			{
-				"buffer_size": 4628,
+				"buffer_size": 6075,
 				"line_ending": "Unix"
 			}
 		},
@@ -191,7 +323,31 @@
 			"file": "a_variables.ino",
 			"settings":
 			{
-				"buffer_size": 2786,
+				"buffer_size": 3537,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "c_plugin_commands.ino",
+			"settings":
+			{
+				"buffer_size": 2317,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/amelvin/Dropbox/Arduino/libraries/NeoPixelBus/NeoPixelBus.cpp",
+			"settings":
+			{
+				"buffer_size": 46855,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "b_inits.ino",
+			"settings":
+			{
+				"buffer_size": 619,
 				"line_ending": "Unix"
 			}
 		},
@@ -199,7 +355,7 @@
 			"file": "z_loop.ino",
 			"settings":
 			{
-				"buffer_size": 416,
+				"buffer_size": 307,
 				"line_ending": "Unix"
 			}
 		},
@@ -207,7 +363,15 @@
 			"file": "x_setup.ino",
 			"settings":
 			{
-				"buffer_size": 2201,
+				"buffer_size": 2943,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "web_server.ino",
+			"settings":
+			{
+				"buffer_size": 12626,
 				"line_ending": "Unix"
 			}
 		}
@@ -248,22 +412,22 @@
 	],
 	"file_history":
 	[
+		"/Users/amelvin/Documents/Git-Projects/Melvana/a_variables.ino",
 		"/Users/amelvin/Documents/Git-Projects/Melvana/c_plugin_commands.ino",
 		"/Users/amelvin/Dropbox/Arduino/Adalight-alternative/Adalight-alternative.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/a_variables.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/c_command_handle.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/web_server.ino",
 		"/Users/amelvin/Documents/Git-Projects/Melvana/mqqt_config.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/x_setup.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/Melvana.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/misc_functions.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/c_ws2812.ino",
 		"/Users/amelvin/Documents/Git-Projects/Melvana/b_inits.ino",
 		"/Users/amelvin/Documents/Git-Projects/Melvana/d_memory_func.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/c_ws2812.ino.old",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/c_command_handle.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/a_0plugin_headers.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/c_ws2812.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/misc_functions.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/web_server.ino",
-		"/Users/amelvin/Documents/Git-Projects/Melvana/Melvana.sublime-project",
 		"/Users/amelvin/Documents/Git-Projects/Melvana/z_loop.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/x_setup.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/a_0plugin_headers.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/Melvana.ino",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/c_ws2812.ino.old",
+		"/Users/amelvin/Documents/Git-Projects/Melvana/Melvana.sublime-project",
 		"/Users/amelvin/Documents/Git-Projects/Melvana/b_display.ino",
 		"/Users/amelvin/Documents/Git-Projects/Melvana/0_plugin_headers.ino",
 		"/Users/amelvin/Documents/Git-Projects/Melvana/0_plugin_headers",
@@ -363,6 +527,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"var6",
+			"ICACHE_FLASH_ATTR",
+			"strip",
 			"strip.",
 			"strip.Show()",
 			"255",
@@ -382,6 +549,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"",
 			"strip->",
 			"strip->\n",
 			"strip->Show();\n"
@@ -395,7 +563,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 8,
 			"sheets":
 			[
 				{
@@ -404,15 +572,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 15523,
+						"buffer_size": 42987,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								8042,
-								8042
+								8030,
+								8030
 							]
 						],
 						"settings":
@@ -422,27 +590,87 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 3443.0,
+						"translation.y": 2789.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "b_inits.ino",
+					"file": "mqqt_config.ino",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 532,
+						"buffer_size": 9196,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								532,
-								532
+								368,
+								368
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "misc_functions.ino",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6075,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5455,
+								5455
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1677.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "a_variables.ino",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3537,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1717,
+								1717
 							]
 						],
 						"settings":
@@ -453,24 +681,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 4,
 					"file": "c_plugin_commands.ino",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1815,
+						"buffer_size": 2317,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1070,
-								1070
+								2296,
+								2296
 							]
 						],
 						"settings":
@@ -480,19 +708,137 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 575.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/Users/amelvin/Dropbox/Arduino/libraries/NeoPixelBus/NeoPixelBus.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 46855,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3091,
+								3091
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2834.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "b_inits.ino",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 619,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								267,
+								277
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "misc_functions.ino",
+					"buffer": 7,
+					"file": "z_loop.ino",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 307,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								244,
+								244
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "x_setup.ino",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2943,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								745,
+								745
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 278.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "web_server.ino",
 					"semi_transient": true,
 					"settings":
 					{
-						"buffer_size": 4628,
+						"buffer_size": 12626,
 						"regions":
 						{
 						},
@@ -511,92 +857,6 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "a_variables.ino",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2786,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2785,
-								2785
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1040.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "z_loop.ino",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 416,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								405,
-								405
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "x_setup.ino",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2201,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								358,
-								358
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 905.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 4,

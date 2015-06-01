@@ -10,34 +10,48 @@ String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colo
 int lasteffectupdate; 
 int WS2812interval = 2000; 
 //int CurrentBrightness = 255; 
-  String selected;
 
- RgbColor colourset; // used to work out if to run dimming on set colour
+ //RgbColor colourset; // used to work out if to run dimming on set colour
 
 
-int WS2812timerID = -1; // make sure timer is put to off....
+//int WS2812timerID = -1; // make sure timer is put to off....
 int spectrumValue[7];
 int filter=80;
 
 uint16_t effectState = 0;
 
-uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+//uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
-uint16_t var1,var2,var3,var4,var5,var6,var7,var8,var9,var10;
+uint16_t 
+var1,var2,var3,var4,var5,
+var6,var7,var8,var9,var10;
+
+static const char *VAR_STRING[] = {
+"Var1              ", 
+"Var2              ", 
+"Var3              ", 
+"Var4              ", 
+"Var5              ", 
+"Var6              ", 
+"Total_X           ", 
+"Number of effects ", 
+"Var9              ", 
+"Size of effect    "};
+
 
 void  handle_WS2812 () { // handles the web commands...
  boolean updateLEDs = false;
  int power = getPixelPower();
  //Serial.println("WS2812 - Web page called.");
  //= 0;
+   String selected;
+
 //String CurrentRGBcolour = "00000";
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
  if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command")); 
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  CurrentAnimationSpeed = server.arg("anispeed").toInt();
-
- 
 
 
  if (server.arg("rgbpicker").length() != 0) 
@@ -61,22 +75,15 @@ void  handle_WS2812 () { // handles the web commands...
 
   if ((server.arg("modedrop").length() != 0)) 
     {
-      lasteffectupdate = 0;
-      uint8_t a = server.arg("modedrop").toInt();
-      Serial.println("MODE DROP recieved: " + String(a));
-       opState = (operatingState)a;
-       if (a != 0) LastOpState = (operatingState)a;
-       //if(opState == COLOR) effectbypass = true;
 
-    EEPROM.write(PixelCount_address + 3, LastOpState);
-    EEPROM.commit();
+      WS2812_mode_string(server.arg("modedrop"));
 
       }
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
   
   //httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
-  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   ( <a href='/lightsconfig'>CONFIG</a> ) ";
+  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   | <a href='/lightsconfig'>CONFIG</a>  ";
   //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
   //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
   //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
@@ -87,7 +94,7 @@ for (int k=0; k < numberofmodes; k++ ) {
     if (opState == k) { 
         selected = "' selected "; 
       } else selected = "' "; 
-  httpbuf += "<option value='" + String(k) + selected + ">" + String(MODE_STRING[k]) + "</option>";
+  httpbuf += "<option value='" + String(k) + selected + ">" + MODE_STRING[k] + "</option>";
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
 
   }
@@ -122,6 +129,20 @@ for (int k=0; k < numberofmodes; k++ ) {
   server.send(200, "text/html", httpbuf);
 
 if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
+
+}
+
+
+// Takes MODE selected by number, changes OpState, SAVES NEW MODE TO EEPROM, incase of reboot....
+void WS2812_mode_number(String Value) {
+
+      lasteffectupdate = 0;
+      uint8_t chosen_mode = Value.toInt();
+      Serial.println("MODE DROP recieved: " + Value);
+      opState = (operatingState)chosen_mode;
+      if (chosen_mode != 0) LastOpState = (operatingState)chosen_mode;
+      EEPROM.write(PixelCount_address + 3, LastOpState);
+      EEPROM.commit();
 
 }
 
@@ -177,10 +198,30 @@ void    WS2812_dim_string (String Value)
 
 }
 
+
 void  WS2812_mode_string (String Value)
 
 {
+  
+  lasteffectupdate = 0; // RESET EFFECT COUNTER
+  Serial.println("FUCKING ARSE");
   Serial.print("MODE recieved: " + Value);
+  int willy = Value.length();
+  Serial.println(" .." + String(willy));
+
+  if (isValidNumber(Value)) {
+
+      // WS2812_mode_number(Value); 
+
+      uint8_t chosen_mode = Value.toInt();
+      Serial.println("MODE DROP recieved: " + Value);
+      opState = (operatingState)chosen_mode;
+      if (chosen_mode != 0) LastOpState = (operatingState)chosen_mode;
+
+
+  } else {
+
+
   Value.toLowerCase();
 
   if (Value == "off" | Value == "OFF") { if (opState != OFF) { LastOpState = opState; opState = OFF; } ;};
@@ -229,6 +270,8 @@ void  WS2812_mode_string (String Value)
       SetRGBcolour(NewColour);
 
   }
+
+}
 
   EEPROM.write(PixelCount_address + 3, LastOpState);
 
@@ -849,11 +892,12 @@ void  test2 () { // WORKING RANDOM SQUARE SIZES...
         strip->LinearFadePixelColor(CurrentAnimationSpeed, i, 0);
       }
 
+
       for (int i = 0; i < numberofpoints; i++) {
 
       RgbColor colour = RgbColor(random(255),random(255),random(255));
 
-      if (square_size == 10) colour.Darken(random(0,200));
+      if (square_size == 10) colour.Darken(random(0,50));
 
       if (square_size == 10) square_size = random(1,7);
 
@@ -1006,6 +1050,8 @@ void Adalight_Flash() {
 
 
 void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+
   static boolean Adalight_configured;
   static uint16_t effectbuf_position = 0;
   enum mode { MODE_INITIALISE = 0, MODE_HEADER, MODE_CHECKSUM, MODE_DATA, MODE_SHOW, MODE_WAIT};
@@ -1232,7 +1278,7 @@ return brightness;
 void handle_lights_config() {
 
 
-   if (server.arg("var1").length() != 0) WS2812interval = server.arg("var1").toInt();
+   if (server.arg("var1").length() != 0) var1 = server.arg("var1").toInt();
    if (server.arg("var2").length() != 0) var2 = server.arg("var2").toInt(); // colour point min
    if (server.arg("var3").length() != 0) var3 = server.arg("var3").toInt(); // colour point max
    if (server.arg("var4").length() != 0) var4 = server.arg("var4").toInt();
@@ -1244,19 +1290,20 @@ void handle_lights_config() {
    if (server.arg("var10").length() != 0) var10 = server.arg("var10").toInt();
 
    // String a = ESP.getFlashChipSizeByChipId(); 
-
+   if (server.arg("reset") == "true") { var1 = 0; var2 = 0; var3 = 0; var4 = 0; var5 = 0; var6 = 0; var7 = 0; var8 = 0; var9 = 0; var10 = 0;};
 
 
 
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
+  httpbuf += " <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>  "; 
   httpbuf += "<form name=form action='/lightsconfig' method='POST'>\n";
   //httpbuf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
-  for (int k=1; k < 11; k++ ) {
+  for (int k=0; k < 10; k++ ) {
   //httpbuf += "<option value='" + String(k) + selected + ">" + String(MODE_STRING[k]) + "</option>";
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
-    httpbuf += "Var" + String(k) + " : <input type='text' id='var" + String(k) + "' name='var" + String(k) + "' value=''><br>";
+    httpbuf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value=''><br>";
   }
 
   httpbuf += "  <input type='submit' value='Submit'/>" ; 

@@ -2,10 +2,9 @@
 
 
 
-
 //void callback(char* mqtttopic, byte* payload, unsigned int length) {
 
-void ICACHE_FLASH_ATTR callback(const MQTT::Publish& pub) {
+void callback(const MQTT::Publish& pub) {
 
   Serial.print("MQTT Message Recieved: ");
   Serial.print(pub.topic());
@@ -39,12 +38,12 @@ void ICACHE_FLASH_ATTR callback(const MQTT::Publish& pub) {
             mqttbuf = pub.payload_string();
 
 
-/*
-   if (topicrecieved.indexOf("/WS2812period") > 0) WS2812timer_command_string(mqttbuf);
-   if (topicrecieved.indexOf("/WS2812mode") > 0) WS2812_mode_string(mqttbuf);
-   if (topicrecieved.indexOf("/WS2812dim") > 0) WS2812_dim_string(mqttbuf);
-   if (topicrecieved.indexOf("/WS2812") > 0) WS2812_command_string(mqttbuf);
-  */
+
+//   if (topicrecieved.indexOf("/WS2812period") > 0) WS2812timer_command_string(mqttbuf);
+//   if (topicrecieved.indexOf("/WS2812mode") > 0) WS2812_mode_string(mqttbuf);
+//   if (topicrecieved.indexOf("/WS2812dim") > 0) WS2812_dim_string(mqttbuf);
+//   if (topicrecieved.indexOf("/WS2812") > 0) WS2812_command_string(mqttbuf);
+//
 
 
    
@@ -65,7 +64,9 @@ if (mqttbuf == "reboot") ESP.reset(); //system_restart(); // abort();
 
 if (mqttbuf.indexOf('=') > 0) 
       {
+        Serial.println("BOLLOCKS!");
        String instruction = mqttbuf.substring(0,mqttbuf.indexOf('=') );
+
        String value = mqttbuf.substring(mqttbuf.indexOf('=') +1 ,mqttbuf.length());
        
        // Command_Handler (instruction,value);
@@ -86,20 +87,6 @@ if (mqttbuf.indexOf('=') > 0)
         if (instruction == "brightness")  WS2812_dim_string(value);
 
        
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////// -----   EPROM UPDATE CALL ------- ////////////////////////////////////////////////////////////////////////
-  /* if  (eeprom_updates_pending)
-               {
-                 SaveParams();
-                 eeprom_updates_pending = false;
-                 //Current_Request_no = 0;
-                 Serial.println("(MQTT) Updates made, and saved to EEPROM");
-               }  else  // else if (Current_Request_no == totalargcount) 
-               {
-                 Serial.println("(MQTT) End Request Reached but NO updates Pending");
-                 //eeprom_updates_pending = false;
-                 //Current_Request_no = 0;                
-               }  */
       } 
       
 
@@ -109,7 +96,7 @@ if (mqttbuf.indexOf('=') > 0)
 
 
 
-void ICACHE_FLASH_ATTR  initiatemqqt ()
+void  initiatemqqt ()
     {
       //IPAddress MQTTserver(0,0,0,0);
 
@@ -170,7 +157,7 @@ void ICACHE_FLASH_ATTR  initiatemqqt ()
   } 
 
 
-void ICACHE_FLASH_ATTR send_mqtt_msg (String topic, String message, int type )
+void  send_mqtt_msg (String topic, String message, int type )
 
 {
   if (!MQTT_enabled) return;
@@ -206,7 +193,7 @@ void ICACHE_FLASH_ATTR send_mqtt_msg (String topic, String message ) // overload
 }
 
 
-void ICACHE_FLASH_ATTR handle_mqtt() {
+void  handle_mqtt() {
  if (server.arg("mqttserver").length() != 0) mqttserver_command(server.arg("mqttserver")); 
  if (server.arg("reboot").length() != 0) ESP.reset(); // abort();
 
