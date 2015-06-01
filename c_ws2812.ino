@@ -15,6 +15,7 @@ String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colo
 int lasteffectupdate; 
 int WS2812interval = 2000; 
 
+ 
 
 int spectrumValue[7];
 int filter=80;

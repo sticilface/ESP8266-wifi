@@ -33,7 +33,6 @@ if (mqttbuf == "reboot") ESP.reset(); //system_restart(); // abort();
 
 if (mqttbuf.indexOf('=') > 0) 
       {
-        Serial.println("BOLLOCKS!");
        String instruction = mqttbuf.substring(0,mqttbuf.indexOf('=') );
 
        String value = mqttbuf.substring(mqttbuf.indexOf('=') +1 ,mqttbuf.length());
