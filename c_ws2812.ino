@@ -16,7 +16,6 @@ int lasteffectupdate;
 int WS2812interval = 2000; 
 
 
-
 int spectrumValue[7];
 int filter=80;
 
@@ -49,7 +48,7 @@ void  handle_WS2812 () { // handles the web commands...
 
 //String CurrentRGBcolour = "00000";
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
- if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command")); 
+ //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command")); 
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  CurrentAnimationSpeed = server.arg("anispeed").toInt();
@@ -62,7 +61,7 @@ void  handle_WS2812 () { // handles the web commands...
     Serial.println("RGB picker command: " + server.arg("rgbpicker"));
   }
 
-  if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
+  //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
 
   if (server.arg("leds").length() != 0) {
     pixelCount = server.arg("leds").toInt();
@@ -257,8 +256,8 @@ WS2812interval = Value.toInt();
 }
 
 
-void  WS2812_command_string (String Value) {
-}
+//void  WS2812_command_string (String Value) {
+//}
 /*
 
 if (Value.indexOf("rgb") >= 0) 
