@@ -72,8 +72,8 @@ void setup() {
   Serial.print("mDNS responder started.........(");
 */
     
-  Serial.print(deviceid);
-  Serial.println(".local)");
+  //Serial.print(deviceid);
+  //Serial.println(".local)");
   
   
   ///// ----- Set up MQTT ------ //////

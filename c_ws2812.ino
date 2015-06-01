@@ -215,7 +215,7 @@ void  WS2812_mode_string (String Value)
 
       EEPROM.commit();
 
-      Serial.print(" New colours written to EEPROM...");
+      /* Serial.print(" New colours written to EEPROM...");
 
       Serial.print("Retrieved Colours are: ");
       
@@ -227,7 +227,7 @@ void  WS2812_mode_string (String Value)
       Serial.print(G); 
       Serial.print(" ");
       Serial.println(B);
-
+*/ 
       SetRGBcolour(NewColour);
 
   }
