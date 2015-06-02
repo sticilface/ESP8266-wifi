@@ -61,7 +61,10 @@ void setup() {
 
 
   restartNetworking();
-  /*
+
+
+
+  
    if (!mdns.begin(deviceid, WiFi.localIP())) {
     Serial.print("Error setting up MDNS responder!....(");
     
@@ -70,7 +73,7 @@ void setup() {
     }
   }
   Serial.print("mDNS responder started.........(");
-*/
+
     
   //Serial.print(deviceid);
   //Serial.println(".local)");

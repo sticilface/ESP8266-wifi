@@ -2,7 +2,6 @@ void loop() {
   // put your main code here, to run repeatedly:
 
 
-  mdns.update();  
   mqttclient.loop();
   server.handleClient();
      
@@ -15,6 +14,7 @@ void loop() {
  
 	loop_Plugin();
  
+ //mdns.update();  
 
  
 
