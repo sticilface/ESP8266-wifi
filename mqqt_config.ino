@@ -214,7 +214,7 @@ void  handle_mqtt() {
   httpbuf += F("</form>");
  if(MQTT_enabled) {
   
-  httpbuf += "<br>MQTT Server is: " + String(mqttserver) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
+  httpbuf += "<br>MQTT Server is: " + String(mqttserver_string) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
   httpbuf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
   httpbuf += F("<br><form action='/mqtt' method='POST'>\n");
   httpbuf += F("\n\nNew Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");

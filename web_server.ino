@@ -134,7 +134,7 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   httpbuf = F("<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>Wifi Configuration</title></head>\n<body><h1>Wifi Config</h1>\n");
   httpbuf += "<p>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
   httpbuf += "<br>Current SSID is: " + String(ssid);
-  httpbuf += "<br>Current MQTT Server is: " + String(mqttserver) + "..." + ((mqttconnected)?"Connected":"Disconnected");
+  httpbuf += "<br>Current MQTT Server is: " + mqttserver_string + "..." + ((mqttconnected)?"Connected":"Disconnected");
   httpbuf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
   httpbuf += F("<br><form action='/wifi' method='POST'>\n");
   httpbuf += F("\n\nNew Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");

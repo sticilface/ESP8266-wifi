@@ -78,7 +78,7 @@ IPAddress MQTTserver(0,0,0,0);
 
 char mqtttopic[BUFSIZE];// = "esp";
 // char mqttserver[BUFSIZE];// = "192.168.1.24";
-String mqttserver; 
+String mqttserver_string; 
 
 /////// ------- COMMAND ARGS -------
 //const int numberofcommands = 13;
