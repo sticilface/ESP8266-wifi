@@ -83,13 +83,13 @@ void setup_Plugin () {
 
  
 
-  //timer.setTimeout(100, OnceOnlyTask);
+  timer.setTimeout(100, OnceOnlyTask);
 
 }
 
 void OnceOnlyTask () {
 
-	opState = ADALIGHT;
+	opState = EQ1;
 }
 
 void loop_Plugin () {

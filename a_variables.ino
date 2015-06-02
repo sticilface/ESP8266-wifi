@@ -109,16 +109,16 @@ const int bitaddress = 500;
 enum operatingState { 
 OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, 
 ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
-COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,TEST2,TEST3,TEST4,SQUARES
+COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,TEST2,TEST3,TEST4,SQUARES,EQ1
 };
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
 static const char *MODE_STRING[] = {
 "Off", "Rainbow", "Color", "Chase Rainbow", "Fade", 
 "AdaLight", "test", "Looparound", "Pick Random", "Fade in Fade Out", 
-"Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Test2","Test3","Test4","Squares" 
+"Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Test2","Test3","Test4","Squares","EQ1" 
 };
-#define numberofmodes 18 /////// DONT FORGET THIS....
+#define numberofmodes 19 /////// DONT FORGET THIS....
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness; 
@@ -126,8 +126,6 @@ uint8_t CurrentBrightness;
 uint16_t CurrentAnimationSpeed =2000; 
 
 RgbColor NewColour;
-
-int willybumbum; 
 
 unsigned int localPort = 8888;      // local port to listen on
 

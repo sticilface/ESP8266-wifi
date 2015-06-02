@@ -426,6 +426,10 @@ switch (opState)
     case SQUARES:
       Squares();
       break;
+    case EQ1:
+      eq1();
+      break;
+
    }
 
 
@@ -1439,23 +1443,71 @@ uint16_t return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_
 // function to shift pixels in blocks one way or another...
 void pixelshift(uint16_t start, uint16_t end) {
 
+static long last_pixelshift = 0;
 RgbColor pix_colour; // holds pixel data... 
+uint16_t pixelshift_timer = 100; 
 
+if (millis() > (last_pixelshift + pixelshift_timer)) {
+  //Serial.println("pixel shift if statement hit");
 // Move direction = right.... Start at end.. move one by one....
-if (end > start) {
-
-    for (uint16_t i = end; i > start + 1; i--) {
+  if (end > start) {
+    //Serial.print("direction = right....");
+    for (uint16_t i = end; i > start ; i--) {
       pix_colour = strip->GetPixelColor(i-1);
       strip->SetPixelColor(i, pix_colour);
+      //Serial.print(i);
+      //Serial.print(" ");
     }
-} else if (start < end) {  // Move direction = left
+  }   else if (start > end) {  // Move direction = left
 
-    for (uint16_t i = end; i < start - 1; i++) {
+    for (uint16_t i = end; i < start; i++) {
+    Serial.print("direction = left....");
+
       pix_colour = strip->GetPixelColor(i+1);
       strip->SetPixelColor(i, pix_colour);
+      Serial.print(i);
+      Serial.print(" ");
     }
 
+  }
+  strip->SetPixelColor(start, 0);
+  last_pixelshift = millis(); 
 }
+
+
+}
+
+void eq1 () {
+
+//static bool showing = false;
+
+  if (millis() > (lasteffectupdate + WS2812interval)  )  {
+      //Serial.print("ON");
+      //RgbColor pix_colour = RgbColor(random(255),random(255),random(255));    
+//      strip->SetPixelColor(0, pix_colour);
+
+      strip->SetPixelColor(6, RgbColor(255,0,0));
+      strip->SetPixelColor(5, RgbColor(0,255,0));
+      strip->SetPixelColor(4, RgbColor(0,0,255));
+
+
+      lasteffectupdate = millis();
+      //showing = true; 
+  } else if (millis() > (lasteffectupdate + WS2812interval) ) {
+          //Serial.print("OFF");
+     //         strip->SetPixelColor(2, 0);
+
+     //     strip->SetPixelColor(2, 0);
+     //     strip->SetPixelColor(1, 0);
+
+     //     showing = false; 
+     //     lasteffectupdate = millis();
+          
+  }
+
+
+pixelshift(6,0);
+
 
 }
 
