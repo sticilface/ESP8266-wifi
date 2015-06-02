@@ -15,8 +15,6 @@ String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colo
 int lasteffectupdate; 
 int WS2812interval = 2000; 
 
- 
-
 int spectrumValue[7];
 int filter=80;
 
@@ -1438,5 +1436,27 @@ uint16_t return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_
   return pixel; 
 }
 
+// function to shift pixels in blocks one way or another...
+void pixelshift(uint16_t start, uint16_t end) {
+
+RgbColor pix_colour; // holds pixel data... 
+
+// Move direction = right.... Start at end.. move one by one....
+if (end > start) {
+
+    for (uint16_t i = end; i > start + 1; i--) {
+      pix_colour = strip->GetPixelColor(i-1);
+      strip->SetPixelColor(i, pix_colour);
+    }
+} else if (start < end) {  // Move direction = left
+
+    for (uint16_t i = end; i < start - 1; i++) {
+      pix_colour = strip->GetPixelColor(i+1);
+      strip->SetPixelColor(i, pix_colour);
+    }
+
+}
+
+}
 
 
