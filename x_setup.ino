@@ -77,17 +77,10 @@ void setup() {
   
   
   ///// ----- Set up MQTT ------ //////
-  if (MQTT_enabled) {
-    Serial.println("MQTT_enable var is true");
-                initiatemqqt ();
-// - Send  first round of messages on boot
+  if (MQTT_enabled) initiatemqqt (); 
 
-  
-  } else {
 
-    Serial.println("MQTT_enable var is false");
 
-  }
   ///// ---- WEB SERVER ------/////
   server.on("/", handle_root);
   server.on("/wifi", handle_wifi);
@@ -97,25 +90,29 @@ void setup() {
   server.on("/test", handle_test);
 
   server.on("/misc", handle_misc);
+
+
   //server.on("/ws2812", handle_WS2812);
 
   //server.on("/temperature", handle_temperature);
 
   // Start the server 
+
   Udp.begin(localPort);
   
   server.begin();
 
   Serial.println("HTTP server started");
 
-   // timer.setInterval(APtimeout, deactivateAP);
-   // timer.setInterval(MQTTtimeout, initiatemqqt);
+    timer.setInterval(APtimeout, deactivateAP);
+    timer.setInterval(MQTTtimeout, initiatemqqt);
 
     //timer.setInterval(Uptimer_timeout, uptime);
 
   Serial.println("Timers set up");
   
   setup_Plugin ();
+
   Serial.println("Plugins started");
     //timer.setInterval(32,ws2812_animating);
 

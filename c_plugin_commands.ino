@@ -29,14 +29,19 @@ void setup_Plugin () {
 
     if (EEPROM.read(PixelPIN_enablebyte) == flagvalue) {
 
-      Serial.println("PixelPIN_byte HIT");
+      // Serial.println("PixelPIN_byte HIT");
       pixelPIN = EEPROM.read(PixelPIN_address);
-      Serial.println("EEprom Read: PixelPIN = " + String(pixelPIN));
+      // Serial.println("EEprom Read: PixelPIN = " + String(pixelPIN));
       if (isnan(pixelPIN)) pixelPIN = 2;
-}
+      }
+
+// Brightness
 
     CurrentBrightness = EEPROM.read(PixelCount_address + 2);
+
     if (isnan(CurrentBrightness)) CurrentBrightness = 255;
+
+// Last Op State
 
 
     uint8_t c = EEPROM.read(PixelCount_address + 3);
@@ -44,7 +49,8 @@ void setup_Plugin () {
     if (isnan(c)) c = 0;
     LastOpState = (operatingState)c;
 
-      
+//  Number of pixels as DOUBLE... 
+
     if (EEPROM.read(PixelCount_enablebyte) == flagvalue) 
      {     
 
@@ -59,24 +65,23 @@ void setup_Plugin () {
 
       } 
 
-      Serial.print("/n Saved Colours are: ");
-      
+      //Serial.print("/n Saved Colours are: ");
+
+// SAVED COLOURS
+
       uint8_t R = EEPROM.read(PixelCount_address + 4);
       uint8_t G = EEPROM.read(PixelCount_address + 5);
       uint8_t B = EEPROM.read(PixelCount_address + 6);
-      Serial.print(R);  
-      Serial.print(" ");
-      Serial.print(G); 
-      Serial.print(" ");
-      Serial.println(B);
 
       NewColour = RgbColor(R,G,B);
 
 
+// initiate PLUGIN
 
-  initiateWS2812();
 
-  // timer.setInterval(30, run_animations);
+      initiateWS2812();
+
+ 
 
   //timer.setTimeout(100, OnceOnlyTask);
 

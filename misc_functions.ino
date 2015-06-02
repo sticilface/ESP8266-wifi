@@ -170,14 +170,7 @@ double ICACHE_FLASH_ATTR os_atof(const char* s)
 	return rez * fact;
 }
 
-void New_random_function ()
 
-{
-  
-  
-  
-  
-}
 
 
 void ICACHE_FLASH_ATTR Save_String (char * NewValue,int writeaddress,int writeaddressbyte)

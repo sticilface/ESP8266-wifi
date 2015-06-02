@@ -2,23 +2,19 @@ void loop() {
   // put your main code here, to run repeatedly:
 
 
-  //mdns.update();  
+  mdns.update();  
   mqttclient.loop();
   server.handleClient();
-    
- 
+     
 
  ////////////// -------- PLUGIN CONTROLs -----------------------
-  
 
-   timer.run();
+
+	timer.run();
 
  
-loop_Plugin();
+	loop_Plugin();
  
-    //CPU_clock_count();
-
- //strip.UpdateAnimations();
 
  
 
