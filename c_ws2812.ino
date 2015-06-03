@@ -1461,12 +1461,12 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
   }   else if (start > end) {  // Move direction = left
 
     for (uint16_t i = end; i < start; i++) {
-    Serial.print("direction = left....");
+    //Serial.print("direction = left....");
 
       pix_colour = strip->GetPixelColor(i+1);
       strip->SetPixelColor(i, pix_colour);
-      Serial.print(i);
-      Serial.print(" ");
+      //Serial.print(i);
+      //Serial.print(" ");
     }
 
   }
