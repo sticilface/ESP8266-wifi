@@ -345,16 +345,16 @@ String RGBtoHEX (RgbColor value) {
 
 void StripOFF() {
 
-  if (millis() > (lasteffectupdate + WS2812interval) ){
+  //if (millis() > (lasteffectupdate + WS2812interval) ){
 
   memset(pixelsPOINT, 0, 3 * strip->PixelCount() ); 
 
   strip->Dirty();
 
 
-lasteffectupdate = millis();
+//lasteffectupdate = millis();
 
-}
+//}
 
  /* for (uint16_t i = 0; i < pixelCount; i++)
   {
@@ -454,7 +454,12 @@ switch (opState)
     case EQ1:
       eq1();
       break;
-
+    case RANDOM:
+      Random_colour();
+      break;
+    case RANDOMFUNC:
+      Random_function();
+      break;
    }
 
 
@@ -471,6 +476,61 @@ if (millis() > update_strip_time + 30) {
 
 
 }
+
+void Random_function() {
+
+static long Random_func_timeout, Random_func_lasttime; 
+static uint8_t random_choice; 
+
+    if (millis() > (Random_func_lasttime + Random_func_timeout)) {
+      //Serial.print("New random choice..."); 
+
+      random_choice = random(0, 3);
+      Random_func_lasttime = millis(); 
+      Random_func_timeout = random(60000, 60000*5);
+      //Random_func_timeout = random(10000, 20000);
+
+    }
+
+    if (random_choice == 0) rainbow();
+    if (random_choice == 1) spiral();
+    if (random_choice == 2) Rainbowcycle();
+    if (random_choice == 3) Random_colour();
+    //if (random_choice == 4) rainbow();
+  //  if (random_choice == 5) rainbow();
+
+
+
+
+}
+
+void Random_colour() {
+
+static long Random_func_timeout, Random_func_lasttime; 
+static uint8_t current_r;
+
+    if (millis() > (Random_func_lasttime + Random_func_timeout)) {
+      Serial.print("New random choice..."); 
+
+      // uint8_t random_choice = random(0, 5);
+
+      RgbColor random_colour_random = RgbColor(random(255),random(255),random(255)); 
+
+      SetRGBcolour(random_colour_random);
+
+      Random_func_lasttime = millis(); 
+      Random_func_timeout = random(60000, 60000*5);
+      //Random_func_timeout = random(10000, 60000);
+
+    }
+
+
+
+
+
+
+} // end of random func
+
 
 void  CoolBlobs() {
 
@@ -681,7 +741,7 @@ void  Rainbowcycle() {
 
 void  test4() {
 
-
+Serial.println("TEST4");
 
 
 }
@@ -1559,7 +1619,7 @@ pixelshift(0,6);
 
 } else if (direction == 2) {
 
-//pixelshift_middle(); 
+pixelshift_middle(); 
 
 
 };
