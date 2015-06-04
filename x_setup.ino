@@ -101,8 +101,13 @@ void setup() {
 
   // Start the server 
 
-  Udp.begin(localPort);
-  
+  //Udp.begin(localPort);
+
+  Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
+
+  //Udp.beginMulticast(multicast_ip_addr, WiFi.localIP() , localPort); 
+
+
   server.begin();
 
   Serial.println("HTTP server started");

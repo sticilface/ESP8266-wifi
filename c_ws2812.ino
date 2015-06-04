@@ -479,7 +479,7 @@ if (millis() > update_strip_time + 30) {
 
 void Random_function() {
 
-static long Random_func_timeout, Random_func_lasttime; 
+static uint32_t Random_func_timeout, Random_func_lasttime; 
 static uint8_t random_choice; 
 
     if (millis() > (Random_func_lasttime + Random_func_timeout)) {
@@ -1282,10 +1282,13 @@ static boolean Adalight_configured;
     Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
     Adalight_configured = true;
     } 
+
 int packetSize = Udp.parsePacket();
 
   if(Udp.available())
   {
+        Serial.println("UDP packet recieved...");
+
     RgbColor col;
     int currentpixel = 0;
     for (int i = 0; i < packetSize; i = i + 3) {

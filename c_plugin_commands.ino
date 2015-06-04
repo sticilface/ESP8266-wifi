@@ -90,6 +90,7 @@ void setup_Plugin () {
 void OnceOnlyTask () {
 
 	opState = EQ1;
+  
 }
 
 void loop_Plugin () {

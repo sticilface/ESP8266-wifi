@@ -74,6 +74,7 @@ boolean Plugin_enable = false;
 
 
 IPAddress MQTTserver(0,0,0,0);
+IPAddress multicast_ip_addr(224,0,0,0);
 ////////////////////-----------MQTT---------------///////////////////
 
 char mqtttopic[BUFSIZE];// = "esp";
