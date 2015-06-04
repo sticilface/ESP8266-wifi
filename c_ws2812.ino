@@ -37,8 +37,22 @@ static const char *VAR_STRING[] = {
 "Var9              ", 
 "Size of effect    "};
 
+uint32_t randomvar1 = 1; 
+uint32_t randomvar2 =2; 
+uint32_t randomvar3=3; 
+uint32_t randomvar4=4; 
+
 
 void  handle_WS2812 () { // handles the web commands...
+
+  Serial.println(randomvar1);
+  Serial.println(randomvar2);
+  Serial.println(randomvar3);
+  Serial.println(randomvar4);
+
+
+
+
  boolean updateLEDs = false;
  int power = getPixelPower();
  //Serial.println("WS2812 - Web page called.");
@@ -1520,10 +1534,7 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 }
 
-uint32_t randomvar1; 
-uint32_t randomvar2; 
-uint32_t randomvar3; 
-uint32_t randomvar4; 
+
 
 
 void eq1 () {
