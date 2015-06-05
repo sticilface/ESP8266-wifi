@@ -60,8 +60,7 @@ long MQTT_connect_timer;
 long request_timeout; 
 long Uptime_timer;
 
-// multicast DNS responder
-MDNSResponder mdns;
+
 
 
 // Features Enables
@@ -124,6 +123,7 @@ static const char *MODE_STRING[] = {
 "Random Function" 
 };
 #define numberofmodes 21 /////// DONT FORGET THIS....
+
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness; 

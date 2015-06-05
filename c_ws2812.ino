@@ -1237,6 +1237,7 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
       int a = pixelCount/256;
       int b = pixelCount % 256;        
+      
         EEPROM.write(PixelCount_address,a);
         EEPROM.write(PixelCount_address+1,b);
 
@@ -1561,7 +1562,8 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 }
 
 
-// function to shift pixels in blocks one way or another...
+//// function to shift pixels in blocks one way or another...
+
 void pixelshift_middle() {
 
 static long last_pixelshift = 0;
@@ -1596,6 +1598,7 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 
 }
+ // END of pixel shift
 
 
 
