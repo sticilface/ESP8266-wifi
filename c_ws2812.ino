@@ -45,10 +45,7 @@ uint32_t randomvar4=4;
 
 void  handle_WS2812 () { // handles the web commands...
 
-  Serial.println(randomvar1);
-  Serial.println(randomvar2);
-  Serial.println(randomvar3);
-  Serial.println(randomvar4);
+
 
 
 
@@ -288,7 +285,16 @@ RgbColor dim(RgbColor value) {
     return value;
 }
 
+
+
+
 void SetRGBcolour (RgbColor value) {
+
+SetRGBcolour(value,CurrentAnimationSpeed); 
+
+}
+
+void SetRGBcolour (RgbColor value, uint16_t speed) {
     
   value = dim(value);
   
@@ -296,7 +302,7 @@ void SetRGBcolour (RgbColor value) {
 
           for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
        // strip->SetPixelColor(pixel,value);
-          strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel, value);
+          strip->LinearFadePixelColor(speed, pixel, value);
     }
     strip->StartAnimating(); // start animations
   }
@@ -460,6 +466,12 @@ switch (opState)
     case RANDOMFUNC:
       Random_function();
       break;
+    case ARTNET:
+      Art_Net_func ();
+      break;
+    case RANDOM_TOP_BOTTOM:
+      Random_Top_Bottom();
+      break;
    }
 
 
@@ -512,11 +524,11 @@ static uint8_t current_r;
     if (millis() > (Random_func_lasttime + Random_func_timeout)) {
       Serial.print("New random choice..."); 
 
-      // uint8_t random_choice = random(0, 5);
+      uint16_t random_animation_speed = random(2000, 20000);
 
       RgbColor random_colour_random = RgbColor(random(255),random(255),random(255)); 
 
-      SetRGBcolour(random_colour_random);
+      SetRGBcolour(random_colour_random,random_animation_speed);
 
       Random_func_lasttime = millis(); 
       Random_func_timeout = random(60000, 60000*5);
@@ -1636,3 +1648,229 @@ pixelshift_middle();
 }
 
 
+
+///////////////////
+//
+//
+//      ART - NET  
+//
+//
+///////////////////
+
+  uint8_t artnetPacket[MAX_BUFFER_ARTNET];
+  uint16_t packetSize;
+  uint16_t opcode;
+  uint8_t sequence;
+  uint16_t incomingUniverse;
+  uint16_t dmxDataLength;
+  void (*artDmxCallback)(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* data);
+
+
+
+
+uint16_t Artnetread()
+{
+  packetSize = Udp.parsePacket();
+  
+  if (packetSize <= MAX_BUFFER_ARTNET && packetSize > 0)
+  { 
+      Udp.read(artnetPacket, MAX_BUFFER_ARTNET);
+
+      // Check that packetID is "Art-Net" else ignore
+      for (byte i = 0 ; i < 9 ; i++)
+      {
+        if (artnetPacket[i] != ART_NET_ID[i])
+          return 0;
+      }
+        
+      opcode = artnetPacket[8] | artnetPacket[9] << 8; 
+
+      if (opcode == ART_DMX)
+      {
+        sequence = artnetPacket[12];
+        incomingUniverse = artnetPacket[14] | artnetPacket[15] << 8;  
+        dmxDataLength = artnetPacket[17] | artnetPacket[16] << 8;
+
+        if (artDmxCallback) (*artDmxCallback)(incomingUniverse, dmxDataLength, sequence, artnetPacket + ART_DMX_START);
+        return ART_DMX;
+      }
+      if (opcode == ART_POLL)
+      {
+        return ART_POLL; 
+      }
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+void printPacketHeader()
+{
+  Serial.print("packet size = ");
+  Serial.print(packetSize);
+  Serial.print("\topcode = ");
+  Serial.print(opcode, HEX);
+  Serial.print("\tuniverse number = ");
+  Serial.print(incomingUniverse);
+  Serial.print("\tdata length = ");
+  Serial.print(dmxDataLength);
+  Serial.print("\tsequence n0. = ");
+  Serial.println(sequence);
+}
+
+void printPacketContent()
+{
+  for (uint16_t i = ART_DMX_START ; i < dmxDataLength ; i++){
+    Serial.print(artnetPacket[i], DEC);
+    Serial.print("  ");
+  }
+  Serial.println('\n');
+}
+
+
+void Art_Net_func () {
+
+static boolean Adalight_configured;
+
+ if (!Adalight_configured) {
+    Serial.println("ART - NET mode enabled\n"); // Send "Magic Word" string to host
+    Adalight_configured = true;
+    } 
+
+
+int test = Artnetread();
+
+if (test == ART_DMX) Serial.println("DMX YES");
+
+
+
+//Serial.println(test);
+//printPacketContent();
+
+
+/*
+int packetSize = Udp.parsePacket();
+
+  if(Udp.available())
+  {
+        Serial.println("UDP packet recieved...");
+
+    RgbColor col;
+    int currentpixel = 0;
+    for (int i = 0; i < packetSize; i = i + 3) {
+      if (currentpixel > pixelCount) break;
+        col.R = Udp.read();
+        col.G = Udp.read();
+        col.B = Udp.read();
+        strip->SetPixelColor(currentpixel,col);
+        currentpixel++;
+      }
+
+strip->Show();
+
+}
+
+*/
+
+}
+
+
+void top_bottom_fade( RgbColor Top, RgbColor Bottom,uint8_t count_x) {
+
+uint8_t x,y,colour_index; 
+uint8_t total_y = return_total_y(count_x); // get total number of rows
+
+RgbColor colournew;
+Serial.println("Total y = ");
+Serial.print(total_y);
+Serial.print("...");
+  Serial.print(" TOP ");
+  Serial.print(" R:");
+  Serial.print(Top.R);
+  Serial.print(" G:");
+  Serial.print(Top.G);
+  Serial.print(" B:");
+  Serial.print(Top.B);  
+  Serial.print(" BOTTOM ");
+  Serial.print(" R:");
+  Serial.print(Bottom.R);
+  Serial.print(" G:");
+  Serial.print(Bottom.G);
+  Serial.print(" B:");
+  Serial.print(Bottom.B); 
+
+for (y = 0; y < total_y; y++) {
+
+  colour_index = map(y,0,total_y,0,255); // map steps of blend.........
+  
+  Serial.println();
+  Serial.print(y);
+  Serial.print("-->");
+  Serial.print(colour_index);
+
+
+  colournew = colournew.LinearBlend(Bottom, Top, colour_index);  // generate new colour.... 
+
+
+  Serial.print(" colournew ");
+  Serial.print(" R:");
+  Serial.print(colournew.R);
+  Serial.print(" G:");
+  Serial.print(colournew.G);
+  Serial.print(" B:");
+  Serial.print(colournew.B); 
+  Serial.print("(");
+
+    for( x = 0; x < count_x; x++) {
+        uint16_t pixel = return_pixel(x,y, count_x); 
+        Serial.print(pixel);
+        Serial.print(",");
+        strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel , colournew);
+        //strip->SetPixelColor( pixel, colournew);
+
+    }
+
+}
+    strip->StartAnimating(); // start animations
+
+            Serial.print(")");
+
+Serial.println("Top Bottom Feed function finished...");
+}
+
+void Random_Top_Bottom() {
+
+static long Random_func_timeout, Random_func_lasttime; 
+static uint8_t current_r, total_x;
+
+if (var7 == 0 ) total_x = 13; else total_x = var7;
+
+    if (!(strip->IsAnimating())) {
+
+    if (millis() > (Random_func_lasttime + Random_func_timeout)) {
+
+      uint16_t random_animation_speed = random(2000, 20000);
+
+
+
+      RgbColor random_colour_top = Wheel(random(255)); //  RgbColor(255,0,0); 
+
+      RgbColor random_colour_bottom = Wheel(random(255)); // RgbColor(0,255,00); 
+
+      Serial.println("Pre... top bottom...");
+      
+      top_bottom_fade(random_colour_top, random_colour_bottom, total_x);
+      
+      Serial.println("random top bottom returned...");
+      
+
+      Random_func_lasttime = millis(); 
+     // Random_func_timeout = random(60000, 60000*5);
+      
+      Random_func_timeout = random(10000, 60000);
+
+    }
+  }
+
+}

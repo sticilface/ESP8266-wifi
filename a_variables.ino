@@ -111,7 +111,7 @@ OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE,
 ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
 COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,TEST2,
 TEST3,TEST4,SQUARES,EQ1,RANDOM,
-RANDOMFUNC
+RANDOMFUNC, ARTNET, RANDOM_TOP_BOTTOM
 };
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
@@ -120,9 +120,9 @@ static const char *MODE_STRING[] = {
 "AdaLight", "test", "Looparound", "Pick Random", "Fade in Fade Out", 
 "Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Test2",
 "Test3","Test4","Squares","EQ1","Random Colour", 
-"Random Function" 
+"Random Function", "Art-Net", "Random Top Bottom"
 };
-#define numberofmodes 21 /////// DONT FORGET THIS....
+#define numberofmodes 23 /////// DONT FORGET THIS....
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
@@ -132,5 +132,5 @@ uint16_t CurrentAnimationSpeed =2000;
 
 RgbColor NewColour;
 
-unsigned int localPort = 8888;      // local port to listen on
+unsigned int localPort = 6454; //8888;      // local port to listen on
 
