@@ -128,7 +128,7 @@ uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness; 
 
-uint16_t CurrentAnimationSpeed =2000; 
+uint16_t CurrentAnimationSpeed = 2000; 
 
 RgbColor NewColour;
 

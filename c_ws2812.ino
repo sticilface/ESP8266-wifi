@@ -279,10 +279,32 @@ if (Value.indexOf("rgb") >= 0)
 } */
 
 
+
+
 RgbColor dim(RgbColor value) {
-    int amounttodarken = 255 - CurrentBrightness;
-    value.Darken(amounttodarken);
-    return value;
+
+  //  int amounttodarken = 255 - CurrentBrightness;
+  //  value.Darken(amounttodarken);
+  //  return value;
+
+    RgbColor HSVspace = rgbToHsv(value);
+
+    HSVspace.R = (double)HSVspace.R / 255;
+    HSVspace.G = (double)HSVspace.G / 255;
+    HSVspace.B = (double)CurrentBrightness / 255; 
+
+    Serial.print(HSVspace.R);
+    Serial.print("  ");
+    Serial.print(HSVspace.G);
+    Serial.print("  ");
+    Serial.print(HSVspace.B);
+    Serial.print("  ");
+
+
+
+    value = hsvToRgb(HSVspace.R, HSVspace.G, HSVspace.B);
+
+return(value);
 }
 
 
@@ -478,16 +500,26 @@ switch (opState)
    }
 
 
-
-
-
 if (millis() > update_strip_time + 30) {
     if (strip->IsAnimating()) strip->UpdateAnimations(); 
     strip->Show();
     update_strip_time = millis();
-}
 
-} // end of switch case
+} // end of switch case...
+
+/*
+static bool ani_update = false;
+
+if (!ani_update && strip->IsAnimating()) {
+  Serial.print("Animating...");
+  ani_update = true;
+} else if (ani_update && !strip->IsAnimating()) {
+  Serial.println("Stopped");
+  ani_update = false;
+}
+*/
+
+} // end of ws2812 function 
 
 
 void HSI_Cycle() {
@@ -501,17 +533,38 @@ if (millis() > (lasteffectupdate + WS2812interval) ){
 
 if (j > 360) j = 0; 
 
-RgbColor col = hsi2rgb(j,1,1);
+double j_double = (double)j / 360; 
+double v_double = (double)CurrentBrightness / 255; 
+double s_double; 
+
+//RgbColor col = hsvToRgb(j_double,1,v_double);
+
+/*  Serial.println();
+  Serial.print(j_double);
+  Serial.print("-->");
+  Serial.print(" R:");
+  Serial.print(col.R);
+  Serial.print(" G:");
+  Serial.print(col.G);
+  Serial.print(" B:");
+  Serial.print(col.B);  
+*/
 
 //int col = 200; 
 
 for (int i=0; i < pixelCount; i++) {
-    strip->SetPixelColor(i, col);    //turn every third pixel on
+
+double s_double = (double)i / pixelCount; 
+
+
+RgbColor col = hsvToRgb(j_double,s_double,v_double);
+
+    strip->SetPixelColor(i, col);   
         }
 
-j++;
-
 lasteffectupdate = millis();
+
+j++; 
 
 }
 
@@ -526,8 +579,8 @@ lasteffectupdate = millis();
 
 void Random_function() {
 
-static uint32_t Random_func_timeout, Random_func_lasttime; 
-static uint8_t random_choice; 
+static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
+static uint8_t random_choice = 0 ; 
 
     if (millis() > (Random_func_lasttime + Random_func_timeout)) {
       //Serial.print("New random choice..."); 
@@ -553,8 +606,8 @@ static uint8_t random_choice;
 
 void Random_colour() {
 
-static long Random_func_timeout, Random_func_lasttime; 
-static uint8_t current_r;
+static long Random_func_timeout = 0, Random_func_lasttime = 0; 
+static uint8_t current_r = 0;
 
     if (millis() > (Random_func_lasttime + Random_func_timeout)) {
       Serial.print("New random choice..."); 
@@ -608,8 +661,7 @@ void setcolour () {
 
 */
 
-void   FadeInFadeOutRinseRepeat(uint8_t peak)
-{
+void   FadeInFadeOutRinseRepeat(uint8_t peak) {
   if (effectState == 0)
   {
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
@@ -640,9 +692,9 @@ void  PickRandom(uint8_t peak)
     uint8_t pixel = random(pixelCount);
     
     // configure the animations
-    RgbColor color; // = //strip->getPixelColor(pixel);
+    RgbColor color = Wheel(random(255)); // = //strip->getPixelColor(pixel);
 
-    color = RgbColor(random(peak), random(peak), random(peak));
+    //color = RgbColor(random(peak), random(peak), random(peak));
 
     
     uint16_t time = random(100,400);
@@ -829,7 +881,7 @@ void  test() {
 
  if (millis() > (lasteffectupdate + WS2812interval) ){
 
-  static int wsPoint ;
+  static int wsPoint =0;
   //uint16_t i; // , j;
   //pixelsNUM = 60;
   //for(j=0; j<256; j++) { v
@@ -855,11 +907,11 @@ void clearpixels() {
 
 void  spiral() {
 
-static uint16_t currentcolor;
+static uint16_t currentcolor = 0;
 
   if (millis() > (lasteffectupdate + WS2812interval) ) 
   { // effect update timer
-  uint8_t pitch;
+  uint8_t pitch = 0 ;
   
   if (var7 == 0 ) pitch = 13; else pitch = var7;
   uint8_t total_y = return_total_y(pitch); // get the number of rows.  rounds up...
@@ -885,8 +937,7 @@ static uint16_t currentcolor;
 // FACES ALGO....
 void  test3 () {
 
- uint8_t x,y, total_y;
-
+  uint8_t x,y, total_y;
   uint8_t total_x = var7; 
   uint8_t square_size = var10;
   uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
@@ -1028,7 +1079,7 @@ void  test2 () { // WORKING RANDOM SQUARE SIZES...
 
 
 
-void   Squares () {
+void  Squares () {
 
   static int wsPoint = 0;
   
@@ -1151,10 +1202,10 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
   static uint16_t effectbuf_position = 0;
   enum mode { MODE_INITIALISE = 0, MODE_HEADER, MODE_CHECKSUM, MODE_DATA, MODE_SHOW, MODE_WAIT};
   static mode state = MODE_INITIALISE;
-  static int effect_timeout;
+  static int effect_timeout = 0;
   static uint8_t prefixcount = 0;
-  static unsigned long ada_sent; 
-  static unsigned long pixellatchtime;
+  static unsigned long ada_sent = 0; 
+  static unsigned long pixellatchtime = 0;
   const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
   const unsigned long initializetimeout = 10000; 
   static unsigned long initializetime = 0; 
@@ -1326,7 +1377,7 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
 void UDPfunc () {
 
-static boolean Adalight_configured;
+static boolean Adalight_configured = false;
 
  if (!Adalight_configured) {
     Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
@@ -1339,7 +1390,7 @@ int packetSize = Udp.parsePacket();
   {
         Serial.println("UDP packet recieved...");
 
-    RgbColor col;
+    RgbColor col = RgbColor(0,0,0);
     int currentpixel = 0;
     for (int i = 0; i < packetSize; i = i + 3) {
       if (currentpixel > pixelCount) break;
@@ -1476,8 +1527,8 @@ uint16_t return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_
 //  000   0000    00000    000000   0000000
 
 
-  uint16_t pixel; 
-  uint8_t pixel_x, pixel_y;
+  uint16_t pixel = 0; 
+  uint8_t pixel_x = 0, pixel_y = 0 ;
 
 //  GRID = 3 : 1  2  3  4  5  6  pixels 
 
@@ -1582,7 +1633,7 @@ uint16_t return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_
 void pixelshift(uint16_t start, uint16_t end) {
 
 static long last_pixelshift = 0;
-RgbColor pix_colour; // holds pixel data... 
+RgbColor pix_colour = RgbColor(0,0,0); // holds pixel data... 
 uint16_t pixelshift_timer = 100; 
 
 if (millis() > (last_pixelshift + pixelshift_timer)) {
@@ -1616,7 +1667,7 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 void pixelshift_middle() {
 
 static long last_pixelshift = 0;
-RgbColor pix_colour; // holds pixel data... 
+RgbColor pix_colour = RgbColor(0,0,0); // holds pixel data... 
 uint16_t pixelshift_timer = 100; 
 uint16_t middle = strip->PixelCount() / 2; 
 uint8_t remainderodd = 0; 
@@ -1813,12 +1864,12 @@ strip->Show();
 }
 
 
-void top_bottom_fade( RgbColor Top, RgbColor Bottom,uint8_t count_x) {
+void top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
 
 uint8_t x,y,colour_index; 
 uint8_t total_y = return_total_y(count_x); // get total number of rows
 RgbColor colournew;
-
+//CurrentAnimationSpeed = 2000;
 /*
 Serial.println("Total y = ");
 Serial.print(total_y);
@@ -1844,7 +1895,7 @@ for (y = 0; y < total_y; y++) {
   colour_index = map(y,1,total_y-1,1,254);  // map steps of blend.........
 
 if (y == 0) colour_index = 0; 
-if (y == total_y) colour_index = 255;
+if (y == total_y - 1) colour_index = 255;
 
     colournew = colournew.LinearBlend(Bottom, Top, colour_index);  // generate new colour.... 
 
@@ -1860,66 +1911,91 @@ if (y == total_y) colour_index = 255;
   Serial.print(colournew.G);
   Serial.print(" B:");
   Serial.print(colournew.B); 
-  Serial.print("("); */ 
-
+  Serial.print("  ("); 
+*/
     for( x = 0; x < count_x; x++) {
         uint16_t pixel = return_pixel(x,y, count_x); 
-        // Serial.print(pixel);
-        // Serial.print(",");
-        strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel , colournew);
+
+        if (pixel >= strip->PixelCount()) break;
+        //Serial.print(pixel);
+        //Serial.print(",");
+        //strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand,y_rand,total_x), dim(colour));
+        strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel , colournew); //CurrentAnimationSpeed
+        
         //strip->SetPixelColor( pixel, colournew);
 
     }
+  
+  //Serial.print(")  ");
 
 }
-    strip->StartAnimating(); // start animations
-
-            //Serial.print(")");
+    
+strip->StartAnimating(); // start animations
 
 //Serial.println("Top Bottom Feed function finished...");
 }
 
 void Random_Top_Bottom() {
 
-static long Random_func_timeout = 0, Random_func_lasttime = 0; 
+static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0, total_x = 0;
 
-if (var7 == 0 ) total_x = 13; else total_x = var7;
+if (var7 == 0 ) {total_x = 13;} else total_x = var7;
+    
+    if ( (millis() > (Random_func_lasttime + Random_func_timeout ) ) && (!strip->IsAnimating()) ) {
 
-    if (!(strip->IsAnimating())) {
-
-    if (millis() > (Random_func_lasttime + Random_func_timeout)) {
-
+/*
+      Serial.println();
+      Serial.print("Effect updated..(");
+      Serial.print(strip->IsAnimating());
+      Serial.print(") ");
+*/
       uint16_t random_animation_speed = random(2000, 20000);
-      uint8_t vvv = random(255);
-      uint8_t bbb = random(255); 
-      int8_t dif = vvv - bbb; 
+      uint8_t vvv,bbb,dif; 
+      vvv = random(255);
 
-      while (abs(dif) < 50) {
-        bbb = random(255);
-        dif = vvv - bbb;
-      }
+do {
+      bbb = random(255); 
+      dif = vvv - bbb; 
+      dif = abs(dif);
+      } while (dif < 50);
+
+
+      /*Serial.print("top: ");
+      Serial.print(vvv);
+      Serial.print(" bottom: ");
+      Serial.print(bbb);
+      Serial.print(" Abs diff: ");
+      Serial.print(abs(dif)); */
 
       RgbColor random_colour_top = Wheel(vvv); //  RgbColor(255,0,0); 
       RgbColor random_colour_bottom = Wheel(bbb); //  RgbColor(255,0,0); 
 
-      //RgbColor random_colour_bottom = Wheel((vvv+100)%255); // RgbColor(0,255,00); 
-      //Serial.println("Pre... top bottom...");
+      //Serial.print("  (PRE)");
       
       top_bottom_fade(random_colour_top, random_colour_bottom, total_x);
-  
-      //Serial.println("random top bottom returned...");
       
 
-      Random_func_lasttime = millis(); 
-     // Random_func_timeout = random(60000, 60000*5);
+
+      //Serial.println("  (POST) ");
       
-      Random_func_timeout = random(10000, 60000);
+
+      Random_func_lasttime = millis() + CurrentAnimationSpeed; 
+
+      //Serial.print("Random_func_lasttime: ");
+      //Serial.print(Random_func_lasttime); 
+      // Random_func_timeout = random(60000, 60000*5);
+      
+
+      Random_func_timeout = random(1000, (WS2812interval * 5 * 2) );
+      //Serial.print("   Random_func_timeout: ");
+      //Serial.println(Random_func_timeout); 
 
     }
-  }
+  //}
 
-}
+} // end of actual function.....
+
 
 
 
@@ -1936,7 +2012,7 @@ if (var7 == 0 ) total_x = 13; else total_x = var7;
 
 //int rgb[3];
 
-RgbColor hsi2rgb(float H, float S, float I) {
+RgbColor notworking_hsi2rgb(float H, float S, float I) {
 
   RgbColor RGBcolour;
 
