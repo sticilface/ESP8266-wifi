@@ -12,18 +12,18 @@
 
 String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colour is changed...
 
-int lasteffectupdate; 
+int lasteffectupdate =0 ; 
 int WS2812interval = 2000; 
 
-int spectrumValue[7];
-int filter=80;
+//int spectrumValue[7];
+//int filter=80;
 
 uint16_t effectState = 0;
 
 
 uint16_t 
-var1,var2,var3,var4,var5,
-var6,var7,var8,var9,var10;
+var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
+var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
 
 static const char *VAR_STRING[] = {
 "Var1              ", 
@@ -38,9 +38,9 @@ static const char *VAR_STRING[] = {
 "Size of effect    "};
 
 uint32_t randomvar1 = 1; 
-uint32_t randomvar2 =2; 
-uint32_t randomvar3=3; 
-uint32_t randomvar4=4; 
+uint32_t randomvar2 = 2; 
+uint32_t randomvar3 = 3; 
+uint32_t randomvar4 = 4; 
 
 
 void  handle_WS2812 () { // handles the web commands...
@@ -54,7 +54,7 @@ void  handle_WS2812 () { // handles the web commands...
  int power = getPixelPower();
  //Serial.println("WS2812 - Web page called.");
  //= 0;
-   String selected;
+   String selected = " "  ;
 
 //String CurrentRGBcolour = "00000";
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
@@ -315,7 +315,7 @@ RgbColor  HEXtoRGB (String hexString) // Converts HEX to RBG object....
 {
 
   uint32_t decValue = 0;
-  int nextInt;
+  int nextInt = 0;
   
   for (int i = 0; i < hexString.length(); i++) {
     
@@ -472,6 +472,9 @@ switch (opState)
     case RANDOM_TOP_BOTTOM:
       Random_Top_Bottom();
       break;
+    case HSICYCLE:
+      HSI_Cycle();
+      break;
    }
 
 
@@ -484,10 +487,42 @@ if (millis() > update_strip_time + 30) {
     update_strip_time = millis();
 }
 
+} // end of switch case
+
+
+void HSI_Cycle() {
+
+
+static int j;
+
+if (millis() > (lasteffectupdate + WS2812interval) ){
+
+  //Serial.println("Fade updaed");
+
+if (j > 360) j = 0; 
+
+RgbColor col = hsi2rgb(j,1,1);
+
+//int col = 200; 
+
+for (int i=0; i < pixelCount; i++) {
+    strip->SetPixelColor(i, col);    //turn every third pixel on
+        }
+
+j++;
+
+lasteffectupdate = millis();
+
+}
+
+
 
 
 
 }
+
+
+
 
 void Random_function() {
 
@@ -955,7 +990,7 @@ void  test2 () { // WORKING RANDOM SQUARE SIZES...
 
       for (int i = 0; i < numberofpoints; i++) {
 
-      RgbColor colour = RgbColor(random(255),random(255),random(255));
+      RgbColor colour = Wheel(random(255)); // RgbColor(random(255),random(255),random(255));
 
       if (square_size == 10) colour.Darken(random(0,50));
 
@@ -1019,7 +1054,7 @@ void   Squares () {
       uint8_t x_rand = random(1, total_x-2) ; 
       uint8_t y_rand = random(1, total_y-2) ;
 
-      RgbColor colour = RgbColor(random(255),random(255),random(255));
+      RgbColor colour = Wheel(random(255)) ; //  RgbColor(random(255),random(255),random(255));
 
       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand,y_rand,total_x), dim(colour));
 
@@ -1284,6 +1319,8 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
     strip = new NeoPixelBus(count, pin);
     pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
+    if (strip->PixelCount() < 10) var7 = 1;
+
 
 }
 
@@ -1780,8 +1817,9 @@ void top_bottom_fade( RgbColor Top, RgbColor Bottom,uint8_t count_x) {
 
 uint8_t x,y,colour_index; 
 uint8_t total_y = return_total_y(count_x); // get total number of rows
-
 RgbColor colournew;
+
+/*
 Serial.println("Total y = ");
 Serial.print(total_y);
 Serial.print("...");
@@ -1798,21 +1836,23 @@ Serial.print("...");
   Serial.print(" G:");
   Serial.print(Bottom.G);
   Serial.print(" B:");
-  Serial.print(Bottom.B); 
+  Serial.print(Bottom.B); */
+
 
 for (y = 0; y < total_y; y++) {
 
-  colour_index = map(y,0,total_y,0,255); // map steps of blend.........
-  
+  colour_index = map(y,1,total_y-1,1,254);  // map steps of blend.........
+
+if (y == 0) colour_index = 0; 
+if (y == total_y) colour_index = 255;
+
+    colournew = colournew.LinearBlend(Bottom, Top, colour_index);  // generate new colour.... 
+
+  /*
   Serial.println();
   Serial.print(y);
   Serial.print("-->");
   Serial.print(colour_index);
-
-
-  colournew = colournew.LinearBlend(Bottom, Top, colour_index);  // generate new colour.... 
-
-
   Serial.print(" colournew ");
   Serial.print(" R:");
   Serial.print(colournew.R);
@@ -1820,12 +1860,12 @@ for (y = 0; y < total_y; y++) {
   Serial.print(colournew.G);
   Serial.print(" B:");
   Serial.print(colournew.B); 
-  Serial.print("(");
+  Serial.print("("); */ 
 
     for( x = 0; x < count_x; x++) {
         uint16_t pixel = return_pixel(x,y, count_x); 
-        Serial.print(pixel);
-        Serial.print(",");
+        // Serial.print(pixel);
+        // Serial.print(",");
         strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel , colournew);
         //strip->SetPixelColor( pixel, colournew);
 
@@ -1834,15 +1874,15 @@ for (y = 0; y < total_y; y++) {
 }
     strip->StartAnimating(); // start animations
 
-            Serial.print(")");
+            //Serial.print(")");
 
-Serial.println("Top Bottom Feed function finished...");
+//Serial.println("Top Bottom Feed function finished...");
 }
 
 void Random_Top_Bottom() {
 
-static long Random_func_timeout, Random_func_lasttime; 
-static uint8_t current_r, total_x;
+static long Random_func_timeout = 0, Random_func_lasttime = 0; 
+static uint8_t current_r = 0, total_x = 0;
 
 if (var7 == 0 ) total_x = 13; else total_x = var7;
 
@@ -1851,18 +1891,24 @@ if (var7 == 0 ) total_x = 13; else total_x = var7;
     if (millis() > (Random_func_lasttime + Random_func_timeout)) {
 
       uint16_t random_animation_speed = random(2000, 20000);
+      uint8_t vvv = random(255);
+      uint8_t bbb = random(255); 
+      int8_t dif = vvv - bbb; 
 
+      while (abs(dif) < 50) {
+        bbb = random(255);
+        dif = vvv - bbb;
+      }
 
+      RgbColor random_colour_top = Wheel(vvv); //  RgbColor(255,0,0); 
+      RgbColor random_colour_bottom = Wheel(bbb); //  RgbColor(255,0,0); 
 
-      RgbColor random_colour_top = Wheel(random(255)); //  RgbColor(255,0,0); 
-
-      RgbColor random_colour_bottom = Wheel(random(255)); // RgbColor(0,255,00); 
-
-      Serial.println("Pre... top bottom...");
+      //RgbColor random_colour_bottom = Wheel((vvv+100)%255); // RgbColor(0,255,00); 
+      //Serial.println("Pre... top bottom...");
       
       top_bottom_fade(random_colour_top, random_colour_bottom, total_x);
-      
-      Serial.println("random top bottom returned...");
+  
+      //Serial.println("random top bottom returned...");
       
 
       Random_func_lasttime = millis(); 
@@ -1873,4 +1919,70 @@ if (var7 == 0 ) total_x = 13; else total_x = var7;
     }
   }
 
+}
+
+
+
+
+// Function example takes H, S, I, and a pointer to the 
+// returned RGB colorspace converted vector. It should
+// be initialized with:
+//
+// int rgb[3];
+//
+// in the calling function. After calling hsi2rgb
+// the vector rgb will contain red, green, and blue
+// calculated values.
+
+//int rgb[3];
+
+RgbColor hsi2rgb(float H, float S, float I) {
+
+  RgbColor RGBcolour;
+
+  int r, g , b ;
+
+  //H = fmod(H,360); // cycle H around to 0-360 degrees
+
+//  f = a/b - floor(a/b);
+ Serial.println();
+ Serial.print("hsitorgb func: H="); 
+ Serial.print(H);
+ H = H/360 - floor(H/360); 
+ Serial.print(" -> ");
+Serial.print(H);
+Serial.print("  : ");
+
+  H = 3.14159*H/(float)180; // Convert to radians.
+  S = S>0?(S<1?S:1):0; // clamp S and I to interval [0,1]
+  I = I>0?(I<1?I:1):0;
+    
+  // Math! Thanks in part to Kyle Miller.
+  if(H < 2.09439) {
+    r = 255*I/3*(1+S*cos(H)/cos(1.047196667-H));
+    g = 255*I/3*(1+S*(1-cos(H)/cos(1.047196667-H)));
+    b = 255*I/3*(1-S);
+  } else if(H < 4.188787) {
+    H = H - 2.09439;
+    g = 255*I/3*(1+S*cos(H)/cos(1.047196667-H));
+    b = 255*I/3*(1+S*(1-cos(H)/cos(1.047196667-H)));
+    r = 255*I/3*(1-S);
+  } else {
+    H = H - 4.188787;
+    b = 255*I/3*(1+S*cos(H)/cos(1.047196667-H));
+    r = 255*I/3*(1+S*(1-cos(H)/cos(1.047196667-H)));
+    g = 255*I/3*(1-S);
+  }
+  Serial.println();
+  Serial.print("R: ");
+  Serial.print(r);
+  Serial.print("G: ");
+  Serial.print(g);
+  Serial.print("B: ");
+  Serial.print(b);
+
+  RGBcolour.R = r;
+  RGBcolour.G = g;
+  RGBcolour.B = b;
+  return RGBcolour; 
 }

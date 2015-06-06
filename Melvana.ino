@@ -2,6 +2,7 @@
 
 
 #include <ESP8266WiFi.h>
+#include <NeoPixelBus.h>
 
 #include <ESP8266WebServer.h>
 
@@ -17,4 +18,4 @@
 
 #include <SimpleTimer.h>
 
-#include <NeoPixelBus.h>
+
