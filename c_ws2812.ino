@@ -1274,8 +1274,8 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
     case MODE_DATA:
 
-
-        while (Serial.available() && effectbuf_position <= 3 * strip->PixelCount()) {
+        //  this bit is what might... be causing the flashing... as it extends past memory stuctures....
+        while (Serial.available() && effectbuf_position < 3 * strip->PixelCount()) {  // was <=  
           pixelsPOINT[effectbuf_position++] = Serial.read();
           //if (effectbuf_position == 3 * strip->PixelCount()) break; 
         }
@@ -1951,7 +1951,7 @@ if (var7 == 0 ) {total_x = 13;} else total_x = var7;
       Serial.print(") ");
 */
       uint16_t random_animation_speed = random(2000, 20000);
-      uint8_t vvv,bbb,dif; 
+      uint8_t vvv,bbb,dif = 0 ; 
       vvv = random(255);
 
 do {
