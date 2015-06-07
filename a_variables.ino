@@ -109,8 +109,8 @@ const int bitaddress = 500;
 enum operatingState { 
 OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, 
 ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
-COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,TEST2,
-TEST3,TEST4,SQUARES,EQ1,RANDOM,
+COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,SQUARES2,
+SQUARESRANDOM,TEST4,SQUARES,EQ1,RANDOM,
 RANDOMFUNC, ARTNET, RANDOM_TOP_BOTTOM, HSICYCLE
 };
 operatingState opState = OFF;
@@ -118,8 +118,8 @@ operatingState LastOpState = OFF;
 static const char *MODE_STRING[] = {
 "Off", "Rainbow", "Color", "Chase Rainbow", "Fade", 
 "AdaLight", "test", "Looparound", "Pick Random", "Fade in Fade Out", 
-"Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Test2",
-"Test3","Test4","Squares","EQ1","Random Colour", 
+"Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Squares2",
+"Squares Random","Test4","Squares","EQ1","Random Colour", 
 "Random Function", "Art-Net", "Random Top Bottom", "HSIcycle"
 };
 #define numberofmodes 24 /////// DONT FORGET THIS....

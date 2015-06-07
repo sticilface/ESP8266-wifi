@@ -18,4 +18,3 @@
 
 #include <SimpleTimer.h>
 
-#include <math.h>

@@ -10,10 +10,11 @@
 // PixelCount_address + 2 =  
 // PixelCount_address + 3 =  LastOpState
 
-String CurrentRGBcolour; // This is for the WEBPAGE... takes the value when colour is changed...
+String CurrentRGBcolour = " "; // This is for the WEBPAGE... takes the value when colour is changed...
 
 int lasteffectupdate =0 ; 
 int WS2812interval = 2000; 
+long Random_func_timeout = 0; 
 
 //int spectrumValue[7];
 //int filter=80;
@@ -37,10 +38,7 @@ static const char *VAR_STRING[] = {
 "Var9              ", 
 "Size of effect    "};
 
-uint32_t randomvar1 = 1; 
-uint32_t randomvar2 = 2; 
-uint32_t randomvar3 = 3; 
-uint32_t randomvar4 = 4; 
+
 
 
 void  handle_WS2812 () { // handles the web commands...
@@ -156,6 +154,9 @@ void WS2812_mode_number(String Value) {
 
 }
 
+//  might need to add an effect function timeout thing....  to reset effect and call update with NEW dim setting... 
+
+
 void    WS2812_dim_string (String Value)
 {
 
@@ -164,6 +165,7 @@ void    WS2812_dim_string (String Value)
       if (a < 0) a = 0;
 
       CurrentBrightness  = a;
+
       EEPROM.write(PixelCount_address + 2, CurrentBrightness);
       EEPROM.commit();
      
@@ -179,6 +181,7 @@ void  WS2812_mode_string (String Value)
 {
   
   lasteffectupdate = 0; // RESET EFFECT COUNTER
+  Random_func_timeout = 0; //RESET additionall timeout... 
 
   if (Value.toInt() != 0) {
 
@@ -287,24 +290,42 @@ RgbColor dim(RgbColor value) {
   //  value.Darken(amounttodarken);
   //  return value;
 
-    RgbColor HSVspace = rgbToHsv(value);
-
-    HSVspace.R = (double)HSVspace.R / 255;
-    HSVspace.G = (double)HSVspace.G / 255;
-    HSVspace.B = (double)CurrentBrightness / 255; 
-
-    Serial.print(HSVspace.R);
-    Serial.print("  ");
-    Serial.print(HSVspace.G);
-    Serial.print("  ");
-    Serial.print(HSVspace.B);
-    Serial.print("  ");
 
 
+     RgbColor newvalue = dimbyhsv(value, (byte) CurrentBrightness);
 
-    value = hsvToRgb(HSVspace.R, HSVspace.G, HSVspace.B);
+  /* Serial.println();
+  Serial.print("(Dim = ");
+  Serial.print(CurrentBrightness);
+  Serial.print(")");
+  Serial.print(" R:");
+  Serial.print(value.R);
+  Serial.print(" --> ");
+  Serial.print(" R:");
+  Serial.print(newvalue.R);
 
-return(value);
+  Serial.print(" : "); 
+
+  Serial.print(" G:");
+  Serial.print(value.G);
+  Serial.print(" --> ");
+  Serial.print(" G:");
+  Serial.print(newvalue.G);
+
+  Serial.print(" : "); 
+
+  Serial.print(" B:");
+  Serial.print(value.B);
+  Serial.print(" --> ");
+  Serial.print(" B:");
+  Serial.print(newvalue.B);
+
+*/ 
+
+
+
+
+return(newvalue);
 }
 
 
@@ -467,11 +488,11 @@ switch (opState)
     case SPIRAL:
       spiral();
       break;
-    case TEST2:
-      test2();
+    case SQUARES2:
+      Squares2(0);
       break;
-    case TEST3:
-      test3();
+    case SQUARESRANDOM:
+      Squares2(1);
       break;
     case TEST4:
       test4();
@@ -840,7 +861,25 @@ void  Rainbowcycle() {
 
 void  test4() {
 
-Serial.println("TEST4");
+//Serial.println("TEST4");
+  static int wsPoint = 0;
+  RgbColor color1 = Wheel(100);
+  RgbColor color2 = Wheel(200);
+
+if (wsPoint == 255) wsPoint = 0; 
+ if (millis() > (lasteffectupdate + WS2812interval) ){
+
+
+
+
+
+HsvFADErgb(color1,color2,wsPoint); 
+
+
+
+lasteffectupdate = millis();
+wsPoint++; 
+}
 
 
 }
@@ -922,7 +961,7 @@ static uint16_t currentcolor = 0;
     for (x = 0; x < pitch; x+=2) {
       RgbColor colour = Wheel(( x * 256 / pitch + currentcolor) ); // i * 256 / pixelCount + wsPoint) 
       for (y = 0; y < total_y; y++) {
-      strip->SetPixelColor(return_pixel( x, y, pitch), colour);
+      strip->SetPixelColor(return_pixel( x, y, pitch), dim(colour));
       }
     }
   
@@ -1012,12 +1051,13 @@ void  test3 () {
 
 
 // Working 
-void  test2 () { // WORKING RANDOM SQUARE SIZES...
+
+
+void  Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   
 
   uint8_t x,y, total_y;
-
   uint8_t total_x = var7; 
   uint8_t square_size = var10;
   uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
@@ -1043,9 +1083,9 @@ void  test2 () { // WORKING RANDOM SQUARE SIZES...
 
       RgbColor colour = Wheel(random(255)); // RgbColor(random(255),random(255),random(255));
 
-      if (square_size == 10) colour.Darken(random(0,50));
-
-      if (square_size == 10) square_size = random(1,7);
+      //if (square_size == 10) colour.Darken(random(0,50)); // OLD METHOD
+      if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
+      if (mode == 1) square_size = random(1,7);
 
 
       uint8_t x_rand = random(0, total_x - square_size ) ; 
@@ -1059,7 +1099,7 @@ void  test2 () { // WORKING RANDOM SQUARE SIZES...
 
         int pixel1 = return_shape_square(x_rand, y_rand, j, square_size, total_x ); 
 
-        if (pixel1 <= pixelCount) strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel1 , dim(colour));
+        if (pixel1 < pixelCount) strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel1 , dim(colour));
       
      }
 
@@ -1075,7 +1115,7 @@ void  test2 () { // WORKING RANDOM SQUARE SIZES...
 
 
 } 
-// end of test2
+// end of Squares2
 
 
 
@@ -1111,14 +1151,14 @@ void  Squares () {
 
       colour.Darken(50);
 
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand + 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand     , total_x     ), colour);
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand - 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand + 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand - 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand + 1 , total_x     ), colour);
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand     , total_x     ), colour);
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand - 1 , total_x     ), colour);       
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand + 1 , total_x     ), dim(colour));
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand     , total_x     ), dim(colour));
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand - 1 , total_x     ), dim(colour));
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand + 1 , total_x     ), dim(colour));
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand - 1 , total_x     ), dim(colour));
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand + 1 , total_x     ), dim(colour));
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand     , total_x     ), dim(colour));
+      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand - 1 , total_x     ), dim(colour));       
 
 
     }
@@ -1145,7 +1185,7 @@ void theatreChaseRainbow() {
   //for (int j=0; j < 256; j++) {       // cycle all 256 colors in the wheel
 
         for (int i=0; i < pixelCount; i=i+3) {
-          strip->SetPixelColor(i+animationstate, Wheel(i+colourpoint));    //turn every third pixel on
+          strip->SetPixelColor(i+animationstate, dim(Wheel(i+colourpoint)));    //turn every third pixel on
         }
 
 
@@ -1175,21 +1215,21 @@ void Adalight_Flash() {
     strip->Show(); 
 
 
-    delay(500);
+    delay(200);
 
         for(uint16_t i=0; i<pixelCount; i++) {
         strip->SetPixelColor(i, RgbColor(0,255,0));
           }
         strip->Show(); 
 
-    delay(500);
+    delay(200);
 
         for(uint16_t i=0; i<pixelCount; i++) {
         strip->SetPixelColor(i, RgbColor(0,0,255));
           }
         strip->Show(); 
 
-    delay(500);
+    delay(200);
     StripOFF();
 
   }
@@ -1897,7 +1937,13 @@ for (y = 0; y < total_y; y++) {
 if (y == 0) colour_index = 0; 
 if (y == total_y - 1) colour_index = 255;
 
-    colournew = colournew.LinearBlend(Bottom, Top, colour_index);  // generate new colour.... 
+
+//   
+//    colournew = colournew.LinearBlend(Bottom, Top, colour_index);  // generate new colour.... 
+//
+//
+
+    colournew = HsvFADErgb(Bottom,Top,colour_index); 
 
   /*
   Serial.println();
@@ -1920,7 +1966,7 @@ if (y == total_y - 1) colour_index = 255;
         //Serial.print(pixel);
         //Serial.print(",");
         //strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand,y_rand,total_x), dim(colour));
-        strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel , colournew); //CurrentAnimationSpeed
+        strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel , dim(colournew)); //CurrentAnimationSpeed
         
         //strip->SetPixelColor( pixel, colournew);
 
@@ -1935,14 +1981,14 @@ strip->StartAnimating(); // start animations
 //Serial.println("Top Bottom Feed function finished...");
 }
 
-void Random_Top_Bottom() {
+void Random_Top_Bottom() { 
 
-static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
+//static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0, total_x = 0;
 
 if (var7 == 0 ) {total_x = 13;} else total_x = var7;
     
-    if ( (millis() > (Random_func_lasttime + Random_func_timeout ) ) && (!strip->IsAnimating()) ) {
+    if ( (millis() > (lasteffectupdate + Random_func_timeout ) ) && (!strip->IsAnimating()) ) {
 
 /*
       Serial.println();
@@ -1980,14 +2026,16 @@ do {
       //Serial.println("  (POST) ");
       
 
-      Random_func_lasttime = millis() + CurrentAnimationSpeed; 
+      //Random_func_lasttime = millis() + CurrentAnimationSpeed;  // was working...  changed to get updates working....
+
+      lasteffectupdate = millis() ; 
 
       //Serial.print("Random_func_lasttime: ");
       //Serial.print(Random_func_lasttime); 
       // Random_func_timeout = random(60000, 60000*5);
       
 
-      Random_func_timeout = random(1000, (WS2812interval * 5 * 2) );
+      Random_func_timeout = random(WS2812interval*30, (WS2812interval * 300) ) + CurrentAnimationSpeed; 
       //Serial.print("   Random_func_timeout: ");
       //Serial.println(Random_func_timeout); 
 
