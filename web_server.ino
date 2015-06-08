@@ -191,6 +191,7 @@ void ICACHE_FLASH_ATTR handle_io() {
 
 
 void ICACHE_FLASH_ATTR handle_test() {
+
     byte addressarray[8] = {PIN_1,PIN_2,PIN_3,PIN_4,PIN_5,PIN_6,PIN_7,PIN_8};
 
        if (server.arg("binary") == "test") 
@@ -229,7 +230,7 @@ void ICACHE_FLASH_ATTR handle_test() {
                   }
           }
          
-         int memlocation;
+         int memlocation = 0;
          if (server.arg("location").length() != 0) 
           {
             String memlocationString = server.arg("location");
@@ -334,7 +335,7 @@ void ICACHE_FLASH_ATTR handle_misc ()
          
   int currentspeed = EEPROM.read(SERIALspeedbyte); //SERIALspeedbyte
   //currentspeed = 4;
-  String selected; 
+  String selected = " "; 
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
   httpbuf += "<p> Heap Size = " + String(ESP.getFreeHeap()) ; // + "</br>";

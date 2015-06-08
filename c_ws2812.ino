@@ -12,7 +12,7 @@
 
 String CurrentRGBcolour = " "; // This is for the WEBPAGE... takes the value when colour is changed...
 
-int lasteffectupdate =0 ; 
+int lasteffectupdate = 0 ; 
 int WS2812interval = 2000; 
 long Random_func_timeout = 0; 
 
@@ -159,7 +159,7 @@ void WS2812_mode_number(String Value) {
 
 void    WS2812_dim_string (String Value)
 {
-
+      lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
       int a = Value.toInt();
       if (a > 255) a = 255;
       if (a < 0) a = 0;
@@ -258,6 +258,8 @@ void  WS2812_mode_string (String Value)
 void  WS2812timer_command_string (String Value)
 
 {
+
+lasteffectupdate = 0;
 
 WS2812interval = Value.toInt();
 
@@ -548,7 +550,7 @@ void HSI_Cycle() {
 
 static int j;
 
-if (millis() > (lasteffectupdate + WS2812interval) ){
+if (millis() > (lasteffectupdate) ){
 
   //Serial.println("Fade updaed");
 
@@ -583,7 +585,7 @@ RgbColor col = hsvToRgb(j_double,s_double,v_double);
     strip->SetPixelColor(i, col);   
         }
 
-lasteffectupdate = millis();
+lasteffectupdate = millis() + WS2812interval ;
 
 j++; 
 
@@ -600,25 +602,26 @@ j++;
 
 void Random_function() {
 
-static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t random_choice = 0 ; 
+static uint32_t Random_func_next_time = 0;
 
-    if (millis() > (Random_func_lasttime + Random_func_timeout)) {
-      //Serial.print("New random choice..."); 
+if (millis() > Random_func_next_time + 1000) Random_func_next_time = 0; // This resets things if its been turned off after 1s... 
 
-      random_choice = random(0, 3);
-      Random_func_lasttime = millis(); 
-      Random_func_timeout = random(60000, 60000*5);
-      //Random_func_timeout = random(10000, 20000);
+    if (millis() > Random_func_next_time) {
+
+    random_choice = random(0, 5);
+
+    Random_func_next_time = millis() + random(WS2812interval*30, (WS2812interval * 300) ); 
 
     }
+
 
     if (random_choice == 0) rainbow();
     if (random_choice == 1) spiral();
     if (random_choice == 2) Rainbowcycle();
     if (random_choice == 3) Random_colour();
-    //if (random_choice == 4) rainbow();
-  //  if (random_choice == 5) rainbow();
+    if (random_choice == 4) Squares2(1);
+    if (random_choice == 5) Random_Top_Bottom();
 
 
 
@@ -627,22 +630,23 @@ static uint8_t random_choice = 0 ;
 
 void Random_colour() {
 
-static long Random_func_timeout = 0, Random_func_lasttime = 0; 
+ //long Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0;
 
-    if (millis() > (Random_func_lasttime + Random_func_timeout)) {
-      Serial.print("New random choice..."); 
+    if (millis() > lasteffectupdate) {
+      //Serial.print("New random choice..."); 
 
       uint16_t random_animation_speed = random(2000, 20000);
 
-      RgbColor random_colour_random = RgbColor(random(255),random(255),random(255)); 
+      //RgbColor random_colour_random = RgbColor(random(255),random(255),random(255));  // generates lots of white colours... not balenced..
+      RgbColor random_colour_random = Wheel(random(255));
 
       SetRGBcolour(random_colour_random,random_animation_speed);
 
-      Random_func_lasttime = millis(); 
-      Random_func_timeout = random(60000, 60000*5);
+      //Random_func_lasttime = millis(); 
+      long Random_func_timeout = random(60000, 60000*5);
       //Random_func_timeout = random(10000, 60000);
-
+      lasteffectupdate = millis() + Random_func_timeout; 
     }
 
 
@@ -655,13 +659,13 @@ static uint8_t current_r = 0;
 
 void  CoolBlobs() {
 
-    if (millis() > (lasteffectupdate + WS2812interval) ){
+    if (millis() > (lasteffectupdate ) ){
       
 
 
 
 
-
+      lasteffectupdate = millis() + WS2812interval; 
     } // end of timer if
 
 } // end of coolblobs
@@ -803,10 +807,11 @@ void  Fade() {
 
 
 static int j;
-if (millis() > (lasteffectupdate + WS2812interval) ){
+if (millis() > (lasteffectupdate ) ){
 
   //Serial.println("Fade updaed");
 if (j > 256) j = 0; 
+
 RgbColor col = Wheel(j);
 //int col = 200; 
 
@@ -816,7 +821,7 @@ for (int i=0; i < pixelCount; i++) {
 
 
 j++;
-lasteffectupdate = millis();
+lasteffectupdate = millis() + WS2812interval;
 
 }
 
@@ -828,7 +833,7 @@ void  Rainbowcycle() {
 
    static int wsPoint ;
  
- if (millis() > (lasteffectupdate + WS2812interval) ){
+ if (millis() > (lasteffectupdate ) ){
 
 
   uint16_t i; // , j;
@@ -842,7 +847,7 @@ void  Rainbowcycle() {
 
     if (wsPoint==256*5) wsPoint=0; 
     wsPoint++;
-    lasteffectupdate = millis();
+    lasteffectupdate = millis() + WS2812interval;
     
   //}
 }
@@ -867,7 +872,7 @@ void  test4() {
   RgbColor color2 = Wheel(200);
 
 if (wsPoint == 255) wsPoint = 0; 
- if (millis() > (lasteffectupdate + WS2812interval) ){
+ if (millis() > (lasteffectupdate ) ){
 
 
 
@@ -877,7 +882,7 @@ HsvFADErgb(color1,color2,wsPoint);
 
 
 
-lasteffectupdate = millis();
+lasteffectupdate = millis() + WS2812interval ;
 wsPoint++; 
 }
 
@@ -887,7 +892,7 @@ wsPoint++;
 void  test() {
 
 
- if (millis() > (lasteffectupdate + WS2812interval) ){
+ if (millis() > (lasteffectupdate) ){
 
   static int wsPoint = 0;
 
@@ -901,7 +906,7 @@ void  test() {
     }
       if (wsPoint==256) wsPoint=0; 
     wsPoint++;
-    lasteffectupdate = millis();
+    lasteffectupdate = millis() + WS2812interval;
 }
 
 
@@ -918,7 +923,7 @@ void  test() {
 // try to constrain wspoint which is color generator... 
  if(var3 == 0) var3 = 256; // MAKE sure that there is a +ve end point for the colour wheel... else wsPoint = var3;
 
- if (millis() > (lasteffectupdate + WS2812interval) ){
+ if (millis() > (lasteffectupdate) ){
 
   static int wsPoint =0;
   //uint16_t i; // , j;
@@ -931,7 +936,7 @@ void  test() {
     
     if (wsPoint==var3) wsPoint=var2; 
     wsPoint++;
-    lasteffectupdate = millis();
+    lasteffectupdate = millis() + WS2812interval ;
 }
     // Serial.println("Colours Updated..." + String(//strip->numPixels()));
 
@@ -948,7 +953,7 @@ void  spiral() {
 
 static uint16_t currentcolor = 0;
 
-  if (millis() > (lasteffectupdate + WS2812interval) ) 
+  if (millis() > (lasteffectupdate ) ) 
   { // effect update timer
   uint8_t pitch = 0 ;
   
@@ -967,7 +972,7 @@ static uint16_t currentcolor = 0;
   
 
   if (currentcolor == 256) currentcolor = 0; else currentcolor++ ;// cycle through to next colour
-  lasteffectupdate = millis();
+  lasteffectupdate = millis() + WS2812interval ;
 
   } // effect update timer
 
@@ -990,7 +995,7 @@ void  test3 () {
 
 
 
-    if ( (millis() > (lasteffectupdate + (WS2812interval*10))) && (!strip->IsAnimating()) ) {
+    if ( (millis() > lasteffectupdate) && (!strip->IsAnimating()) ) {
 
       for(int i = 0; i < pixelCount; i++) // SET everything to black!  
       {
@@ -1038,7 +1043,7 @@ void  test3 () {
 
     //Serial.println("------------------");
 
-    lasteffectupdate = millis() + CurrentAnimationSpeed;
+    lasteffectupdate = millis() + CurrentAnimationSpeed + (WS2812interval*10) ;
     strip->StartAnimating(); // start animations
 
     }
@@ -1071,7 +1076,7 @@ void  Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
 
 
-    if ( (millis() > (lasteffectupdate + (WS2812interval*10))) && (!strip->IsAnimating()) ) {
+    if ( (millis() > lasteffectupdate ) && (!strip->IsAnimating()) ) {
 
       for(int i = 0; i < pixelCount; i++) // SET everything to black!  
       {
@@ -1085,7 +1090,7 @@ void  Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       //if (square_size == 10) colour.Darken(random(0,50)); // OLD METHOD
       if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
-      if (mode == 1) square_size = random(1,7);
+      if (mode == 1) square_size = random(2,7);
 
 
       uint8_t x_rand = random(0, total_x - square_size ) ; 
@@ -1108,7 +1113,7 @@ void  Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     //Serial.println("------------------");
 
-    lasteffectupdate = millis() + CurrentAnimationSpeed;  // add time so that next sequence starts AFTER animations have finished...
+    lasteffectupdate = millis() + CurrentAnimationSpeed + (WS2812interval*10) ;  // add time so that next sequence starts AFTER animations have finished...
     strip->StartAnimating(); // start animations
 
     }
@@ -1132,7 +1137,7 @@ void  Squares () {
   uint8_t total_x = var7; 
 
 
-    if ( (millis() > (lasteffectupdate + (WS2812interval*10))) && (!strip->IsAnimating()) ) {
+    if ( (millis() > lasteffectupdate) && (!strip->IsAnimating()) ) {
       for(int i = 0; i < pixelCount; i++) // SET everything to black!  
       {
         //strip->SetPixelColor(i,0);
@@ -1163,7 +1168,7 @@ void  Squares () {
 
     }
 
-    lasteffectupdate = millis() + CurrentAnimationSpeed;
+    lasteffectupdate = millis() + CurrentAnimationSpeed + (WS2812interval*10) ;
     strip->StartAnimating(); // start animations
 
     }
@@ -1179,7 +1184,7 @@ void  Squares () {
 void theatreChaseRainbow() {
   static uint16_t colourpoint = 0; 
   static uint8_t animationstate = 0 ; 
-  if (millis() > (lasteffectupdate + WS2812interval) ) {
+  if (millis() > (lasteffectupdate ) ) {
 
 
   //for (int j=0; j < 256; j++) {       // cycle all 256 colors in the wheel
@@ -1199,7 +1204,7 @@ void theatreChaseRainbow() {
 
   
     colourpoint++; 
-    lasteffectupdate = millis();
+    lasteffectupdate = millis() + WS2812interval ;
   }  //  end of timer..... 
 
 }
@@ -1670,11 +1675,18 @@ uint16_t return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_
 }
 
 // function to shift pixels in blocks one way or another...
+
 void pixelshift(uint16_t start, uint16_t end) {
+
+  pixelshift( start, end,100); 
+}
+
+
+void pixelshift(uint16_t start, uint16_t end, uint16_t pixelshift_timer) {
 
 static long last_pixelshift = 0;
 RgbColor pix_colour = RgbColor(0,0,0); // holds pixel data... 
-uint16_t pixelshift_timer = 100; 
+//uint16_t pixelshift_timer = 100; 
 
 if (millis() > (last_pixelshift + pixelshift_timer)) {
 
@@ -1703,12 +1715,18 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 
 //// function to shift pixels in blocks one way or another...
-
 void pixelshift_middle() {
+
+
+pixelshift_middle(100); 
+
+}
+
+
+void pixelshift_middle(uint16_t pixelshift_timer) {
 
 static long last_pixelshift = 0;
 RgbColor pix_colour = RgbColor(0,0,0); // holds pixel data... 
-uint16_t pixelshift_timer = 100; 
 uint16_t middle = strip->PixelCount() / 2; 
 uint8_t remainderodd = 0; 
 if  (strip->PixelCount() % 2 != 0) remainderodd = 1 ; 
@@ -1745,12 +1763,12 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 void eq1 () {
 
-  if (millis() > (lasteffectupdate + WS2812interval)  )  {
+  if (millis() > lasteffectupdate  )  {
 
       strip->SetPixelColor(3, RgbColor(255,0,0));
       strip->SetPixelColor(4, RgbColor(0,255,0));
       //strip->SetPixelColor(4, RgbColor(0,0,255));
-      lasteffectupdate = millis();
+      lasteffectupdate = millis() + WS2812interval;
   } 
           
 uint8_t direction = random(0,2);
@@ -1988,7 +2006,7 @@ static uint8_t current_r = 0, total_x = 0;
 
 if (var7 == 0 ) {total_x = 13;} else total_x = var7;
     
-    if ( (millis() > (lasteffectupdate + Random_func_timeout ) ) && (!strip->IsAnimating()) ) {
+    if ( (millis() > lasteffectupdate  ) && (!strip->IsAnimating()) ) {
 
 /*
       Serial.println();
@@ -2028,14 +2046,14 @@ do {
 
       //Random_func_lasttime = millis() + CurrentAnimationSpeed;  // was working...  changed to get updates working....
 
-      lasteffectupdate = millis() ; 
+      lasteffectupdate = millis() + random(WS2812interval*30, (WS2812interval * 300) ) + CurrentAnimationSpeed;
 
       //Serial.print("Random_func_lasttime: ");
       //Serial.print(Random_func_lasttime); 
       // Random_func_timeout = random(60000, 60000*5);
       
 
-      Random_func_timeout = random(WS2812interval*30, (WS2812interval * 300) ) + CurrentAnimationSpeed; 
+      //Random_func_timeout = random(WS2812interval*30, (WS2812interval * 300) ) + CurrentAnimationSpeed; 
       //Serial.print("   Random_func_timeout: ");
       //Serial.println(Random_func_timeout); 
 

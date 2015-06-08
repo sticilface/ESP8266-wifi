@@ -3,7 +3,7 @@ void setup() {
   // put your setup code here, to run once:
   EEPROM.begin(512);
 
-  long serialspeed;
+  long serialspeed = 0;
   uint8_t currentspeed = EEPROM.read(SERIALspeedbyte);
 
   if (currentspeed < 0 || currentspeed > numberofbaudrates) {
@@ -72,6 +72,7 @@ void setup() {
       delay(1000);
     }
   }
+  
   Serial.print("mDNS responder started.........(");
 
     
@@ -110,18 +111,18 @@ void setup() {
 
   server.begin();
 
-  Serial.println("HTTP server started");
+  //Serial.println("HTTP server started");
 
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
 
     //timer.setInterval(Uptimer_timeout, uptime);
 
-  Serial.println("Timers set up");
+  //Serial.println("Timers set up");
   
   setup_Plugin ();
 
-  Serial.println("Plugins started");
+  //Serial.println("Plugins started");
     //timer.setInterval(32,ws2812_animating);
 
 

@@ -6,20 +6,20 @@ char password[BUFSIZE];// = "wellcometrust";
 char deviceid[BUFSIZE];// = "";
 //String deviceid;
 
-String clientName;
-String LocalIP;
+String clientName = " ";
+String LocalIP = " ";
 
 char bufchar[BUFSIZE];
-String buf;
-String httpbuf;
-String bytedump;
+String buf = " " ;
+String httpbuf = " ";
+String bytedump = " ";
 
 char mqttcharbuf[200];
-String mqttbuf;
+String mqttbuf = " ";
 char mqttesptopic[BUFSIZE] = "esp";  //Required to define the GLOBAL MQTT RESPONSE!
 
-int wifinetworksfound;
-int wifimode;
+int wifinetworksfound = 0;
+int wifimode = 0;
 
 const int APtimeout = 300000;
 boolean APtimeout_done = false;
@@ -55,10 +55,10 @@ const int SERIALspeedbyte = 8;
 
 //boolean MQTTenabled;
 
-long AP_STA_timer;
-long MQTT_connect_timer;
-long request_timeout; 
-long Uptime_timer;
+long AP_STA_timer = 0;
+long MQTT_connect_timer = 0;
+long request_timeout = 0; 
+long Uptime_timer = 0;
 
 
 
@@ -66,9 +66,9 @@ long Uptime_timer;
 // Features Enables
 
 boolean MQTT_enabled = false;
-boolean ThingSpeak_enable;
-boolean Prowl_Enable;
-int DEBUG;
+//boolean ThingSpeak_enable;
+//boolean Prowl_Enable;
+int DEBUG = false;
 boolean Plugin_enable = false;
 
 
@@ -78,7 +78,7 @@ IPAddress multicast_ip_addr(224,0,0,0);
 
 char mqtttopic[BUFSIZE];// = "esp";
 // char mqttserver[BUFSIZE];// = "192.168.1.24";
-String mqttserver_string; 
+String mqttserver_string = " "; 
 
 /////// ------- COMMAND ARGS -------
 //const int numberofcommands = 13;
@@ -130,7 +130,7 @@ uint8_t CurrentBrightness;
 
 uint16_t CurrentAnimationSpeed = 2000; 
 
-RgbColor NewColour;
+RgbColor NewColour = RgbColor(0,0,0);
 
 unsigned int localPort = 6454; //8888;      // local port to listen on
 
