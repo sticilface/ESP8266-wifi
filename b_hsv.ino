@@ -253,6 +253,71 @@ return color;
 
 
 
+RgbColor Hsv_COLOR_range_rgb(RgbColor color1, byte lower, byte upper, byte progress) {
+
+
+    double r1d = (double) color1.R/255;
+    double g1d = (double) color1.G/255;
+    double b1d = (double) color1.B/255;
+    double max = threeway_max(r1d, g1d, b1d), min = threeway_min(r1d, g1d, b1d);
+    double h1, s1, v1 = max;
+
+    double d1 = max - min;
+    s1 = max == 0 ? 0 : d1 / max;
+
+    if (max == min) { 
+        h1 = 0; // achromatic
+    } else {
+        if (max == r1d) {
+            h1 = (g1d - b1d) / d1 + (g1d < b1d ? 6 : 0);
+        } else if (max == g1d) {
+            h1 = (b1d - r1d) / d1 + 2;
+        } else if (max == b1d) {
+            h1 = (r1d - g1d) / d1 + 4;
+        }
+        h1 /= 6;
+    }
+
+double low = h1 - (double) lower/360;
+double high = h1 + (double) upper/360;
+
+if (low < 0) low += 1; 
+if (high > 1) high -= 1; 
+
+
+double h = map_double ((double) progress, 0, 255, low,high);
+double s = s1, v = v1; 
+
+RgbColor color; 
+
+    double rD, gD, bD;
+
+    int i = int(h * 6);
+    double f = h * 6 - i;
+    double p = v * (1 - s);
+    double q = v * (1 - f * s);
+    double t = v * (1 - (1 - f) * s);
+
+    switch(i % 6){
+        case 0: rD = v, gD = t, bD = p; break;
+        case 1: rD = q, gD = v, bD = p; break;
+        case 2: rD = p, gD = v, bD = t; break;
+        case 3: rD = p, gD = q, bD = v; break;
+        case 4: rD = t, gD = p, bD = v; break;
+        case 5: rD = v, gD = p, bD = q; break;
+    }
+
+    color.R = rD * 255;
+    color.G = gD * 255;
+    color.B = bD * 255;
+
+return color;
+
+
+}
+
+
+
 
 RgbColor HsvFADErgb(RgbColor color1, RgbColor color2, byte progress) {
 

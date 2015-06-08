@@ -111,7 +111,8 @@ OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE,
 ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
 COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,SQUARES2,
 SQUARESRANDOM,TEST4,SQUARES,EQ1,RANDOM,
-RANDOMFUNC, ARTNET, RANDOM_TOP_BOTTOM, HSICYCLE
+RANDOMFUNC, ARTNET, RANDOM_TOP_BOTTOM, RANDOM_TOP_BOTTOM_LINEAR, SINGLE_COLOUR_FADE,
+RANDOM_COLOUR_FADE, HSICYCLE
 };
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
@@ -120,9 +121,10 @@ static const char *MODE_STRING[] = {
 "AdaLight", "test", "Looparound", "Pick Random", "Fade in Fade Out", 
 "Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Squares2",
 "Squares Random","Test4","Squares","EQ1","Random Colour", 
-"Random Function", "Art-Net", "Random Top Bottom", "HSIcycle"
+"Random Function", "Art-Net", "HSV Top Bottom", "Linear Top Bottom", "Single Colour Fade", 
+"Random Colour Fade", "HSIcycle"
 };
-#define numberofmodes 24 /////// DONT FORGET THIS....
+#define numberofmodes 27 /////// DONT FORGET THIS....
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;

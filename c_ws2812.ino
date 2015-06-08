@@ -27,16 +27,16 @@ var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
 var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
 
 static const char *VAR_STRING[] = {
-"Var1              ", 
-"Var2              ", 
-"Var3              ", 
-"Var4              ", 
-"Var5              ", 
-"Var6              ", 
-"Total_X           ", 
-"Number of effects ", 
-"Var9              ", 
-"Size of effect    "};
+"Floor             ", // var 1
+"Ceiling           ", // var 2
+"Var3              ", // var 3
+"Var4              ", // var 4
+"Var5              ", // var 5
+"Var6              ", // var 6
+"Total_X           ", // var 7
+"Number of effects ", // var 8
+"Var9              ", // var 9
+"Size of effect    "};// var 10
 
 
 
@@ -59,7 +59,7 @@ void  handle_WS2812 () { // handles the web commands...
  //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command")); 
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
- if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  CurrentAnimationSpeed = server.arg("anispeed").toInt();
+ if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
 
 
  if (server.arg("rgbpicker").length() != 0) 
@@ -91,7 +91,7 @@ void  handle_WS2812 () { // handles the web commands...
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
   
   //httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
-  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   | <a href='/lightsconfig'>CONFIG</a>  ";
+  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
   //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
   //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
   //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
@@ -102,7 +102,7 @@ for (int k=0; k < numberofmodes; k++ ) {
     if (opState == k) { 
         selected = "' selected "; 
       } else selected = "' "; 
-  httpbuf += "<option value='" + String(k) + selected + ">" + MODE_STRING[k] + "</option>";
+  httpbuf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + MODE_STRING[k] + "</option>";
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
 
   }
@@ -139,6 +139,15 @@ for (int k=0; k < numberofmodes; k++ ) {
 if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 }
+
+void Animationspped_command_string (String Value) {
+
+  uint16_t newvalue = Value.toInt();
+
+  CurrentAnimationSpeed = newvalue; 
+  lasteffectupdate = 0; 
+}
+
 
 
 // Takes MODE selected by number, changes OpState, SAVES NEW MODE TO EEPROM, incase of reboot....
@@ -179,7 +188,7 @@ void    WS2812_dim_string (String Value)
 void  WS2812_mode_string (String Value)
 
 {
-  
+
   lasteffectupdate = 0; // RESET EFFECT COUNTER
   Random_func_timeout = 0; //RESET additionall timeout... 
 
@@ -210,11 +219,13 @@ void  WS2812_mode_string (String Value)
   if (Value == "colour") { opState = LastOpState = COLOR; }; 
   if (Value == "chaserainbow") { opState = LastOpState = ChaseRainbow; }; 
   if (Value == "test") {opState = LastOpState = TEST; };
-
+  if (Value == "refresh" ) { 
+    lasteffectupdate = 0;  
+  }
 
   if (Value.indexOf("rgb") >= 0) 
     {
-      opState = LastOpState = COLOR;
+      //opState = LastOpState = COLOR; //  this allows you to pick colour base for other MODES.... 
       String instruction = Value.substring(4,Value.length()+1 );
       Serial.println("/n RGB command recieved: " + instruction);
       CurrentRGBcolour = instruction;
@@ -240,7 +251,7 @@ void  WS2812_mode_string (String Value)
       Serial.print(" ");
       Serial.println(B);
 */ 
-      SetRGBcolour(NewColour);
+      //SetRGBcolour(NewColour);
 
   }
 
@@ -292,7 +303,7 @@ RgbColor dim(RgbColor value) {
   //  value.Darken(amounttodarken);
   //  return value;
 
-
+    if (CurrentBrightness == 255) return value; 
 
      RgbColor newvalue = dimbyhsv(value, (byte) CurrentBrightness);
 
@@ -397,6 +408,7 @@ String RGBtoHEX (RgbColor value) {
 void StripOFF() {
 
   //if (millis() > (lasteffectupdate + WS2812interval) ){
+  lasteffectupdate = 0; 
 
   memset(pixelsPOINT, 0, 3 * strip->PixelCount() ); 
 
@@ -515,8 +527,17 @@ switch (opState)
       Art_Net_func ();
       break;
     case RANDOM_TOP_BOTTOM:
-      Random_Top_Bottom();
+      Random_Top_Bottom(0);
       break;
+    case RANDOM_TOP_BOTTOM_LINEAR:
+      Random_Top_Bottom(1);
+      break;    
+    case SINGLE_COLOUR_FADE:
+      Random_Top_Bottom(2);
+      break;  
+    case RANDOM_COLOUR_FADE:
+      Random_Top_Bottom(3);
+      break;      
     case HSICYCLE:
       HSI_Cycle();
       break;
@@ -621,7 +642,7 @@ if (millis() > Random_func_next_time + 1000) Random_func_next_time = 0; // This 
     if (random_choice == 2) Rainbowcycle();
     if (random_choice == 3) Random_colour();
     if (random_choice == 4) Squares2(1);
-    if (random_choice == 5) Random_Top_Bottom();
+    if (random_choice == 5) Random_Top_Bottom(0);
 
 
 
@@ -1474,7 +1495,7 @@ return brightness;
 
 void handle_lights_config() {
 
-
+   if (server.args() != 0) lasteffectupdate = 0;    
    if (server.arg("var1").length() != 0) var1 = server.arg("var1").toInt();
    if (server.arg("var2").length() != 0) var2 = server.arg("var2").toInt(); // colour point min
    if (server.arg("var3").length() != 0) var3 = server.arg("var3").toInt(); // colour point max
@@ -1921,32 +1942,18 @@ strip->Show();
 
 }
 
-
+// Overloaded func for topbottom fade...
 void top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
+
+  top_bottom_fade(Top,Bottom,count_x,0);
+}
+
+
+void top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint8_t fadetype) {
 
 uint8_t x,y,colour_index; 
 uint8_t total_y = return_total_y(count_x); // get total number of rows
 RgbColor colournew;
-//CurrentAnimationSpeed = 2000;
-/*
-Serial.println("Total y = ");
-Serial.print(total_y);
-Serial.print("...");
-  Serial.print(" TOP ");
-  Serial.print(" R:");
-  Serial.print(Top.R);
-  Serial.print(" G:");
-  Serial.print(Top.G);
-  Serial.print(" B:");
-  Serial.print(Top.B);  
-  Serial.print(" BOTTOM ");
-  Serial.print(" R:");
-  Serial.print(Bottom.R);
-  Serial.print(" G:");
-  Serial.print(Bottom.G);
-  Serial.print(" B:");
-  Serial.print(Bottom.B); */
-
 
 for (y = 0; y < total_y; y++) {
 
@@ -1955,28 +1962,22 @@ for (y = 0; y < total_y; y++) {
 if (y == 0) colour_index = 0; 
 if (y == total_y - 1) colour_index = 255;
 
+        if (var1 == 0) var1 = 20;
+        if (var2 == 0) var2 = 20; 
+  
+    if (fadetype == 1 ) { 
+      colournew = colournew.LinearBlend(Bottom, Top, colour_index); 
+      } else if (fadetype == 2) {
+        colournew = Hsv_COLOR_range_rgb(NewColour, var1,var2,colour_index);  // give fade from HSV Hue 50 deg below and 50 deg above
+      } else if (fadetype == 3) {
 
-//   
-//    colournew = colournew.LinearBlend(Bottom, Top, colour_index);  // generate new colour.... 
-//
-//
+        colournew = Hsv_COLOR_range_rgb(Top, var1,var2,colour_index);  
+      } else {       
+        colournew = HsvFADErgb(Bottom,Top,colour_index);
+      } // generate new colour.... based on value passed in fade type.
 
-    colournew = HsvFADErgb(Bottom,Top,colour_index); 
 
-  /*
-  Serial.println();
-  Serial.print(y);
-  Serial.print("-->");
-  Serial.print(colour_index);
-  Serial.print(" colournew ");
-  Serial.print(" R:");
-  Serial.print(colournew.R);
-  Serial.print(" G:");
-  Serial.print(colournew.G);
-  Serial.print(" B:");
-  Serial.print(colournew.B); 
-  Serial.print("  ("); 
-*/
+
     for( x = 0; x < count_x; x++) {
         uint16_t pixel = return_pixel(x,y, count_x); 
 
@@ -1999,7 +2000,7 @@ strip->StartAnimating(); // start animations
 //Serial.println("Top Bottom Feed function finished...");
 }
 
-void Random_Top_Bottom() { 
+void Random_Top_Bottom(uint8_t fadetype) { 
 
 //static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0, total_x = 0;
@@ -2037,7 +2038,7 @@ do {
 
       //Serial.print("  (PRE)");
       
-      top_bottom_fade(random_colour_top, random_colour_bottom, total_x);
+      top_bottom_fade(random_colour_top, random_colour_bottom, total_x, fadetype);
       
 
 
@@ -2047,6 +2048,7 @@ do {
       //Random_func_lasttime = millis() + CurrentAnimationSpeed;  // was working...  changed to get updates working....
 
       lasteffectupdate = millis() + random(WS2812interval*30, (WS2812interval * 300) ) + CurrentAnimationSpeed;
+      if (fadetype == 2) lasteffectupdate = millis() + CurrentAnimationSpeed + 500; // This effect does not require changing.... 
 
       //Serial.print("Random_func_lasttime: ");
       //Serial.print(Random_func_lasttime); 
