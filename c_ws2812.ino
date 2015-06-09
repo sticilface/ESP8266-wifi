@@ -44,25 +44,12 @@ static const char *VAR_STRING[] = {
 void  handle_WS2812 () { // handles the web commands...
 
 
+static int power; 
+bool updateLEDs = false;
 
+String selected = " "  ;
 
-
-
- boolean updateLEDs = false;
- int power = getPixelPower();
- //Serial.println("WS2812 - Web page called.");
- //= 0;
-   String selected = " " , Paused_String = " " ;
-
-   if (paused) {
-    Paused_String = "<a href='/ws2812?mode=play'>PLAY</a>"; 
-  } else {
-    Paused_String = " <a href='/ws2812?mode=pause'>PAUSE</a>"; 
-  } ; 
-
-//String CurrentRGBcolour = "00000";
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
- //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command")); 
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
@@ -97,7 +84,7 @@ void  handle_WS2812 () { // handles the web commands...
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
   
   //httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
-  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   | "+ Paused_String + "   | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
+  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
   //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
   //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
   //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
@@ -112,37 +99,35 @@ for (int k=0; k < numberofmodes; k++ ) {
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
 
   }
-
-  //httpbuf += "<option value='Colour'>Colour</option>";
-  //httpbuf += "<option value='Rainbow'>Rainbow</option>";
-  //httpbuf += "<option value='Fade'>Fade</option>";
-  //httpbuf += "<option value='ChaseRainbow'>ChaseRainbow</option>";
   
-  httpbuf += F("</select>");
-  httpbuf += F("</form></p>");
-  httpbuf += F("<p><form action='/ws2812' method='POST'");
+  httpbuf += "</select>";
+  httpbuf += "</form></p>";
+  httpbuf += "<p><form action='/ws2812' method='POST'";
   httpbuf += "<p>Color: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "' >";
-  httpbuf += F("<br>  <input type='submit' value='Submit'/>" ); 
-  httpbuf += F("</form>"); 
-  httpbuf += F("<form name=sliders action='/ws2812' method='POST'>\n");
+  httpbuf += "<br>  <input type='submit' value='Submit'/>"; 
+  httpbuf += "</form>"; 
+  httpbuf += "<form name=sliders action='/ws2812' method='POST'>\n";
   httpbuf += "<br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='" + String(CurrentAnimationSpeed) + "' onchange='this.form.submit();' > ";
   httpbuf += "<br>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "' onchange='this.form.submit();' > ";
   httpbuf += "<br>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' onchange='this.form.submit();'> ";
   //httpbuf += "<input type='submit' value='Submit'/>" ; 
-  httpbuf += F("</form>"); 
-  httpbuf += F("<p><form action='/ws2812' method='POST'");
-  httpbuf += F("<form action='/ws2812' method='POST'>");    
+  httpbuf += "</form>"; 
+  httpbuf += "<p><form action='/ws2812' method='POST'";
+  httpbuf += "<form action='/ws2812' method='POST'>";    
   httpbuf += "<p>LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "' >";
   httpbuf += "<br>PIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "' >";
-  httpbuf += F("<br>  <input type='submit' value='Submit'/>") ; 
-  httpbuf += F("</form>"); 
+  httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
+  httpbuf += "</form>"; 
   httpbuf += "Power = " + String(power) + "mA"; 
-  httpbuf += F("<br> Adalight order: GRB");
+  httpbuf += "<br> Adalight order: GRB";
   httpbuf += htmlendstring; 
   
   server.send(200, "text/html", httpbuf);
 
 if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
+
+power = getPixelPower();
+
 
 }
 

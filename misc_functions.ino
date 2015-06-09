@@ -62,7 +62,9 @@ void ICACHE_FLASH_ATTR restartNetworking()
   if(EEPROM.read(ssidAddressbyte) == flagvalue) {
     
   Serial.print("Joining Wifi Network");
-  WiFi.begin(ssid, password);
+
+  //WiFi.begin(ssid, password);
+  WiFi.begin();
     int i = 0;
     while (WiFi.status() != WL_CONNECTED && i < 40) {
     delay(500);
