@@ -129,6 +129,7 @@ static const char *MODE_STRING[] = {
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness; 
+bool paused = false; 
 
 uint16_t CurrentAnimationSpeed = 2000; 
 

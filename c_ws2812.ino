@@ -52,7 +52,13 @@ void  handle_WS2812 () { // handles the web commands...
  int power = getPixelPower();
  //Serial.println("WS2812 - Web page called.");
  //= 0;
-   String selected = " "  ;
+   String selected = " " , Paused_String = " " ;
+
+   if (paused) {
+    Paused_String = "<a href='/ws2812?mode=play'>PLAY</a>"; 
+  } else {
+    Paused_String = " <a href='/ws2812?mode=pause'>PAUSE</a>"; 
+  } ; 
 
 //String CurrentRGBcolour = "00000";
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
@@ -91,7 +97,7 @@ void  handle_WS2812 () { // handles the web commands...
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
   
   //httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
-  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
+  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   | "+ Paused_String + "   | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
   //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
   //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
   //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
@@ -222,6 +228,9 @@ void  WS2812_mode_string (String Value)
   if (Value == "refresh" ) { 
     lasteffectupdate = 0;  
   }
+
+  if (Value == "pause") paused = true;
+  if (Value == "play") paused = false; 
 
   if (Value.indexOf("rgb") >= 0) 
     {
@@ -562,6 +571,10 @@ if (!ani_update && strip->IsAnimating()) {
   ani_update = false;
 }
 */
+
+
+if (paused) lasteffectupdate = millis() + 1000; 
+
 
 } // end of ws2812 function 
 
