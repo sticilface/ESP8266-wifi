@@ -43,7 +43,7 @@ static const char *VAR_STRING[] = {
 
 void  handle_WS2812 () { // handles the web commands...
 
-
+String paused_string = " " ; 
 static int power; 
 bool updateLEDs = false;
 
@@ -81,10 +81,18 @@ String selected = " "  ;
 
       }
 
+      //----  having this under here works better as the page gets updated before the request data is fired back!
+
+      if (paused) { 
+        paused_string = "<a href='/ws2812?mode=play'>PLAY</a> " ; 
+      } else {
+        paused_string = "<a href='/ws2812?mode=pause'>PAUSE</a>" ; 
+      };
+
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
   
   //httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
-  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>   | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
+  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | "  +  paused_string + " | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
   //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
   //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
   //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
@@ -92,7 +100,7 @@ String selected = " "  ;
   httpbuf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
 for (int k=0; k < numberofmodes; k++ ) {
-    if (opState == k) { 
+    if (HoldingOpState == k) { 
         selected = "' selected "; 
       } else selected = "' "; 
   httpbuf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + MODE_STRING[k] + "</option>";
@@ -183,21 +191,32 @@ void  WS2812_mode_string (String Value)
   lasteffectupdate = 0; // RESET EFFECT COUNTER
   Random_func_timeout = 0; //RESET additionall timeout... 
 
-  if (Value.toInt() != 0) {
+  if (Value.toInt() != 0) {  // if the numerical mode does not equal 0 which is off....
 
       // WS2812_mode_number(Value); 
 
-      uint8_t chosen_mode = Value.toInt();
-      opState = (operatingState)chosen_mode;
-      if (chosen_mode != 0) LastOpState = (operatingState)chosen_mode;
-
+      uint8_t chosen_mode = Value.toInt(); // turn it to number...
+      // opState = (operatingState)chosen_mode; // old way... direct....  
+      HoldingOpState = (operatingState)chosen_mode; // assign selection to holdingopstate... 
+      Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
+      LastOpState = (operatingState)chosen_mode;
 
   } else {
 
 
   Value.toLowerCase();
 
-  if (Value == "off" | Value == "OFF") { if (opState != OFF) { LastOpState = opState; opState = OFF; } ;};
+  if (Value == "off" | Value == "OFF") { 
+      if (opState != OFF) { 
+          LastOpState = opState;
+          Current_Effect_State = POST_EFFECT; //  Set this to TERMINATE current effect.... 
+          //opState = OFF; 
+          HoldingOpState = OFF; 
+      } ;
+  };
+
+
+
   if (Value == "on" | Value == "ON") opState = LastOpState;
   if (Value == "looparound") { opState = LOOPAROUND; LastOpState = LOOPAROUND;};
   if (Value == "pickrandom") { opState = PICKRANDOM; LastOpState = PICKRANDOM; } ;
@@ -210,6 +229,8 @@ void  WS2812_mode_string (String Value)
   if (Value == "colour") { opState = LastOpState = COLOR; }; 
   if (Value == "chaserainbow") { opState = LastOpState = ChaseRainbow; }; 
   if (Value == "test") {opState = LastOpState = TEST; };
+
+
   if (Value == "refresh" ) { 
     lasteffectupdate = 0;  
   }
@@ -224,37 +245,19 @@ void  WS2812_mode_string (String Value)
       Serial.println("/n RGB command recieved: " + instruction);
       CurrentRGBcolour = instruction;
       NewColour = HEXtoRGB(instruction);
-
-
       EEPROM.write(PixelCount_address + 4, NewColour.R);
       EEPROM.write(PixelCount_address + 5, NewColour.G);
       EEPROM.write(PixelCount_address + 6, NewColour.B);
-
       EEPROM.commit();
-
-      /* Serial.print(" New colours written to EEPROM...");
-
-      Serial.print("Retrieved Colours are: ");
-      
-      uint8_t R = EEPROM.read(PixelCount_address + 4);
-      uint8_t G = EEPROM.read(PixelCount_address + 5);
-      uint8_t B = EEPROM.read(PixelCount_address + 6);
-      Serial.print(R);  
-      Serial.print(" ");
-      Serial.print(G); 
-      Serial.print(" ");
-      Serial.println(B);
-*/ 
-      //SetRGBcolour(NewColour);
-
   }
 
 }
 
 
   EEPROM.write(PixelCount_address + 3, LastOpState);
-
   EEPROM.commit();
+
+  if (opState == OFF) opState = HoldingOpState ; // This line ensures that if there is nothing running the effect is started... 
 
 }
 
@@ -301,33 +304,6 @@ RgbColor dim(RgbColor value) {
 
      RgbColor newvalue = dimbyhsv(value, (byte) CurrentBrightness);
 
-  /* Serial.println();
-  Serial.print("(Dim = ");
-  Serial.print(CurrentBrightness);
-  Serial.print(")");
-  Serial.print(" R:");
-  Serial.print(value.R);
-  Serial.print(" --> ");
-  Serial.print(" R:");
-  Serial.print(newvalue.R);
-
-  Serial.print(" : "); 
-
-  Serial.print(" G:");
-  Serial.print(value.G);
-  Serial.print(" --> ");
-  Serial.print(" G:");
-  Serial.print(newvalue.G);
-
-  Serial.print(" : "); 
-
-  Serial.print(" B:");
-  Serial.print(value.B);
-  Serial.print(" --> ");
-  Serial.print(" B:");
-  Serial.print(newvalue.B);
-
-*/ 
 
 
 
@@ -346,16 +322,21 @@ SetRGBcolour(value,CurrentAnimationSpeed);
 
 void SetRGBcolour (RgbColor value, uint16_t speed) {
     
-  value = dim(value);
+
   
       if (!(strip->IsAnimating())) {
 
           for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
        // strip->SetPixelColor(pixel,value);
-          strip->LinearFadePixelColor(speed, pixel, value);
+          strip->LinearFadePixelColor(speed, pixel, dim(value));
     }
     strip->StartAnimating(); // start animations
   }
+
+if (Current_Effect_State == POST_EFFECT) { 
+    Current_Effect_State = PRE_EFFECT; 
+    opState = HoldingOpState; 
+  } ; 
 
 
 }
@@ -610,8 +591,9 @@ j++;
 
 }
 
+//  END of EFFECT  
 
-
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 
 }
@@ -644,6 +626,7 @@ if (millis() > Random_func_next_time + 1000) Random_func_next_time = 0; // This 
 
 
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }
 
@@ -671,6 +654,7 @@ static uint8_t current_r = 0;
 
 
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 
 } // end of random func
@@ -686,6 +670,9 @@ void  CoolBlobs() {
 
       lasteffectupdate = millis() + WS2812interval; 
     } // end of timer if
+
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 } // end of coolblobs
 
@@ -724,6 +711,8 @@ void   FadeInFadeOutRinseRepeat(uint8_t peak) {
   }
   effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
   
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
 }
 
 void  PickRandom(uint8_t peak)
@@ -746,6 +735,9 @@ void  PickRandom(uint8_t peak)
     
     count--;
   }
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
 }
 
 void  LoopAround(uint8_t peak, uint16_t speed)
@@ -786,6 +778,9 @@ void  LoopAround(uint8_t peak, uint16_t speed)
   strip->LinearFadePixelColor(speed, effectState, RgbColor(random(peak), random(peak), random(peak)));
   effectState = (effectState + 1) % pixelCount;
   
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
 }
 
 void  SetRandomSeed()
@@ -844,6 +839,9 @@ lasteffectupdate = millis() + WS2812interval;
 
 }
 
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
 }
 
 
@@ -878,6 +876,7 @@ void  Rainbowcycle() {
 
 
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }
 
@@ -905,6 +904,7 @@ lasteffectupdate = millis() + WS2812interval ;
 wsPoint++; 
 }
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }
 
@@ -929,6 +929,7 @@ void  test() {
 }
 
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }
 
@@ -958,6 +959,8 @@ void  test() {
     lasteffectupdate = millis() + WS2812interval ;
 }
     // Serial.println("Colours Updated..." + String(//strip->numPixels()));
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }   // END OF RAINBOW
 
@@ -994,6 +997,8 @@ static uint16_t currentcolor = 0;
   lasteffectupdate = millis() + WS2812interval ;
 
   } // effect update timer
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }
 
@@ -1070,6 +1075,7 @@ void  test3 () {
 
 
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 } // end of test
 
@@ -1138,6 +1144,9 @@ void  Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     }
 
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
+
 } 
 // end of Squares2
 
@@ -1193,6 +1202,9 @@ void  Squares () {
     }
 
 
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
 } // end of Squares
 
 
@@ -1225,6 +1237,9 @@ void theatreChaseRainbow() {
     colourpoint++; 
     lasteffectupdate = millis() + WS2812interval ;
   }  //  end of timer..... 
+
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }
 
@@ -1369,6 +1384,9 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
  initializetime = millis(); // this resets the timer 
 
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
 }
 
 
@@ -1465,11 +1483,12 @@ int packetSize = Udp.parsePacket();
         currentpixel++;
       }
 
-strip->Show();
+//strip->Show();
 
 }
 
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }
 
@@ -1810,6 +1829,8 @@ pixelshift_middle();
 // pixelshift(6,0);
 
 
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
 }
 
 
@@ -1996,6 +2017,8 @@ if (y == total_y - 1) colour_index = 255;
 strip->StartAnimating(); // start animations
 
 //Serial.println("Top Bottom Feed function finished...");
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+
 }
 
 void Random_Top_Bottom(uint8_t fadetype) { 
@@ -2059,6 +2082,9 @@ do {
 
     }
   //}
+
+
+if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 } // end of actual function.....
 

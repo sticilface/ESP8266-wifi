@@ -63,8 +63,8 @@ void ICACHE_FLASH_ATTR restartNetworking()
     
   Serial.print("Joining Wifi Network");
 
-  //WiFi.begin(ssid, password);
-  WiFi.begin();
+  WiFi.begin(ssid, password);
+  //WiFi.begin();
     int i = 0;
     while (WiFi.status() != WL_CONNECTED && i < 40) {
     delay(500);

@@ -116,6 +116,7 @@ RANDOM_COLOUR_FADE, HSICYCLE
 };
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
+operatingState HoldingOpState = OFF; 
 static const char *MODE_STRING[] = {
 "Off", "Rainbow", "Color", "Chase Rainbow", "Fade", 
 "AdaLight", "test", "Looparound", "Pick Random", "Fade in Fade Out", 
@@ -135,5 +136,8 @@ uint16_t CurrentAnimationSpeed = 2000;
 
 RgbColor NewColour = RgbColor(0,0,0);
 
-unsigned int localPort = 6454; //8888;      // local port to listen on
+unsigned int localPort = 8888; // 6454; //8888;      // local port to listen on
+
+enum effectState { PRE_EFFECT = 0, RUN_EFFECT, POST_EFFECT};
+effectState Current_Effect_State = PRE_EFFECT; 
 

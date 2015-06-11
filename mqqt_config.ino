@@ -86,9 +86,23 @@ void  initiatemqqt ()
           
                 {     //  - if not connected then connect 
                 Serial.println("Success");
-   
+                char holdingbuf[BUFSIZE+1]; 
 // - subscribe                
-                mqttclient.subscribe(deviceid);       // - Then subscribe to device messages 
+                for (uint8_t i = 0; i < BUFSIZE; i++ ) {
+                  holdingbuf[i] = deviceid[i];                 
+                }
+
+                for (uint8_t i = 0; i < BUFSIZE; i++) {
+                  if (holdingbuf[i] == '\0') { holdingbuf[i] = '/' ; holdingbuf[i+1] = '#' ; break; };
+                }
+
+                //Serial.print("Size of: ");
+                //Serial.println(sizeof(deviceid));
+
+                Serial.write(holdingbuf, BUFSIZE);
+
+                //mqttclient.subscribe("test/#");
+                mqttclient.subscribe(holdingbuf);       // - Then subscribe to device messages 
                 mqttclient.subscribe(mqttesptopic);    // ---  subscribe to all esp messages 
 
                 send_mqtt_msg( String(deviceid), LocalIP,2); // the 2 signifies that it publishes under the esp/ topic and not device
