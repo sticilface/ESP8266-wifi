@@ -32,6 +32,17 @@ void callback(const MQTT::Publish& pub) {
 if (mqttbuf == "reboot") ESP.reset(); //system_restart(); // abort();
 
 
+//  NEW METHODS.... 
+
+if (topicrecieved.indexOf("/mode") > 0) WS2812_mode_string(pub.payload_string());
+if (topicrecieved.indexOf("/timer") > 0) WS2812timer_command_string(pub.payload_string());
+if (topicrecieved.indexOf("/brightness") > 0) WS2812_dim_string(pub.payload_string());
+if (topicrecieved.indexOf("/animationspeed") > 0) CurrentAnimationSpeed = (pub.payload_string()).toInt();
+if (topicrecieved.indexOf("/colour") > 0) WS2812_Set_New_Colour(pub.payload_string());
+
+
+
+
 if (mqttbuf.indexOf('=') > 0) 
       {
        String instruction = mqttbuf.substring(0,mqttbuf.indexOf('=') );
@@ -96,15 +107,22 @@ void  initiatemqqt ()
                   if (holdingbuf[i] == '\0') { holdingbuf[i] = '/' ; holdingbuf[i+1] = '#' ; break; };
                 }
 
-                //Serial.print("Size of: ");
-                //Serial.println(sizeof(deviceid));
 
-                Serial.write(holdingbuf, BUFSIZE);
 
-                //mqttclient.subscribe("test/#");
-                mqttclient.subscribe(holdingbuf);       // - Then subscribe to device messages 
-                mqttclient.subscribe(mqttesptopic);    // ---  subscribe to all esp messages 
+                //Serial.write(holdingbuf, BUFSIZE);
 
+                     //mqttclient.subscribe("test/#");
+                //mqttclient.subscribe(holdingbuf);       // - Then subscribe to device messages 
+                //mqttclient.subscribe(mqttesptopic);    // ---  subscribe to all esp messages 
+//
+        mqttclient.subscribe(MQTT::Subscribe(mqttclient.next_packet_id())
+                 .add_topic(holdingbuf, 2)
+                 .add_topic(mqttesptopic, 2)  // optional qos value
+                );
+
+
+
+//
                 send_mqtt_msg( String(deviceid), LocalIP,2); // the 2 signifies that it publishes under the esp/ topic and not device
                 delay(10);
                 send_mqtt_msg( "IP", LocalIP);                

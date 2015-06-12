@@ -104,7 +104,7 @@ void setup() {
 
   //Udp.begin(localPort);
 
-  Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
+  //Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
 
   //Udp.beginMulticast(multicast_ip_addr, WiFi.localIP() , localPort); 
 

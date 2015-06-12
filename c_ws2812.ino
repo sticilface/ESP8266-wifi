@@ -44,7 +44,7 @@ static const char *VAR_STRING[] = {
 void  handle_WS2812 () { // handles the web commands...
 
 String paused_string = " " ; 
-static int power; 
+static int power = 0; 
 bool updateLEDs = false;
 
 String selected = " "  ;
@@ -57,7 +57,9 @@ String selected = " "  ;
 
  if (server.arg("rgbpicker").length() != 0) 
   { 
-    WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
+    //WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
+
+    WS2812_Set_New_Colour(server.arg("rgbpicker"));
 
     Serial.println("RGB picker command: " + server.arg("rgbpicker"));
   }
@@ -133,6 +135,7 @@ for (int k=0; k < numberofmodes; k++ ) {
   server.send(200, "text/html", httpbuf);
 
 if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
+
 
 power = getPixelPower();
 
@@ -217,7 +220,9 @@ void  WS2812_mode_string (String Value)
 
 
 
-  if (Value == "on" | Value == "ON") opState = LastOpState;
+  if (Value == "on" | Value == "ON") opState = HoldingOpState = LastOpState;
+
+
   if (Value == "looparound") { opState = LOOPAROUND; LastOpState = LOOPAROUND;};
   if (Value == "pickrandom") { opState = PICKRANDOM; LastOpState = PICKRANDOM; } ;
   if (Value == "fadeinfadeout") { opState = FADEINFADEOUT; LastOpState = FADEINFADEOUT; }; 
@@ -261,6 +266,22 @@ void  WS2812_mode_string (String Value)
 
 }
 
+
+void WS2812_Set_New_Colour (String instruction) {
+
+      //opState = LastOpState = COLOR; //  this allows you to pick colour base for other MODES.... 
+      //String instruction = Value.substring(4,Value.length()+1 );
+      //Serial.println("/n RGB command recieved: " + instruction);
+      
+      CurrentRGBcolour = instruction;
+      NewColour = HEXtoRGB(instruction);
+      EEPROM.write(PixelCount_address + 4, NewColour.R);
+      EEPROM.write(PixelCount_address + 5, NewColour.G);
+      EEPROM.write(PixelCount_address + 6, NewColour.B);
+      EEPROM.commit();
+  
+
+}
 
 
 void  WS2812timer_command_string (String Value)
@@ -1279,27 +1300,31 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
   static boolean Adalight_configured;
   static uint16_t effectbuf_position = 0;
-  enum mode { MODE_INITIALISE = 0, MODE_HEADER, MODE_CHECKSUM, MODE_DATA, MODE_SHOW, MODE_WAIT};
+  enum mode { MODE_INITIALISE = 0, MODE_HEADER, MODE_CHECKSUM, MODE_DATA, MODE_SHOW, MODE_FINISH};
   static mode state = MODE_INITIALISE;
   static int effect_timeout = 0;
   static uint8_t prefixcount = 0;
   static unsigned long ada_sent = 0; 
   static unsigned long pixellatchtime = 0;
   const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
-  const unsigned long initializetimeout = 10000; 
-  static unsigned long initializetime = 0; 
+  //const unsigned long initializetimeout = 10000; 
+  //static unsigned long initializetime = 0; 
     //if (!Adalight_configured) {
     //    Adalight_Flash(); 
     //    Adalight_configured = true;
     //}
 
-    if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
-      pixellatchtime = 0; // reset counter / latch to zero should only fire when show pixls has been called!
-      StripOFF();  // turn off pixels... 
-      state = MODE_HEADER;  // resume header search....
-    }
+//    if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
+//      pixellatchtime = 0; // reset counter / latch to zero should only fire when show pixls has been called!
+//      StripOFF();  // turn off pixels... 
+//      state = MODE_HEADER;  // resume header search....
+//    }
 
-    if(millis() > initializetime + initializetimeout) state = MODE_INITIALISE; // this goes to initiaase mode...
+    // if(millis() > initializetime + initializetimeout) state = MODE_INITIALISE; // this goes to initiaase mode...
+
+    if (Current_Effect_State == PRE_EFFECT) state = MODE_INITIALISE;
+    if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH; 
+
 
   switch (state) {
 
@@ -1307,6 +1332,7 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
       Adalight_Flash(); 
       state = MODE_HEADER;
+      Current_Effect_State = RUN_EFFECT;
 
     case MODE_HEADER:
 
@@ -1376,16 +1402,23 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
       state = MODE_HEADER;
       break;
 
+    case MODE_FINISH:
 
+      //Serial.print("END OF ADALIGHT..."); 
+      Current_Effect_State = PRE_EFFECT; 
+      opState = HoldingOpState; 
+      //state == MODE_INITIALISE; 
+
+    break; 
 }
 
       //strip->Show();
 
 
- initializetime = millis(); // this resets the timer 
+ //initializetime = millis(); // this resets the timer 
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
 }
 
@@ -1459,12 +1492,16 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
 void UDPfunc () {
 
-static boolean Adalight_configured = false;
+//static boolean Adalight_configured = false;
 
- if (!Adalight_configured) {
+ if (Current_Effect_State == PRE_EFFECT) {
     Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
-    Adalight_configured = true;
+    Adalight_Flash();
+    Current_Effect_State = RUN_EFFECT;
+    Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
     } 
+
+if (Current_Effect_State == RUN_EFFECT) {
 
 int packetSize = Udp.parsePacket();
 
@@ -1485,11 +1522,18 @@ int packetSize = Udp.parsePacket();
 
 //strip->Show();
 
+    }
+
 }
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
+if (Current_Effect_State == POST_EFFECT) { 
+  //Serial.println("UDP END"); 
+  Current_Effect_State = PRE_EFFECT; 
+  opState = HoldingOpState; 
+  Udp.stop(); 
+  } ; 
 }
 
 int getPixelPower () {
