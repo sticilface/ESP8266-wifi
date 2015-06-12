@@ -83,52 +83,48 @@ void  initiatemqqt ()
         mqttclient.set_server(MQTTserver);
         mqttclient.set_callback(callback);
 
+        // generate topic...
+
+        String topicString = String(deviceid) + "/Status";
+        char topic[50]; 
+        topicString.toCharArray(topic,50);
+        String MainTopicString = String(deviceid) + "/#";
+
+
+
 
       Serial.print("Initiating MQTT Connection: ");
+
       if (EEPROM.read(mqttAddressbyte) == flagvalue) 
         {                   
       if (!mqttclient.connected()) 
         {             // - check to see if connected 
           
-          Serial.print("Connecting: (") ;
-            Serial.print(MQTTserver);
-            Serial.print(")....");
-          if(mqttclient.connect(deviceid)) 
-          
-                {     //  - if not connected then connect 
+          Serial.print("Connecting: ") ;
+            //Serial.print(MQTTserver);
+            //Serial.print(")....");
+
+          if (  mqttclient.connect(MQTT::Connect(deviceid)
+               .set_clean_session()
+               .set_will(topic, "down")
+               .set_keepalive(60)
+              ) ) {
+
                 Serial.println("Success");
-                char holdingbuf[BUFSIZE+1]; 
-// - subscribe                
-                for (uint8_t i = 0; i < BUFSIZE; i++ ) {
-                  holdingbuf[i] = deviceid[i];                 
-                }
 
-                for (uint8_t i = 0; i < BUFSIZE; i++) {
-                  if (holdingbuf[i] == '\0') { holdingbuf[i] = '/' ; holdingbuf[i+1] = '#' ; break; };
-                }
+                MainTopicString.toCharArray(topic,50);
 
+            mqttclient.subscribe(MQTT::Subscribe(mqttclient.next_packet_id())
+                   .add_topic(topic, 2) // this is the main topic deviceid/#
+                   .add_topic(mqttesptopic, 2)  // this is the esp topic... 
+                   );
 
-
-                //Serial.write(holdingbuf, BUFSIZE);
-
-                     //mqttclient.subscribe("test/#");
-                //mqttclient.subscribe(holdingbuf);       // - Then subscribe to device messages 
-                //mqttclient.subscribe(mqttesptopic);    // ---  subscribe to all esp messages 
-//
-        mqttclient.subscribe(MQTT::Subscribe(mqttclient.next_packet_id())
-                 .add_topic(holdingbuf, 2)
-                 .add_topic(mqttesptopic, 2)  // optional qos value
-                );
-
-
-
-//
                 send_mqtt_msg( String(deviceid), LocalIP,2); // the 2 signifies that it publishes under the esp/ topic and not device
-                delay(10);
+                delay(5);
                 send_mqtt_msg( "IP", LocalIP);                
-                delay(10);
+                delay(5);
                 send_mqtt_msg( "Version", version);                
-                delay(10);
+                delay(5);
                 send_mqtt_msg( "Status", "Device Ready");
               
             } else

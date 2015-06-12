@@ -3,7 +3,7 @@
 // 2. spotty pixel... 
 
 
-// MEMORY ALLOCATIONS:
+// EEPROM ALLOCATIONS:
 
 // PixelCount_address + 0 =  
 // PixelCount_address + 1 =  
@@ -1431,8 +1431,15 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     //Serial.println("Change Neopixels called"); 
 
 
-        int pixelPINstored = EEPROM.read(PixelPIN_address);    
-        int pixelCountstored = EEPROM.read(PixelCount_address);
+        uint8_t pixelPINstored = EEPROM.read(PixelPIN_address);    
+        //int pixelCountstored = EEPROM.read(PixelCount_address);
+
+        uint8_t a = EEPROM.read(PixelCount_address);
+        uint8_t b = EEPROM.read(PixelCount_address+1);
+        if(isnan(a)) a = 0;
+        if(isnan(b)) b = 0;
+        uint16_t pixelCountstored = a*256+b;
+
         //int b=EEPROM.read(PixelCount_address+1);
         //nt pixelCountstored = a*256+b;
 

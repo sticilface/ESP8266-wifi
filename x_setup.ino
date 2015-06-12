@@ -73,7 +73,7 @@ void setup() {
     }
   }
   
-  Serial.print("mDNS responder started.........(");
+  Serial.println("mDNS responder started.");
 
     
   //Serial.print(deviceid);
