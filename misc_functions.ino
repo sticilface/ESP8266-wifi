@@ -213,8 +213,20 @@ void ICACHE_FLASH_ATTR Save_String (char * NewValue,int writeaddress,int writead
 void uptime ()
 
 {
-    send_mqtt_msg("Uptime", String(millis()/60000));
+   // send_mqtt_msg("Uptime", String(millis()/60000));
+  int sec = millis() / 1000;
+  int min = sec / 60;
+  int hr = min / 60;
 
+  Serial.println();
+  Serial.print("Uptime ");
+  Serial.print(hr);
+  Serial.print(":");
+  Serial.print(min % 60);
+  Serial.print(":");
+  Serial.print(sec % 60);
+  Serial.print("   HEAP = ");
+  Serial.print(ESP.getFreeHeap());
 
 }
 

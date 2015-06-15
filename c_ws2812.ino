@@ -41,7 +41,7 @@ static const char *VAR_STRING[] = {
 
 
 
-void  handle_WS2812 () { // handles the web commands...
+void  cache handle_WS2812 () { // handles the web commands...
 
 
 
@@ -148,7 +148,7 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 }
 
-void Animationspped_command_string (String Value) {
+void cache Animationspped_command_string (String Value) {
 
   uint16_t newvalue = Value.toInt();
 
@@ -159,7 +159,7 @@ void Animationspped_command_string (String Value) {
 
 
 // Takes MODE selected by number, changes OpState, SAVES NEW MODE TO EEPROM, incase of reboot....
-void WS2812_mode_number(String Value) {
+void cache WS2812_mode_number(String Value) {
 
       lasteffectupdate = 0;
       uint8_t chosen_mode = Value.toInt();
@@ -174,7 +174,7 @@ void WS2812_mode_number(String Value) {
 //  might need to add an effect function timeout thing....  to reset effect and call update with NEW dim setting... 
 
 
-void    WS2812_dim_string (String Value)
+void  cache  WS2812_dim_string (String Value)
 {
       lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
       int a = Value.toInt();
@@ -193,7 +193,7 @@ void    WS2812_dim_string (String Value)
 }
 
 
-void  WS2812_mode_string (String Value)
+void  cache WS2812_mode_string (String Value)
 
 {
 
@@ -279,7 +279,7 @@ void  WS2812_mode_string (String Value)
 }
 
 
-void WS2812_Set_New_Colour (String instruction) {
+void cache WS2812_Set_New_Colour (String instruction) {
 
       //opState = LastOpState = COLOR; //  this allows you to pick colour base for other MODES.... 
       //String instruction = Value.substring(4,Value.length()+1 );
@@ -296,7 +296,7 @@ void WS2812_Set_New_Colour (String instruction) {
 }
 
 
-void  WS2812timer_command_string (String Value)
+void  cache WS2812timer_command_string (String Value)
 
 {
 
@@ -327,7 +327,7 @@ if (Value.indexOf("rgb") >= 0)
 
 
 
-RgbColor dim(RgbColor value) {
+RgbColor cache dim(RgbColor value) {
 
   //  int amounttodarken = 255 - CurrentBrightness;
   //  value.Darken(amounttodarken);
@@ -347,13 +347,13 @@ return(newvalue);
 
 
 
-void SetRGBcolour (RgbColor value) {
+void cache SetRGBcolour (RgbColor value) {
 
 SetRGBcolour(value,CurrentAnimationSpeed); 
 
 }
 
-void SetRGBcolour (RgbColor value, uint16_t speed) {
+void cache SetRGBcolour (RgbColor value, uint16_t speed) {
     
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
   
@@ -371,7 +371,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 }
 
-RgbColor  HEXtoRGB (String hexString) // Converts HEX to RBG object....
+RgbColor cache HEXtoRGB (String hexString) // Converts HEX to RBG object....
 
 {
 
@@ -399,7 +399,7 @@ RgbColor  HEXtoRGB (String hexString) // Converts HEX to RBG object....
 }
 
 
-String RGBtoHEX (RgbColor value) {
+String cache RGBtoHEX (RgbColor value) {
 
   //char R[3]
  //sprintf( R, "%X", value );
@@ -410,7 +410,7 @@ String RGBtoHEX (RgbColor value) {
 
 }
 
-void Pre_effect() {
+void cache Pre_effect() {
 
 Current_Effect_State = RUN_EFFECT; 
 lasteffectupdate = 0; 
@@ -419,14 +419,14 @@ Random_func_timeout = 0; //RESET additionall timeout...
 
 }
 
-void Post_effect() {
+void cache Post_effect() {
 
 Current_Effect_State = PRE_EFFECT; 
 opState = HoldingOpState; 
 
 }
 
-void StripOFF() {
+void cache StripOFF() {
 
 //  //if (millis() > (lasteffectupdate + WS2812interval) ){
 //  lasteffectupdate = 0; 
@@ -442,7 +442,7 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
 
 
 if (millis() > (lasteffectupdate + 1000) ){
-  Serial.print(".");
+  //Serial.print(".");
     //memset(pixelsPOINT, 0, 3 * strip->PixelCount() );
     //strip->Dirty();
       for (uint16_t i = 0; i < pixelCount; i++)
@@ -478,7 +478,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-void  initiateWS2812 ()
+void cache initiateWS2812 ()
 
 {
   opState = OFF;
@@ -491,7 +491,7 @@ void  initiateWS2812 ()
 
 
 
-void ws2812 ()  // put switch cases here...
+void cache ws2812 ()  // put switch cases here...
 
 
 {
@@ -509,7 +509,7 @@ switch (opState)
    case RAINBOW:
       rainbow();
       break;
-   case COLOR:
+/*   case COLOR:
       SetRGBcolour(NewColour);
       break;
    case ChaseRainbow:
@@ -584,6 +584,8 @@ switch (opState)
     case HSICYCLE:
       HSI_Cycle();
       break;
+
+      */
    }
 
 
@@ -613,7 +615,7 @@ if (paused) lasteffectupdate = millis() + 1000;
 } // end of ws2812 function 
 
 
-void HSI_Cycle() {
+void cache HSI_Cycle() {
 
 
 static int j;
@@ -670,7 +672,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-void Random_function() {
+void cache Random_function() {
 
 static uint8_t random_choice = 0 ; 
 static uint32_t Random_func_next_time = 0;
@@ -700,7 +702,7 @@ if (millis() > Random_func_next_time + 1000) Random_func_next_time = 0; // This 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
-void Random_colour() {
+void cache Random_colour() {
 
  //long Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0;
@@ -731,7 +733,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 } // end of random func
 
 
-void  CoolBlobs() {
+void cache CoolBlobs() {
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
     if (millis() > (lasteffectupdate ) ){
       
@@ -763,7 +765,7 @@ void setcolour () {
 
 */
 
-void   FadeInFadeOutRinseRepeat(uint8_t peak) {
+void cache  FadeInFadeOutRinseRepeat(uint8_t peak) {
   if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
   if (effectState == 0)
@@ -787,7 +789,7 @@ void   FadeInFadeOutRinseRepeat(uint8_t peak) {
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
-void  PickRandom(uint8_t peak)
+void cache PickRandom(uint8_t peak)
 {
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
   // pick random set of pixels to animate
@@ -811,7 +813,7 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
-void  LoopAround(uint8_t peak, uint16_t speed)
+void cache LoopAround(uint8_t peak, uint16_t speed)
 {
   // Looping around the ring sample
   uint16_t prevPixel;
@@ -855,7 +857,7 @@ void  LoopAround(uint8_t peak, uint16_t speed)
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
-void  SetRandomSeed()
+void cache SetRandomSeed()
 {
   uint32_t seed;
   
@@ -875,7 +877,7 @@ void  SetRandomSeed()
 }
 
 
-RgbColor  Wheel (byte WheelPos) {
+RgbColor  cache Wheel (byte WheelPos) {
   WheelPos = 255 - WheelPos;
   if(WheelPos < 85) {
    return  RgbColor(255 - WheelPos * 3, 0, WheelPos * 3);
@@ -889,7 +891,7 @@ RgbColor  Wheel (byte WheelPos) {
 } 
 
 
-void  Fade() {
+void cache Fade() {
 
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
@@ -919,7 +921,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-void  Rainbowcycle() {
+void  cache Rainbowcycle() {
 
    static int wsPoint ;
    if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
@@ -955,7 +957,7 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
 
 
 
-void  test4() {
+void cache test4() {
 
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
@@ -982,7 +984,7 @@ wsPoint++;
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
-void  test() {
+void  cache test() {
 
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
@@ -1007,7 +1009,7 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
- void  rainbow() {
+ void cache rainbow() {
 
   if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 // Var 1 = timer interval
@@ -1040,14 +1042,14 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 }   // END OF RAINBOW
 
-void clearpixels() {
+void cache clearpixels() {
 
     memset(pixelsPOINT, 0, 3 * strip->PixelCount() );   // clear current without... 
 
 
 }
 
-void  spiral() {
+void cache spiral() {
 
 static uint16_t currentcolor = 0;
 
@@ -1080,7 +1082,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 }
 
 // FACES ALGO....
-void  test3 () {
+void cache test3 () {
 
   uint8_t x,y, total_y;
   uint8_t total_x = var7; 
@@ -1160,7 +1162,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 // Working 
 
 
-void  Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
+void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   
 
@@ -1229,7 +1231,7 @@ if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; op
 
 
 
-void  Squares () {
+void cache Squares () {
 
   static int wsPoint = 0;
   
@@ -1289,7 +1291,7 @@ if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; op
 
 
 
-void theatreChaseRainbow() {
+void cache theatreChaseRainbow() {
   static uint16_t colourpoint = 0; 
   static uint8_t animationstate = 0 ; 
   if (millis() > (lasteffectupdate ) ) {
@@ -1322,7 +1324,7 @@ if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; op
 
 
 
-void Adalight_Flash() {
+void cache Adalight_Flash() {
 
     for(uint16_t i=0; i<pixelCount; i++) {
         strip->SetPixelColor(i, RgbColor(255,0,0));
@@ -1351,7 +1353,7 @@ void Adalight_Flash() {
   }
 
 
-void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
   uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
   static boolean Adalight_configured;
@@ -1480,7 +1482,7 @@ void Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
 
 
 // called to change the number of pixels
-void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
+void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   
  bool commitchanges = false; 
 
@@ -1553,7 +1555,7 @@ void ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
 }
 
-void UDPfunc () {
+void cache UDPfunc () {
 
 //static boolean Adalight_configured = false;
 
@@ -1599,7 +1601,7 @@ if (Current_Effect_State == POST_EFFECT) {
   } ; 
 }
 
-int getPixelPower () {
+int cache getPixelPower () {
  int brightnesstally = 0;
  for (int i = 0;i < pixelCount; i++) {
   RgbColor colour = strip->GetPixelColor(i);
@@ -1617,9 +1619,9 @@ return brightness;
 
 
 
-void handle_lights_config() {
+void cache handle_lights_config() {
 
-   if (server.args() != 0) lasteffectupdate = 0;    
+   if (server.args() != 0) { lasteffectupdate = 0; Random_func_timeout = 0; }; 
    if (server.arg("var1").length() != 0) var1 = server.arg("var1").toInt();
    if (server.arg("var2").length() != 0) var2 = server.arg("var2").toInt(); // colour point min
    if (server.arg("var3").length() != 0) var3 = server.arg("var3").toInt(); // colour point max
@@ -1660,13 +1662,13 @@ void handle_lights_config() {
 
 
 
-uint16_t return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
+uint16_t cache return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
   uint16_t a = (pitch * y) + x; 
   return a; 
 }
 
 
-uint8_t return_total_y(uint8_t pitch) {
+uint8_t cache return_total_y(uint8_t pitch) {
  uint8_t total_y = pixelCount / pitch; 
  float remainder = pixelCount % pitch;
  if (remainder > 0) total_y++;
@@ -1675,7 +1677,7 @@ uint8_t return_total_y(uint8_t pitch) {
 }
 
 //  Returns a pixel number... starting in bottom left...
-uint16_t return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+uint16_t cache return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
 
   uint16_t pixel; 
   uint8_t pixel_x, pixel_y, row, row_left ;
@@ -1688,7 +1690,7 @@ uint16_t return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint
 }
 
 
-uint16_t return_shape_ring(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+uint16_t cache return_shape_ring(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
 
 //
 //
@@ -1698,14 +1700,14 @@ uint16_t return_shape_ring(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_
 
 }
 
-uint16_t return_shape_x(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+uint16_t cache return_shape_x(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
 
 
 
 
 }
 
-uint16_t return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+uint16_t cache return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
 //                                     7
 //                           6
 //                  5               00   00
@@ -1821,13 +1823,13 @@ uint16_t return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_
 
 // function to shift pixels in blocks one way or another...
 
-void pixelshift(uint16_t start, uint16_t end) {
+void cache pixelshift(uint16_t start, uint16_t end) {
 
   pixelshift( start, end,100); 
 }
 
 
-void pixelshift(uint16_t start, uint16_t end, uint16_t pixelshift_timer) {
+void cache pixelshift(uint16_t start, uint16_t end, uint16_t pixelshift_timer) {
 
 static long last_pixelshift = 0;
 RgbColor pix_colour = RgbColor(0,0,0); // holds pixel data... 
@@ -1860,7 +1862,7 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 
 //// function to shift pixels in blocks one way or another...
-void pixelshift_middle() {
+void cache pixelshift_middle() {
 
 
 pixelshift_middle(100); 
@@ -1868,7 +1870,7 @@ pixelshift_middle(100);
 }
 
 
-void pixelshift_middle(uint16_t pixelshift_timer) {
+void cache pixelshift_middle(uint16_t pixelshift_timer) {
 
 static long last_pixelshift = 0;
 RgbColor pix_colour = RgbColor(0,0,0); // holds pixel data... 
@@ -1906,7 +1908,7 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 
 
-void eq1 () {
+void cache eq1 () {
 
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
@@ -1962,7 +1964,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-uint16_t Artnetread()
+uint16_t cache Artnetread()
 {
   packetSize = Udp.parsePacket();
   
@@ -1999,7 +2001,7 @@ uint16_t Artnetread()
   }
 }
 
-void printPacketHeader()
+void cache printPacketHeader()
 {
   Serial.print("packet size = ");
   Serial.print(packetSize);
@@ -2013,7 +2015,7 @@ void printPacketHeader()
   Serial.println(sequence);
 }
 
-void printPacketContent()
+void cache printPacketContent()
 {
   for (uint16_t i = ART_DMX_START ; i < dmxDataLength ; i++){
     Serial.print(artnetPacket[i], DEC);
@@ -2023,7 +2025,7 @@ void printPacketContent()
 }
 
 
-void Art_Net_func () {
+void cache Art_Net_func () {
 
 static boolean Adalight_configured;
 
@@ -2070,13 +2072,13 @@ strip->Show();
 }
 
 // Overloaded func for topbottom fade...
-void top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
 
   top_bottom_fade(Top,Bottom,count_x,0);
 }
 
 
-void top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint8_t fadetype) {
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint8_t fadetype) {
 
 uint8_t x,y,colour_index; 
 uint8_t total_y = return_total_y(count_x); // get total number of rows
@@ -2131,7 +2133,7 @@ strip->StartAnimating(); // start animations
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
-void Random_Top_Bottom(uint8_t fadetype) { 
+void cache Random_Top_Bottom(uint8_t fadetype) { 
 
 //static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0, total_x = 0;
@@ -2216,7 +2218,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 //int rgb[3];
 
-RgbColor notworking_hsi2rgb(float H, float S, float I) {
+RgbColor cache notworking_hsi2rgb(float H, float S, float I) {
 
   RgbColor RGBcolour;
 

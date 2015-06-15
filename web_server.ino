@@ -321,7 +321,12 @@ void ICACHE_FLASH_ATTR handle_test() {
 void handle_misc ()
 
 {
+   Serial.println();
+  Serial.print("Page hit...(");
+  Serial.print(ESP.getFreeHeap());
+  Serial.print(")...");
   bool updateEEPROMflag = false; 
+  String newhttpbuf; 
 
           //  EEPROM WIPE 
   if (server.arg("eeprom") == "wipe") { EEPROM_wipe(); } ; 
@@ -341,8 +346,8 @@ void handle_misc ()
         } ; 
 
   String selectedhere;  
-
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
+//<meta http-equiv='refresh' content='30'/>
+  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30' name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
   httpbuf += "<p> Heap Size = " + String(ESP.getFreeHeap()) ; // + "</br>";
   httpbuf += "<br> Flash Size = " + String(ESP.getFlashChipSize()) ;
   httpbuf += "<br> Flash Size by ID = " + String(ESP.getFlashChipSizeByChipId()) ;
@@ -374,5 +379,8 @@ void handle_misc ()
   EEPROM.commit();
   updateEEPROMflag = false;
           }; 
+  Serial.print("Page finished.");
+  //Serial.print(ESP.getFreeHeap());
+  //Serial.print(")");
 
 } ; 

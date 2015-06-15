@@ -6,11 +6,16 @@ const int PixelCount_address = 248;
 
 
 
-void handle_root () {
+void cache handle_root () {
 
-  if (wifimode == 1)  { handle_WS2812(); } else {
-  
-  handle_wifi();
+// if (wifimode == 1)  { 
+//  handle_WS2812(); 
+// } else {
+//  handle_wifi();
+//  }
+  Serial.println();
+  Serial.print("handle root hit..."); 
+  //handle_wifi();
   /*
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> SETUP DEVICE</h1>\n";
 
@@ -20,13 +25,53 @@ void handle_root () {
   httpbuf += "<br><a href='/wifi?eeprom=wipe'> EEPROM FORMAT </a>";
   httpbuf += htmlendstring; */ 
 
-};
+//////////////////////////
+  
+  char temp[400];
+  int sec = millis() / 1000;
+  int min = sec / 60;
+  int hr = min / 60;
 
-  server.send(200, "text/html", httpbuf);
+  snprintf ( temp, 400,
+
+"<html>\
+  <head>\
+    <meta http-equiv='refresh' content='30'/>\
+    <title>ESP8266 Demo</title>\
+    <style>\
+      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
+    </style>\
+  </head>\
+  <body>\
+    <h1>Hello from ESP8266!</h1>\
+    <p>Uptime: %02d:%02d:%02d</p>\
+    <img src=\"/test.svg\" />\
+  </body>\
+</html>",
+
+    hr, min % 60, sec % 60
+  );
+
+  server.send ( 200, "text/html", temp );
+/*
+  Serial.println();
+  Serial.print(hr);
+  Serial.print(":");
+  Serial.print(min % 60);
+  Serial.print(":");
+  Serial.print(sec % 60);
+  Serial.print(":");  
+*/
+
+    Serial.print("finshed!");
+
+/////////////////////////////////
+
+  //server.send(200, "text/html", httpbuf);
   
 }
 
-void setup_Plugin () {
+void cache setup_Plugin () {
 
   server.on("/ws2812", handle_WS2812);
   server.on("/lightsconfig", handle_lights_config);

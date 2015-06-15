@@ -1,5 +1,5 @@
 
-void setup() {
+void setup( void ) {
   // put your setup code here, to run once:
   EEPROM.begin(512);
 
@@ -100,8 +100,12 @@ if (wifimode == 1) {
 
 
   ///// ---- WEB SERVER ------/////
-  server.on("/", handle_root);
-  server.on("/wifi", handle_wifi);
+  
+  // if (wifimode == 2)  { server.on("/", handle_wifi); } else { server.on("/", handle_root); }
+
+  server.on("/", handle_misc);
+  
+  //server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);
   server.on("/mqtt", handle_mqtt);
   server.on("/io", handle_io);
@@ -110,9 +114,7 @@ if (wifimode == 1) {
   server.on("/misc", handle_misc);
 
 
-  //server.on("/ws2812", handle_WS2812);
 
-  //server.on("/temperature", handle_temperature);
 
   // Start the server 
 
@@ -127,10 +129,10 @@ if (wifimode == 1) {
 
   //Serial.println("HTTP server started");
 
-    timer.setInterval(APtimeout, deactivateAP);
-    timer.setInterval(MQTTtimeout, initiatemqqt);
+  //  timer.setInterval(APtimeout, deactivateAP);
+  //  timer.setInterval(MQTTtimeout, initiatemqqt);
 
-    //timer.setInterval(Uptimer_timeout, uptime);
+    timer.setInterval(Uptimer_timeout, uptime);
 
   //Serial.println("Timers set up");
 
@@ -142,6 +144,9 @@ if (wifimode == 1) {
 
   //Serial.println("Plugins started");
     //timer.setInterval(32,ws2812_animating);
+
+ Serial.print("Current wifi mode is : ");
+ Serial.println(wifimode);
 
 
 }
