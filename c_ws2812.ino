@@ -44,7 +44,7 @@ static const char *VAR_STRING[] = {
 void  cache handle_WS2812 () { // handles the web commands...
 
 
-
+String buf; 
 
 String paused_string = " " ; 
 static int power = 0; 
@@ -94,51 +94,51 @@ String selected = " "  ;
         paused_string = "<a href='/ws2812?mode=pause'>PAUSE</a>" ; 
       };
 
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
-  if (wifimode == 1) { httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
-  httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | "  +  paused_string + " | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
-  httpbuf += "<form name=frmTest action='/ws2812' method='POST'>\n";
-  httpbuf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
+  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
+  if (wifimode == 1) { buf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
+  buf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | "  +  paused_string + " | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
+  buf += "<form name=frmTest action='/ws2812' method='POST'>\n";
+  buf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
 for (int k=0; k < numberofmodes; k++ ) {
     if (HoldingOpState == k) { 
         selected = "' selected "; 
       } else selected = "' "; 
-  httpbuf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + MODE_STRING[k] + "</option>";
+  buf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + MODE_STRING[k] + "</option>";
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
 
   }
 
-  httpbuf += "</select>";
+  buf += "</select>";
 
-  httpbuf += "</form></p>";
+  buf += "</form></p>";
 
   if(wifimode == 1) {
-  httpbuf += "<p><form action='/ws2812' method='POST'";
-  httpbuf += "<p>Color: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "' >"; 
-  httpbuf += "<br>  <input type='submit' value='Submit'/>"; 
-  httpbuf += "</form>"; 
+  buf += "<p><form action='/ws2812' method='POST'";
+  buf += "<p>Color: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "' >"; 
+  buf += "<br>  <input type='submit' value='Submit'/>"; 
+  buf += "</form>"; 
 } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
 
-  httpbuf += "<form name=sliders action='/ws2812' method='POST'>\n";
-  httpbuf += "<br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='" + String(CurrentAnimationSpeed) + "' onchange='this.form.submit();' > ";
-  httpbuf += "<br>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "' onchange='this.form.submit();' > ";
-  httpbuf += "<br>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' onchange='this.form.submit();'> ";
+  buf += "<form name=sliders action='/ws2812' method='POST'>\n";
+  buf += "<br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='" + String(CurrentAnimationSpeed) + "' onchange='this.form.submit();' > ";
+  buf += "<br>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "' onchange='this.form.submit();' > ";
+  buf += "<br>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' onchange='this.form.submit();'> ";
   //httpbuf += "<input type='submit' value='Submit'/>" ; 
 
-  httpbuf += "</form>"; 
-  httpbuf += "<p><form action='/ws2812' method='POST'";
-  httpbuf += "<form action='/ws2812' method='POST'>";    
-  httpbuf += "<p>LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "' >";
-  httpbuf += "<br>PIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "' >";
-  httpbuf += "<br>  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "</form>"; 
-  httpbuf += "Power = " + String(power) + "mA"; 
-  httpbuf += "<br> Adalight order: GRB";
+  buf += "</form>"; 
+  buf += "<p><form action='/ws2812' method='POST'";
+  buf += "<form action='/ws2812' method='POST'>";    
+  buf += "<p>LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "' >";
+  buf += "<br>PIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "' >";
+  buf += "<br>  <input type='submit' value='Submit'/>" ; 
+  buf += "</form>"; 
+  buf += "Power = " + String(power) + "mA"; 
+  buf += "<br> Adalight order: GRB";
   
-  httpbuf += htmlendstring; 
+  buf += htmlendstring; 
  
-  server.send(200, "text/html", httpbuf);
+  server.send(200, "text/html", buf);
 
 
 
@@ -509,7 +509,7 @@ switch (opState)
    case RAINBOW:
       rainbow();
       break;
-/*   case COLOR:
+   case COLOR:
       SetRGBcolour(NewColour);
       break;
    case ChaseRainbow:
@@ -566,9 +566,9 @@ switch (opState)
     case RANDOMFUNC:
       Random_function();
       break;
-    case ARTNET:
-      Art_Net_func ();
-      break;
+    //case ARTNET:
+    //  Art_Net_func ();
+    //  break;
     case RANDOM_TOP_BOTTOM:
       Random_Top_Bottom(0);
       break;
@@ -581,11 +581,11 @@ switch (opState)
     case RANDOM_COLOUR_FADE:
       Random_Top_Bottom(3);
       break;      
-    case HSICYCLE:
-      HSI_Cycle();
-      break;
+    //case HSICYCLE:
+    //  HSI_Cycle();
+    //  break;
 
-      */
+      
    }
 
 
@@ -1042,13 +1042,15 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 }   // END OF RAINBOW
 
+
+/*
 void cache clearpixels() {
 
     memset(pixelsPOINT, 0, 3 * strip->PixelCount() );   // clear current without... 
 
 
 }
-
+*/
 void cache spiral() {
 
 static uint16_t currentcolor = 0;
@@ -1063,7 +1065,7 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
   uint8_t total_y = return_total_y(pitch); // get the number of rows.  rounds up...
   uint8_t x,y;
 
- clearpixels();
+ //clearpixels();
 
     for (x = 0; x < pitch; x+=2) {
       RgbColor colour = Wheel(( x * 256 / pitch + currentcolor) ); // i * 256 / pixelCount + wsPoint) 
@@ -1080,7 +1082,7 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
-
+/*
 // FACES ALGO....
 void cache test3 () {
 
@@ -1158,6 +1160,7 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 } // end of test
 
+*/
 
 // Working 
 
@@ -1505,14 +1508,6 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     if (count != pixelCountstored) {
     //Serial.println("Pixel count changed..."); 
 
-      //int a = pixelCount/256;
-      //Serial.print(a);
-      //int b = pixelCount % 256;
-      //Serial.print(b);
-        //EEPROM.write(PixelCount_address,(byte)count);
-        //EEPROM.write(PixelCount_address+1,b);
-
-
       int a = pixelCount/256;
       int b = pixelCount % 256;        
       
@@ -1620,7 +1615,7 @@ return brightness;
 
 
 void cache handle_lights_config() {
-
+String buf; 
    if (server.args() != 0) { lasteffectupdate = 0; Random_func_timeout = 0; }; 
    if (server.arg("var1").length() != 0) var1 = server.arg("var1").toInt();
    if (server.arg("var2").length() != 0) var2 = server.arg("var2").toInt(); // colour point min
@@ -1639,22 +1634,22 @@ void cache handle_lights_config() {
 
 
 
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
-  httpbuf += " <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>  "; 
-  httpbuf += "<form name=form action='/lightsconfig' method='POST'>\n";
-  //httpbuf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
+  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
+  buf += " <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>  "; 
+  buf += "<form name=form action='/lightsconfig' method='POST'>\n";
+  //buf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
   for (int k=0; k < 10; k++ ) {
-  //httpbuf += "<option value='" + String(k) + selected + ">" + String(MODE_STRING[k]) + "</option>";
-   // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
-    httpbuf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value=''><br>";
+  //buf += "<option value='" + String(k) + selected + ">" + String(MODE_STRING[k]) + "</option>";
+   // buf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
+    buf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value=''><br>";
   }
 
-  httpbuf += "  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "</form></p>"; 
-  httpbuf += htmlendstring; 
+  buf += "  <input type='submit' value='Submit'/>" ; 
+  buf += "</form></p>"; 
+  buf += htmlendstring; 
 
-  server.send(200, "text/html", httpbuf);
+  server.send(200, "text/html", buf);
 
 
 
@@ -1690,136 +1685,6 @@ uint16_t cache return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y 
 }
 
 
-uint16_t cache return_shape_ring(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
-
-//
-//
-//
-//                                
-//      O         OO          OO  
-
-}
-
-uint16_t cache return_shape_x(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
-
-
-
-
-}
-
-uint16_t cache return_shape_face(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
-//                                     7
-//                           6
-//                  5               00   00
-//          4              00  00   00   00
-//   3            0   0                0    
-//        0  0      0        00       000 
-//  0 0    00       0            
-//   0                     0    0   0     0
-//  000   0000    00000    000000   0000000
-
-
-  uint16_t pixel = 0; 
-  uint8_t pixel_x = 0, pixel_y = 0 ;
-
-//  GRID = 3 : 1  2  3  4  5  6  pixels 
-
-    if (grid_size == 3) {
-    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 4) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 1;};
-    if (desired_pixel == 5) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 2;};
-    if (desired_pixel == 6) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 2;};
-    }
-//  GRID = 4 : 1  2  3  4  5  6 7 8   pixels 
-    if (grid_size == 4) {
-    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 4) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 5) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 2;};
-    if (desired_pixel == 6) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 2;};
-    if (desired_pixel == 7) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 3;};
-    if (desired_pixel == 8) { pixel_x = first_pixel_x + 3; pixel_y = first_pixel_y + 3;};
-    }
-//  GRID = 5 : 1  2  3  4  5  6 7 8 9  pixels 
-
-    if (grid_size == 5) {
-    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 4) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 5) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 0;};
-
-    if (desired_pixel == 6) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 2;};
-    if (desired_pixel == 7) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 3;};
-
-    if (desired_pixel == 8) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 4;};
-    if (desired_pixel == 9) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 4;};
-
-    }
-//  GRID = 6 : 14   pixels 
-
-    if (grid_size == 6) {
-    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 4) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 5) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 6) { pixel_x = first_pixel_x + 6; pixel_y = first_pixel_y + 0;};
-
-    // mouth corners
-    if (desired_pixel == 7) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 1;};
-    if (desired_pixel == 8) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 1;};
-
-    // nose
-    if (desired_pixel == 9)  { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 3;};
-    if (desired_pixel == 10) { pixel_x = first_pixel_x + 3; pixel_y = first_pixel_y + 3;};
-    //eyes
-    if (desired_pixel == 11) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 5;};
-    if (desired_pixel == 12) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 5;};    
-    if (desired_pixel == 13) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 5;};
-    if (desired_pixel == 14) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 5;};  
-    }
-//  GRID = 7 : 21 pixels...
-    if (grid_size == 7) {
-    if (desired_pixel == 1) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 2) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 3) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 4) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 5) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 6) { pixel_x = first_pixel_x + 6; pixel_y = first_pixel_y + 0;};
-    if (desired_pixel == 7) { pixel_x = first_pixel_x + 7; pixel_y = first_pixel_y + 0;};
-
-    // mouth corners
-    if (desired_pixel == 8) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 1;};
-    if (desired_pixel == 9) { pixel_x = first_pixel_x + 6; pixel_y = first_pixel_y + 1;};
-
-    // nose
-    if (desired_pixel == 10) { pixel_x = first_pixel_x + 2; pixel_y = first_pixel_y + 3;};
-    if (desired_pixel == 11) { pixel_x = first_pixel_x + 3; pixel_y = first_pixel_y + 3;};
-    if (desired_pixel == 12) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 3;};
-    if (desired_pixel == 13) { pixel_x = first_pixel_x + 3; pixel_y = first_pixel_y + 4;};
-
-
-    //eyes
-    if (desired_pixel == 14) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 5;};
-    if (desired_pixel == 15) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 5;};    
-    if (desired_pixel == 16) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 5;};
-    if (desired_pixel == 17) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 5;};  
-    if (desired_pixel == 18) { pixel_x = first_pixel_x + 0; pixel_y = first_pixel_y + 6;};
-    if (desired_pixel == 19) { pixel_x = first_pixel_x + 1; pixel_y = first_pixel_y + 6;};    
-    if (desired_pixel == 20) { pixel_x = first_pixel_x + 4; pixel_y = first_pixel_y + 6;};
-    if (desired_pixel == 21) { pixel_x = first_pixel_x + 5; pixel_y = first_pixel_y + 6;}; 
-
-
-    }
-
-
-  pixel = return_pixel(pixel_x, pixel_y, total_in_row);
-  return pixel; 
-}
 
 // function to shift pixels in blocks one way or another...
 
@@ -1945,131 +1810,9 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-///////////////////
-//
-//
-//      ART - NET  
-//
-//
-///////////////////
-
-  uint8_t artnetPacket[MAX_BUFFER_ARTNET];
-  uint16_t packetSize;
-  uint16_t opcode;
-  uint8_t sequence;
-  uint16_t incomingUniverse;
-  uint16_t dmxDataLength;
-  void (*artDmxCallback)(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* data);
 
 
 
-
-uint16_t cache Artnetread()
-{
-  packetSize = Udp.parsePacket();
-  
-  if (packetSize <= MAX_BUFFER_ARTNET && packetSize > 0)
-  { 
-      Udp.read(artnetPacket, MAX_BUFFER_ARTNET);
-
-      // Check that packetID is "Art-Net" else ignore
-      for (byte i = 0 ; i < 9 ; i++)
-      {
-        if (artnetPacket[i] != ART_NET_ID[i])
-          return 0;
-      }
-        
-      opcode = artnetPacket[8] | artnetPacket[9] << 8; 
-
-      if (opcode == ART_DMX)
-      {
-        sequence = artnetPacket[12];
-        incomingUniverse = artnetPacket[14] | artnetPacket[15] << 8;  
-        dmxDataLength = artnetPacket[17] | artnetPacket[16] << 8;
-
-        if (artDmxCallback) (*artDmxCallback)(incomingUniverse, dmxDataLength, sequence, artnetPacket + ART_DMX_START);
-        return ART_DMX;
-      }
-      if (opcode == ART_POLL)
-      {
-        return ART_POLL; 
-      }
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-void cache printPacketHeader()
-{
-  Serial.print("packet size = ");
-  Serial.print(packetSize);
-  Serial.print("\topcode = ");
-  Serial.print(opcode, HEX);
-  Serial.print("\tuniverse number = ");
-  Serial.print(incomingUniverse);
-  Serial.print("\tdata length = ");
-  Serial.print(dmxDataLength);
-  Serial.print("\tsequence n0. = ");
-  Serial.println(sequence);
-}
-
-void cache printPacketContent()
-{
-  for (uint16_t i = ART_DMX_START ; i < dmxDataLength ; i++){
-    Serial.print(artnetPacket[i], DEC);
-    Serial.print("  ");
-  }
-  Serial.println('\n');
-}
-
-
-void cache Art_Net_func () {
-
-static boolean Adalight_configured;
-
- if (!Adalight_configured) {
-    Serial.println("ART - NET mode enabled\n"); // Send "Magic Word" string to host
-    Adalight_configured = true;
-    } 
-
-
-int test = Artnetread();
-
-if (test == ART_DMX) Serial.println("DMX YES");
-
-
-
-//Serial.println(test);
-//printPacketContent();
-
-
-/*
-int packetSize = Udp.parsePacket();
-
-  if(Udp.available())
-  {
-        Serial.println("UDP packet recieved...");
-
-    RgbColor col;
-    int currentpixel = 0;
-    for (int i = 0; i < packetSize; i = i + 3) {
-      if (currentpixel > pixelCount) break;
-        col.R = Udp.read();
-        col.G = Udp.read();
-        col.B = Udp.read();
-        strip->SetPixelColor(currentpixel,col);
-        currentpixel++;
-      }
-
-strip->Show();
-
-}
-
-*/
-
-}
 
 // Overloaded func for topbottom fade...
 void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
@@ -2205,66 +1948,3 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-
-// Function example takes H, S, I, and a pointer to the 
-// returned RGB colorspace converted vector. It should
-// be initialized with:
-//
-// int rgb[3];
-//
-// in the calling function. After calling hsi2rgb
-// the vector rgb will contain red, green, and blue
-// calculated values.
-
-//int rgb[3];
-
-RgbColor cache notworking_hsi2rgb(float H, float S, float I) {
-
-  RgbColor RGBcolour;
-
-  int r, g , b ;
-
-  //H = fmod(H,360); // cycle H around to 0-360 degrees
-
-//  f = a/b - floor(a/b);
- Serial.println();
- Serial.print("hsitorgb func: H="); 
- Serial.print(H);
- H = H/360 - floor(H/360); 
- Serial.print(" -> ");
-Serial.print(H);
-Serial.print("  : ");
-
-  H = 3.14159*H/(float)180; // Convert to radians.
-  S = S>0?(S<1?S:1):0; // clamp S and I to interval [0,1]
-  I = I>0?(I<1?I:1):0;
-    
-  // Math! Thanks in part to Kyle Miller.
-  if(H < 2.09439) {
-    r = 255*I/3*(1+S*cos(H)/cos(1.047196667-H));
-    g = 255*I/3*(1+S*(1-cos(H)/cos(1.047196667-H)));
-    b = 255*I/3*(1-S);
-  } else if(H < 4.188787) {
-    H = H - 2.09439;
-    g = 255*I/3*(1+S*cos(H)/cos(1.047196667-H));
-    b = 255*I/3*(1+S*(1-cos(H)/cos(1.047196667-H)));
-    r = 255*I/3*(1-S);
-  } else {
-    H = H - 4.188787;
-    b = 255*I/3*(1+S*cos(H)/cos(1.047196667-H));
-    r = 255*I/3*(1+S*(1-cos(H)/cos(1.047196667-H)));
-    g = 255*I/3*(1-S);
-  }
-  Serial.println();
-  Serial.print("R: ");
-  Serial.print(r);
-  Serial.print("G: ");
-  Serial.print(g);
-  Serial.print("B: ");
-  Serial.print(b);
-
-  RGBcolour.R = r;
-  RGBcolour.G = g;
-  RGBcolour.B = b;
-  return RGBcolour; 
-}

@@ -188,6 +188,9 @@ void ICACHE_FLASH_ATTR send_mqtt_msg (String topic, String message ) // overload
 
 
 void  handle_mqtt() {
+
+  String buf; 
+  
  if (server.arg("mqttserver").length() != 0) mqttserver_command(server.arg("mqttserver")); 
  if (server.arg("reboot").length() != 0) ESP.reset(); // abort();
 
@@ -236,43 +239,43 @@ void  handle_mqtt() {
 
   //int MQTT_enabled_checked = MQTT_enabled;
   
-  httpbuf = F("<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>MQTT Configuration</title></head>\n<body><h1>MQTT Config</h1>\n");
+  buf = F("<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>MQTT Configuration</title></head>\n<body><h1>MQTT Config</h1>\n");
   
-  httpbuf += "<form action='/mqtt' method='POST'> ENABLED: <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='NO'" + MQTT_enabled_checked_no  + "> NO <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='YES'"+ MQTT_enabled_checked_yes +  "> YES" ;  
-  httpbuf += F("</form>");
+  buf += "<form action='/mqtt' method='POST'> ENABLED: <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='NO'" + MQTT_enabled_checked_no  + "> NO <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='YES'"+ MQTT_enabled_checked_yes +  "> YES" ;  
+  buf += F("</form>");
  if(MQTT_enabled) {
   
-  httpbuf += "<br>MQTT Server is: " + String(mqttserver_string) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
-  httpbuf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
-  httpbuf += F("<br><form action='/mqtt' method='POST'>\n");
-  httpbuf += F("\n\nNew Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");
-  httpbuf += F("\n\nMQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>");
-  httpbuf += "\n\nEnable Uptime <input type='radio' name='form_Uptime_enabled' value='NO'" + form_Uptime_enabled_no  + "> NO <input type='radio' name='form_Uptime_enabled' value='YES'"+ form_Uptime_enabled_yes +  "> YES" ;
+  buf += "<br>MQTT Server is: " + String(mqttserver_string) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
+  buf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
+  buf += F("<br><form action='/mqtt' method='POST'>\n");
+  buf += F("\n\nNew Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");
+  buf += F("\n\nMQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>");
+  buf += "\n\nEnable Uptime <input type='radio' name='form_Uptime_enabled' value='NO'" + form_Uptime_enabled_no  + "> NO <input type='radio' name='form_Uptime_enabled' value='YES'"+ form_Uptime_enabled_yes +  "> YES" ;
 
-  //httpbuf += "<input type='radio' name='state' value='1' checked>On<input type='radio' name='state' value='0'>Off<\p>"; 
-  //httpbuf += "\n\nSSID: <input type='text' id='ssid' name='ssid' value=''><br/>";
-  //httpbuf += "\nPassword: <input type='text' name='password' value=''><br/></p>";
-  //httpbuf += "<input type='submit' value='Submit'></form>"; 
-  httpbuf += "<p><input type='submit' name='reboot' value='Reboot!'/>\n";
-  //httpbuf += "  <input type='submit' name ='scan' value='Scan'/>";   
-    // working httpbuf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-  //httpbuf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
-  httpbuf += "  <input type='submit' value='Submit'/>" ; 
-  httpbuf += "</form></p>"; 
+  //buf += "<input type='radio' name='state' value='1' checked>On<input type='radio' name='state' value='0'>Off<\p>"; 
+  //buf += "\n\nSSID: <input type='text' id='ssid' name='ssid' value=''><br/>";
+  //buf += "\nPassword: <input type='text' name='password' value=''><br/></p>";
+  //buf += "<input type='submit' value='Submit'></form>"; 
+  buf += "<p><input type='submit' name='reboot' value='Reboot!'/>\n";
+  //buf += "  <input type='submit' name ='scan' value='Scan'/>";   
+    // working buf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
+  //buf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
+  buf += "  <input type='submit' value='Submit'/>" ; 
+  buf += "</form></p>"; 
 
 }
 
-  httpbuf += htmlendstring; 
+  buf += htmlendstring; 
 
 
 
-    server.send(200, "text/html", httpbuf);
+    server.send(200, "text/html", buf);
 
      
     if (networkrestart) restartNetworking(); 
 
     if (mqttreload) mqttreloadfunc();
 
-    //server.send(200, "text/plain", httpbuf);
+    //server.send(200, "text/plain", buf);
   //server.send(200, "text/plain", String("MQTT Coming soon....."));
 }

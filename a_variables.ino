@@ -5,6 +5,10 @@ const int BUFSIZE = 32; //was 16
 
 char ssid[BUFSIZE]; // = "fyffest";
 char password[BUFSIZE]; //  = "wellcometrust";
+
+//const char *ssidb = "fyffest";
+//const char *passwordb = "wellcometrust";
+
 char deviceid[BUFSIZE];// = "";
 //String deviceid;
 
@@ -12,12 +16,14 @@ String clientName = " ";
 String LocalIP = " ";
 
 char bufchar[BUFSIZE];
-String buf = " " ;
-String httpbuf = " ";
-String bytedump = " ";
+//String buf = " " ;
+//String httpbuf = " ";
+//String bytedump = " ";
 
 char mqttcharbuf[200];
+
 String mqttbuf = " ";
+
 char mqttesptopic[BUFSIZE] = "esp";  //Required to define the GLOBAL MQTT RESPONSE!
 
 int wifinetworksfound = 0;

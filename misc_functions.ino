@@ -1,4 +1,4 @@
-String ICACHE_FLASH_ATTR macToStr(const uint8_t* mac)
+String cache macToStr(const uint8_t* mac)
 {
   String result;
   for (int i = 0; i < 2; ++i) {
@@ -9,14 +9,14 @@ String ICACHE_FLASH_ATTR macToStr(const uint8_t* mac)
   return result;
 }
 
-void ICACHE_FLASH_ATTR clearbufchar()
+void cache clearbufchar()
 {
  for (int i = 0; i < BUFSIZE; i++) {
     bufchar[i] = 0;
   }
 }
 
-void ICACHE_FLASH_ATTR updateIPaddress()
+void cache updateIPaddress()
 {
   LocalIP = "";
   IPAddress myaddr = WiFi.localIP();
@@ -27,7 +27,7 @@ void ICACHE_FLASH_ATTR updateIPaddress()
   }
 }
 
- void ICACHE_FLASH_ATTR getdeviceID()
+ void cache getdeviceID()
 {
   
   Serial.println();  
@@ -51,55 +51,60 @@ void ICACHE_FLASH_ATTR updateIPaddress()
 
 
 
-void ICACHE_FLASH_ATTR restartNetworking() 
+void  restartNetworking() 
 {
+  
   networkrestart = false;
   AP_STA_timer = millis();
   APtimeout_done = false;
+
   LoadParams();
   getdeviceID();
   //Serial.println();
-  if(EEPROM.read(ssidAddressbyte) == flagvalue) {
+  if (EEPROM.read(ssidAddressbyte) == flagvalue) {
     
-  Serial.print("Joining Wifi Network");
+      Serial.print("Joining Wifi Network");
+      WiFi.begin(ssid, password);
 
-  WiFi.begin(ssid, password);
   //WiFi.begin();
     int i = 0;
-    while (WiFi.status() != WL_CONNECTED && i < 40) {
+    while ((WiFi.status() != WL_CONNECTED ) && (i < 40 )) {
     delay(500);
     i++;
     Serial.print(".");
     if (i == 39) Serial.print("Failed");
     }
     
-  } else 
-  { Serial.print("NO SSID specified...");
-  }
+ 
+
+
+
+  }   else { Serial.print("NO SSID specified...");   }
+  
   
   if(WiFi.status() != WL_CONNECTED)
   {
-   Serial.println();
+    Serial.println();
     Serial.print("Setting up Access Point....");
-   WiFi.mode(WIFI_AP_STA);
-   wifimode = 2;
-   AP_STA_timer = millis();
-   WiFi.softAP(deviceid);
-   Serial.println(deviceid);
-  } else 
-  {
-  Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP()); 
+    WiFi.mode(WIFI_AP_STA);
+    wifimode = 2;
+    AP_STA_timer = millis();
+    WiFi.softAP(deviceid);
+    Serial.println(deviceid);
+  } else  {
+    Serial.println("");
+    Serial.print("Connected to ");
+    Serial.println(ssid);
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP()); 
   }
   
   updateIPaddress();
+  
   }
 
 
-void ICACHE_FLASH_ATTR deactivateAP()
+void cache deactivateAP()
 {
   //Serial.println("Deactivate AP Called");
 
@@ -141,7 +146,7 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
 
 
 
-double ICACHE_FLASH_ATTR os_atof(const char* s)
+double cache os_atof(const char* s)
 {
 	double rez = 0, fact = 1;
 	while (*s && (*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n'))
@@ -175,7 +180,7 @@ double ICACHE_FLASH_ATTR os_atof(const char* s)
 
 
 
-void ICACHE_FLASH_ATTR Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
+void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
 
 {
 
@@ -210,7 +215,7 @@ void ICACHE_FLASH_ATTR Save_String (char * NewValue,int writeaddress,int writead
 
 
 
-void uptime ()
+void cache uptime ()
 
 {
    // send_mqtt_msg("Uptime", String(millis()/60000));
@@ -232,7 +237,7 @@ void uptime ()
 
 //This function will write a 4 byte (32bit) long to the eeprom at
 //the specified address to adress + 3.
-void ICACHE_FLASH_ATTR EEPROMWritelong(int address, long value)
+void cache EEPROMWritelong(int address, long value)
       {
       //Decomposition from a long to 4 bytes by using bitshift.
       //One = Most significant -> Four = Least significant byte
@@ -248,7 +253,7 @@ void ICACHE_FLASH_ATTR EEPROMWritelong(int address, long value)
       EEPROM.write(address + 3, one);
       }
 
-long ICACHE_FLASH_ATTR EEPROMReadlong(long address)
+long cache EEPROMReadlong(long address)
       {
       //Read the 4 bytes from the eeprom memory.
       long four = EEPROM.read(address);
