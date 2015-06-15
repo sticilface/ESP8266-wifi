@@ -248,5 +248,32 @@ long ICACHE_FLASH_ATTR EEPROMReadlong(long address)
       return ((four << 0) & 0xFF) + ((three << 8) & 0xFFFF) + ((two << 16) & 0xFFFFFF) + ((one << 24) & 0xFFFFFFFF);
       }
 
+/*
+void OTA_UPDATE() {
+
+  
+  int cb = listener.parsePacket();
+  
+  if (cb) {
+    IPAddress remote = listener.remoteIP();
+    int cmd  = listener.parseInt();
+    int port = listener.parseInt();
+    int sz   = listener.parseInt();
+    Serial.println("Got packet");
+    Serial.printf("%d %d %d\r\n", cmd, port, sz);
+    WiFiClient cl;
+    if (!cl.connect(remote, port)) {
+      Serial.println("failed to connect");
+      return;
+    }
+
+    listener.stop();
+
+    if (!ESP.updateSketch(cl, sz)) {
+      Serial.println("Update failed");
+    }
+  }
 
 
+}
+*/

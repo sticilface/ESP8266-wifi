@@ -106,7 +106,7 @@ void  initiatemqqt ()
 
           if (  mqttclient.connect(MQTT::Connect(deviceid)
                .set_clean_session()
-               .set_will(topic, "down")
+               .set_will(topic, "Connection Lost!")
                .set_keepalive(60)
               ) ) {
 

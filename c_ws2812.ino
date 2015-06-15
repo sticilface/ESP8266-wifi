@@ -43,9 +43,13 @@ static const char *VAR_STRING[] = {
 
 void  handle_WS2812 () { // handles the web commands...
 
+
+
+
 String paused_string = " " ; 
 static int power = 0; 
 bool updateLEDs = false;
+
 
 String selected = " "  ;
 
@@ -53,7 +57,6 @@ String selected = " "  ;
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
-
 
  if (server.arg("rgbpicker").length() != 0) 
   { 
@@ -91,13 +94,9 @@ String selected = " "  ;
         paused_string = "<a href='/ws2812?mode=pause'>PAUSE</a>" ; 
       };
 
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>";
-  
-  //httpbuf += "<form action='/ws2812' method='POST'>     System is:  <font size='5' color='red'> " + String(opState) + " Last Op State: " + String(LastOpState) + "  </font> ";//"   <input type='submit' name='mode' value='on'>    <input type='submit' name='command' value='off'></form>"; 
+  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
+  if (wifimode == 1) { httpbuf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
   httpbuf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | "  +  paused_string + " | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
-  //httpbuf += "<br> <a href='/ws2812?mode=Colour'>Colour</a>  <a href='/ws2812?mode=Rainbow'>Rainbow</a>  <a href='/ws2812?mode=Fade'>Fade</a>  <a href='/ws2812?mode=ChaseRainbow'>ChaseRainbow</a>  <a href='/ws2812?mode=test'>TEST</a> ";
-  //httpbuf += "<br> <a href='/ws2812?mode=fadeinfadeout'>FadeInFadeOut</a> <a href='/ws2812?mode=pickrandom'>PickRandom</a> <a href='/ws2812?mode=looparound'>LoopAround</a>";
-  //httpbuf += "<br> <a href='/ws2812?mode=adalight'>Adalight</a>  <a href='/ws2812?mode=udp'>UDP</a>" ; 
   httpbuf += "<form name=frmTest action='/ws2812' method='POST'>\n";
   httpbuf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
@@ -109,18 +108,24 @@ for (int k=0; k < numberofmodes; k++ ) {
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
 
   }
-  
+
   httpbuf += "</select>";
+
   httpbuf += "</form></p>";
+
+  if(wifimode == 1) {
   httpbuf += "<p><form action='/ws2812' method='POST'";
-  httpbuf += "<p>Color: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "' >";
+  httpbuf += "<p>Color: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "' >"; 
   httpbuf += "<br>  <input type='submit' value='Submit'/>"; 
   httpbuf += "</form>"; 
+} ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
+
   httpbuf += "<form name=sliders action='/ws2812' method='POST'>\n";
   httpbuf += "<br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='" + String(CurrentAnimationSpeed) + "' onchange='this.form.submit();' > ";
   httpbuf += "<br>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "' onchange='this.form.submit();' > ";
   httpbuf += "<br>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' onchange='this.form.submit();'> ";
   //httpbuf += "<input type='submit' value='Submit'/>" ; 
+
   httpbuf += "</form>"; 
   httpbuf += "<p><form action='/ws2812' method='POST'";
   httpbuf += "<form action='/ws2812' method='POST'>";    
@@ -130,14 +135,15 @@ for (int k=0; k < numberofmodes; k++ ) {
   httpbuf += "</form>"; 
   httpbuf += "Power = " + String(power) + "mA"; 
   httpbuf += "<br> Adalight order: GRB";
-  httpbuf += htmlendstring; 
   
+  httpbuf += htmlendstring; 
+ 
   server.send(200, "text/html", httpbuf);
 
+
+
 if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
-
-
-power = getPixelPower();
+//power = getPixelPower();
 
 
 }
@@ -191,8 +197,8 @@ void  WS2812_mode_string (String Value)
 
 {
 
-  lasteffectupdate = 0; // RESET EFFECT COUNTER
-  Random_func_timeout = 0; //RESET additionall timeout... 
+  //lasteffectupdate = 0; // RESET EFFECT COUNTER
+  //Random_func_timeout = 0; //RESET additionall timeout... 
 
   if (Value.toInt() != 0) {  // if the numerical mode does not equal 0 which is off....
 
@@ -210,13 +216,19 @@ void  WS2812_mode_string (String Value)
   Value.toLowerCase();
 
   if (Value == "off" | Value == "OFF") { 
+    //Serial.println("OFF HTTP request recieved..");
+
       if (opState != OFF) { 
-          LastOpState = opState;
+
+          //Serial.println("Lights ON.. Switching off!");
+
+          //LastOpState = opState;
           Current_Effect_State = POST_EFFECT; //  Set this to TERMINATE current effect.... 
           //opState = OFF; 
           HoldingOpState = OFF; 
-      } ;
-  };
+
+      } 
+  }
 
 
 
@@ -262,7 +274,7 @@ void  WS2812_mode_string (String Value)
   EEPROM.write(PixelCount_address + 3, LastOpState);
   EEPROM.commit();
 
-  if (opState == OFF) opState = HoldingOpState ; // This line ensures that if there is nothing running the effect is started... 
+  //if (opState == OFF) opState = HoldingOpState ; // This line ensures that if there is nothing running the effect is started... 
 
 }
 
@@ -343,7 +355,7 @@ SetRGBcolour(value,CurrentAnimationSpeed);
 
 void SetRGBcolour (RgbColor value, uint16_t speed) {
     
-
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
   
       if (!(strip->IsAnimating())) {
 
@@ -354,10 +366,7 @@ void SetRGBcolour (RgbColor value, uint16_t speed) {
     strip->StartAnimating(); // start animations
   }
 
-if (Current_Effect_State == POST_EFFECT) { 
-    Current_Effect_State = PRE_EFFECT; 
-    opState = HoldingOpState; 
-  } ; 
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
 
 }
@@ -401,14 +410,48 @@ String RGBtoHEX (RgbColor value) {
 
 }
 
+void Pre_effect() {
+
+Current_Effect_State = RUN_EFFECT; 
+lasteffectupdate = 0; 
+Random_func_timeout = 0; //RESET additionall timeout... 
+
+
+}
+
+void Post_effect() {
+
+Current_Effect_State = PRE_EFFECT; 
+opState = HoldingOpState; 
+
+}
+
 void StripOFF() {
 
-  //if (millis() > (lasteffectupdate + WS2812interval) ){
-  lasteffectupdate = 0; 
+//  //if (millis() > (lasteffectupdate + WS2812interval) ){
+//  lasteffectupdate = 0; 
+//
+// memset(pixelsPOINT, 0, 3 * strip->PixelCount() ); 
+//
+//  strip->Dirty();
+//
+//
+//
+//////////////////  
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
-  memset(pixelsPOINT, 0, 3 * strip->PixelCount() ); 
 
-  strip->Dirty();
+if (millis() > (lasteffectupdate + 1000) ){
+  Serial.print(".");
+    //memset(pixelsPOINT, 0, 3 * strip->PixelCount() );
+    //strip->Dirty();
+      for (uint16_t i = 0; i < pixelCount; i++)
+            {
+            strip->SetPixelColor(i,RgbColor(0,0,0));
+            } 
+
+    lasteffectupdate = millis();
+  }
 
 
 //lasteffectupdate = millis();
@@ -426,6 +469,10 @@ void StripOFF() {
  // clearpixels();
 
 //strip->Dirty();
+
+    //  END of EFFECT  
+
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
 }
 
@@ -571,6 +618,8 @@ void HSI_Cycle() {
 
 static int j;
 
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
 if (millis() > (lasteffectupdate) ){
 
   //Serial.println("Fade updaed");
@@ -614,8 +663,7 @@ j++;
 
 //  END of EFFECT  
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
 }
 
@@ -626,6 +674,8 @@ void Random_function() {
 
 static uint8_t random_choice = 0 ; 
 static uint32_t Random_func_next_time = 0;
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
 
 if (millis() > Random_func_next_time + 1000) Random_func_next_time = 0; // This resets things if its been turned off after 1s... 
 
@@ -647,14 +697,15 @@ if (millis() > Random_func_next_time + 1000) Random_func_next_time = 0; // This 
 
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 void Random_colour() {
 
  //long Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0;
+
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
     if (millis() > lasteffectupdate) {
       //Serial.print("New random choice..."); 
@@ -675,14 +726,13 @@ static uint8_t current_r = 0;
 
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
 } // end of random func
 
 
 void  CoolBlobs() {
-
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
     if (millis() > (lasteffectupdate ) ){
       
 
@@ -693,7 +743,7 @@ void  CoolBlobs() {
     } // end of timer if
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
 } // end of coolblobs
 
@@ -714,6 +764,8 @@ void setcolour () {
 */
 
 void   FadeInFadeOutRinseRepeat(uint8_t peak) {
+  if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
   if (effectState == 0)
   {
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
@@ -732,13 +784,12 @@ void   FadeInFadeOutRinseRepeat(uint8_t peak) {
   }
   effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
   
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 void  PickRandom(uint8_t peak)
 {
-
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
   // pick random set of pixels to animate
   uint8_t count = random(pixelCount);
   while (count > 0)
@@ -757,8 +808,7 @@ void  PickRandom(uint8_t peak)
     count--;
   }
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 void  LoopAround(uint8_t peak, uint16_t speed)
@@ -767,6 +817,8 @@ void  LoopAround(uint8_t peak, uint16_t speed)
   uint16_t prevPixel;
   RgbColor prevColor;
   
+  if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
   // fade previous one dark
   prevPixel = (effectState + (pixelCount - 5)) % pixelCount; 
   strip->LinearFadePixelColor(speed, prevPixel, RgbColor(0, 0, 0));
@@ -800,8 +852,7 @@ void  LoopAround(uint8_t peak, uint16_t speed)
   effectState = (effectState + 1) % pixelCount;
   
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 void  SetRandomSeed()
@@ -840,8 +891,10 @@ RgbColor  Wheel (byte WheelPos) {
 
 void  Fade() {
 
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
 static int j;
+
 if (millis() > (lasteffectupdate ) ){
 
   //Serial.println("Fade updaed");
@@ -861,8 +914,7 @@ lasteffectupdate = millis() + WS2812interval;
 }
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 
@@ -870,6 +922,7 @@ if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; op
 void  Rainbowcycle() {
 
    static int wsPoint ;
+   if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
  
  if (millis() > (lasteffectupdate ) ){
 
@@ -897,13 +950,14 @@ void  Rainbowcycle() {
 
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 }
 
 
 
 void  test4() {
+
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
 //Serial.println("TEST4");
   static int wsPoint = 0;
@@ -925,12 +979,12 @@ lasteffectupdate = millis() + WS2812interval ;
 wsPoint++; 
 }
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 void  test() {
 
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
  if (millis() > (lasteffectupdate) ){
 
@@ -950,11 +1004,12 @@ void  test() {
 }
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
  void  rainbow() {
+
+  if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 // Var 1 = timer interval
 // Var 2 = wsPoint Min
 // Var 3 = wsPoint Max
@@ -981,7 +1036,7 @@ if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; op
 }
     // Serial.println("Colours Updated..." + String(//strip->numPixels()));
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
 }   // END OF RAINBOW
 
@@ -995,6 +1050,8 @@ void clearpixels() {
 void  spiral() {
 
 static uint16_t currentcolor = 0;
+
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
   if (millis() > (lasteffectupdate ) ) 
   { // effect update timer
@@ -1019,8 +1076,7 @@ static uint16_t currentcolor = 0;
 
   } // effect update timer
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 // FACES ALGO....
@@ -1031,6 +1087,7 @@ void  test3 () {
   uint8_t square_size = var10;
   uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
 
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 5;
@@ -1096,8 +1153,7 @@ void  test3 () {
 
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 } // end of test
 
 
@@ -1852,6 +1908,8 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 void eq1 () {
 
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
   if (millis() > lasteffectupdate  )  {
 
       strip->SetPixelColor(3, RgbColor(255,0,0));
@@ -1880,8 +1938,7 @@ pixelshift_middle();
 // pixelshift(6,0);
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 
@@ -2025,6 +2082,9 @@ uint8_t x,y,colour_index;
 uint8_t total_y = return_total_y(count_x); // get total number of rows
 RgbColor colournew;
 
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
+
 for (y = 0; y < total_y; y++) {
 
   colour_index = map(y,1,total_y-1,1,254);  // map steps of blend.........
@@ -2068,14 +2128,16 @@ if (y == total_y - 1) colour_index = 255;
 strip->StartAnimating(); // start animations
 
 //Serial.println("Top Bottom Feed function finished...");
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
 void Random_Top_Bottom(uint8_t fadetype) { 
 
 //static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0, total_x = 0;
+
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
 
 if (var7 == 0 ) {total_x = 13;} else total_x = var7;
     
@@ -2135,8 +2197,7 @@ do {
   //}
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 } // end of actual function.....
 
 

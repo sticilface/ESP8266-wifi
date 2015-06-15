@@ -1,8 +1,8 @@
 // Wifi parameters
 const int BUFSIZE = 32; //was 16 
 
-char ssid[BUFSIZE] ; //= "fyffest";
-char password[BUFSIZE];// = "wellcometrust";
+char ssid[BUFSIZE]; // = "fyffest";
+char password[BUFSIZE]; //  = "wellcometrust";
 char deviceid[BUFSIZE];// = "";
 //String deviceid;
 
@@ -87,8 +87,9 @@ String mqttserver_string = " ";
 
 const String htmlendstring = "<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a> <a href='/ws2812'>WS2812</a>";
 #define numberofbaudrates 6
-#define defaultserialspeed 1
 const long baudrates[numberofbaudrates] = {9600,115200,256000,460800,921600,2000000};
+uint8_t currentspeed = 2; 
+long serialspeed = 115200; 
 
 
 boolean light_status = false;
@@ -129,7 +130,7 @@ static const char *MODE_STRING[] = {
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
-uint8_t CurrentBrightness; 
+uint8_t CurrentBrightness = 255; 
 bool paused = false; 
 
 uint16_t CurrentAnimationSpeed = 2000; 

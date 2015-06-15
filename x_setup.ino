@@ -3,21 +3,27 @@ void setup() {
   // put your setup code here, to run once:
   EEPROM.begin(512);
 
-  long serialspeed = 0;
-  uint8_t currentspeed = EEPROM.read(SERIALspeedbyte);
+  //long serialspeed = 0;
 
-  if (currentspeed < 0 || currentspeed > numberofbaudrates) {
-    currentspeed = defaultserialspeed;
+  currentspeed = EEPROM.read(SERIALspeedbyte);
+
+  if (currentspeed == 0 || currentspeed > numberofbaudrates + 1)  {
+    currentspeed = 2; 
     EEPROM.write(SERIALspeedbyte, currentspeed);
     EEPROM.commit();
-    }  
+  }; 
+
+
+    serialspeed = baudrates[currentspeed - 1] ; 
+
+
 
     //currentspeed = 2;
-
+/*
   for (int i = 0; i < numberofbaudrates; i++) {
     if(currentspeed == i) serialspeed = baudrates[i];
   }
-
+*/
   //serialspeed = 115200;
 
   Serial.begin(serialspeed); // 921600 460800 115200
@@ -39,10 +45,10 @@ void setup() {
   wifimode = 2;
   Serial.println("EMERGENCY ACCESS MODE ENABLED");
   AP_STA_timer = millis();
-  Serial.print("Start time: ");
-  Serial.print(AP_STA_timer /1000);
-  Serial.print(" Wifi Mode: ");
-  Serial.println(wifimode);
+  //Serial.print("Start time: ");
+  //Serial.print(AP_STA_timer /1000);
+  //Serial.print(" Wifi Mode: ");
+  //Serial.println(wifimode);
 
     } else
     {
@@ -53,6 +59,7 @@ void setup() {
 
   scannetworks();
   delay(100);
+
   wifimode = 1;
  //Serial.print("Current wifi mode is : ");
  //Serial.println(WiFi.mode());
@@ -62,8 +69,9 @@ void setup() {
 
   restartNetworking();
 
-
-
+//    TAKE OUT MDNS... buggy....
+/*
+if (wifimode == 1) {
   
    if (!mdns.begin(deviceid, WiFi.localIP())) {
     Serial.print("Error setting up MDNS responder!....(");
@@ -71,11 +79,17 @@ void setup() {
     while(1) { 
       delay(1000);
     }
-  }
+}
+
+
   
   Serial.println("mDNS responder started.");
 
-    
+    }
+
+*/ 
+
+
   //Serial.print(deviceid);
   //Serial.println(".local)");
   
@@ -119,6 +133,10 @@ void setup() {
     //timer.setInterval(Uptimer_timeout, uptime);
 
   //Serial.println("Timers set up");
+
+  // OTA updater...
+  //listener.begin(8266);
+  //
   
   setup_Plugin ();
 

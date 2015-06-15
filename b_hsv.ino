@@ -174,11 +174,21 @@ RgbColor hsvToRgb(double h, double s, double v) {
 }
  
 double threeway_max(double a, double b, double c) {
-    return max(a, max(b, c));
+    if (a > b && a > c) return a; 
+    if (b > a && b > c) return b; 
+    if (c > a && c > b) return c; 
+
+
+    //return max(a, max(b, c));
+    //return a; 
 }
 
 double threeway_min(double a, double b, double c) {
-    return min(a, min(b, c));
+
+    if (a < b && a < c) return a; 
+    if (b < a && b < c) return b; 
+    if (c < a && c < b) return c; 
+    //return min(a, min(b, c));
 }
 
 double hue2rgb(double p, double q, double t) {

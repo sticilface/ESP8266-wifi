@@ -318,43 +318,50 @@ void ICACHE_FLASH_ATTR handle_test() {
 }
 
 
-void ICACHE_FLASH_ATTR handle_misc ()
+void handle_misc ()
 
 {
+  bool updateEEPROMflag = false; 
+
           //  EEPROM WIPE 
-         if (server.arg("eeprom") == "wipe") EEPROM_wipe();
+  if (server.arg("eeprom") == "wipe") { EEPROM_wipe(); } ; 
+
           // UPDATE SERIAL SPEED...  requires reboot to work...
-         if (server.arg("serial").length() != 0) {
-            String a = server.arg("serial");
-            Serial.println("Serial mode recieved: " + a);
-            int selected = a.toInt();
-            EEPROM.write(SERIALspeedbyte, selected);
-            EEPROM.commit();
-            Serial.println("Serial speed updated to: " + String(baudrates[selected]));
-         }
-         
-  int currentspeed = EEPROM.read(SERIALspeedbyte); //SERIALspeedbyte
-  //currentspeed = 4;
-  String selected = " "; 
+  if (server.arg("serial").length() != 0) {
+            Serial.println("NEW SERIAL RECIEVED..");
+            Serial.end();
+            delay(10); 
+            currentspeed = (server.arg("serial")).toInt() + 1; 
+            serialspeed = baudrates[currentspeed - 1] ; 
+            Serial.begin(serialspeed); // 921600 460800 115200
+            delay(10);
+            Serial.print("Serial mode recieved: ");
+            Serial.println(currentspeed);
+            updateEEPROMflag = true; 
+        } ; 
+
+  String selectedhere;  
 
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
   httpbuf += "<p> Heap Size = " + String(ESP.getFreeHeap()) ; // + "</br>";
   httpbuf += "<br> Flash Size = " + String(ESP.getFlashChipSize()) ;
   httpbuf += "<br> Flash Size by ID = " + String(ESP.getFlashChipSizeByChipId()) ;
-
   httpbuf += "<br> Flash ID = " + String(ESP.getFlashChipId()) ;
   httpbuf += "<br> Chip ID = " + String(ESP.getChipId()) + "</p>";
+  httpbuf += "<br> Uptime = " + String(millis()) + "</p>";   
   httpbuf += "<p><form action='/misc' method='POST'>\n";
   httpbuf += "<p> Select Speed <select name='serial' onchange='this.form.submit();'>";
-  for (int i=0; i < numberofbaudrates; i ++ ) {
-    if (currentspeed == i) { 
-        selected = "' selected "; 
-      } else selected = "' "; 
-    httpbuf += "<option value='" + String(i) + selected + ">" + String(baudrates[i]) + "</option>";
+  
+  for (uint8_t i = 0; i < numberofbaudrates; i ++ ) {
+    if ((currentspeed - 1) == i) { 
+        selectedhere = "' selected "; 
+      } else { selectedhere = "' "; }
+
+    httpbuf += "<option value='" + String(i) + selectedhere + ">" + String(baudrates[i]) + "</option>";
   }
+
   httpbuf += "</select>";
   httpbuf += "</form></p>";
-
   httpbuf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
   httpbuf += "<br><a href='/misc?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
   httpbuf += "<br><a href='/misc?eeprom=wipe'> EEPROM FORMAT </a>";
@@ -362,5 +369,10 @@ void ICACHE_FLASH_ATTR handle_misc ()
 
   server.send(200, "text/html", httpbuf);
 
+  if (updateEEPROMflag) { 
+  EEPROM.write(SERIALspeedbyte, currentspeed);
+  EEPROM.commit();
+  updateEEPROMflag = false;
+          }; 
 
-}
+} ; 

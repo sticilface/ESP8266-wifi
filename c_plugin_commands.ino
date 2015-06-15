@@ -8,18 +8,22 @@ const int PixelCount_address = 248;
 
 void handle_root () {
 
-  handle_WS2812();
+  if (wifimode == 1)  { handle_WS2812(); } else {
+  
+  handle_wifi();
   /*
-  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
+  httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> SETUP DEVICE</h1>\n";
 
   httpbuf += "<p> Heap Size = " + String(ESP.getFreeHeap()) + " </p>";
   httpbuf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
   httpbuf += "<br><a href='/wifi?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
   httpbuf += "<br><a href='/wifi?eeprom=wipe'> EEPROM FORMAT </a>";
-  httpbuf += htmlendstring; 
+  httpbuf += htmlendstring; */ 
+
+};
 
   server.send(200, "text/html", httpbuf);
-  */
+  
 }
 
 void setup_Plugin () {
@@ -37,9 +41,7 @@ void setup_Plugin () {
 
 // Brightness
 
-    CurrentBrightness = EEPROM.read(PixelCount_address + 2);
-
-    if (isnan(CurrentBrightness)) CurrentBrightness = 255;
+    if (isnan(CurrentBrightness) || CurrentBrightness == 0) CurrentBrightness = 255;
 
 // Last Op State
 
