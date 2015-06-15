@@ -1,5 +1,5 @@
-#define cache ICACHE_FLASH_ATTR
-
+//#define cache ICACHE_FLASH_ATTR
+#define cache  
 // Wifi parameters
 const int BUFSIZE = 32; //was 16 
 

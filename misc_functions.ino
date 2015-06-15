@@ -68,11 +68,11 @@ void  restartNetworking()
 
   //WiFi.begin();
     int i = 0;
-    while ((WiFi.status() != WL_CONNECTED ) && (i < 40 )) {
+    while (WiFi.status() != WL_CONNECTED ) {
     delay(500);
     i++;
     Serial.print(".");
-    if (i == 39) Serial.print("Failed");
+    if (i == 39) { Serial.print("Failed"); break; } ;
     }
     
  
@@ -141,6 +141,7 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
 {
   Serial.println("Scanning for Networks");
   wifinetworksfound = WiFi.scanNetworks();
+
 } 
 
 
@@ -223,7 +224,6 @@ void cache uptime ()
   int min = sec / 60;
   int hr = min / 60;
 
-  Serial.println();
   Serial.print("Uptime ");
   Serial.print(hr);
   Serial.print(":");
@@ -232,6 +232,8 @@ void cache uptime ()
   Serial.print(sec % 60);
   Serial.print("   HEAP = ");
   Serial.print(ESP.getFreeHeap());
+  Serial.println();
+
 
 }
 

@@ -192,6 +192,8 @@ void ICACHE_FLASH_ATTR handle_io() {
 
 
 void ICACHE_FLASH_ATTR handle_test() {
+
+  /*
 String buf; 
     byte addressarray[8] = {PIN_1,PIN_2,PIN_3,PIN_4,PIN_5,PIN_6,PIN_7,PIN_8};
 
@@ -217,16 +219,16 @@ String buf;
              //server.arg(root_string_names_actual[i]).length() != 0)
                   {
                   
-                  Serial.println("Writing " + String(  addressarray[i], BIN) + " to " + server.arg(b));
+              //    Serial.println("Writing " + String(  addressarray[i], BIN) + " to " + server.arg(b));
                    // EepromUtil::eeprom_write_bytes( int startAddr, const byte* array, int numBytes ) 
-                       String value = server.arg(b); 
-                       char buf[value.length()];
-                       value.toCharArray(buf,50);
-                       int ValueInt = atoi(buf);
+              //         String value = server.arg(b); 
+              //         char buf[value.length()];
+              //         value.toCharArray(buf,50);
+              //         int ValueInt = atoi(buf);
                        //byte ValueByte = 
                    
-                    EepromUtil::eeprom_write_bytes(ValueInt, &(addressarray[i]), 1);
-                    EEPROM.commit();
+              //      EepromUtil::eeprom_write_bytes(ValueInt, &(addressarray[i]), 1);
+              //      EEPROM.commit();
 
                   }
           }
@@ -315,7 +317,7 @@ String buf;
     buf += htmlendstring; 
   
     server.send(200, "text/html", buf);
-    
+    */
 }
 
 
@@ -323,7 +325,7 @@ void handle_misc ()
 
 {
   String buf; 
-   Serial.println();
+   //Serial.println();
   Serial.print("Page hit...(");
   Serial.print(ESP.getFreeHeap());
   Serial.print(")...");
@@ -349,7 +351,7 @@ void handle_misc ()
 
   String selectedhere;  
 //<meta http-equiv='refresh' content='30'/>
-  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30' name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
+  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
   buf += "<p> Heap Size = " + String(ESP.getFreeHeap()) ; // + "</br>";
   buf += "<br> Flash Size = " + String(ESP.getFlashChipSize()) ;
   buf += "<br> Flash Size by ID = " + String(ESP.getFlashChipSizeByChipId()) ;
@@ -381,8 +383,8 @@ void handle_misc ()
   EEPROM.commit();
   updateEEPROMflag = false;
           }; 
-  Serial.print("Page finished.");
+  Serial.println("Page finished.");
   //Serial.print(ESP.getFreeHeap());
   //Serial.print(")");
 
-} ; 
+}  

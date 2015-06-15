@@ -27,6 +27,8 @@ void setup( void ) {
   //serialspeed = 115200;
 
   Serial.begin(serialspeed); // 921600 460800 115200
+  //Serial.begin(115200); // 921600 460800 115200
+
   //Serial.setDebugOutput(true);
   //Serial.setDebugOutput(false);
   delay(10);
@@ -57,8 +59,9 @@ void setup( void ) {
     wifimode = 1;
     } 
 
-  scannetworks();
-  delay(100);
+  //scannetworks();
+
+  //delay(2000);
 
   wifimode = 1;
  //Serial.print("Current wifi mode is : ");
@@ -126,7 +129,7 @@ if (wifimode == 1) {
 
   server.on("/", handle_misc);
   
-  //server.on("/wifi", handle_wifi);
+  server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);
   server.on("/mqtt", handle_mqtt);
   server.on("/io", handle_io);
