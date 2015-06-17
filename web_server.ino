@@ -11,6 +11,13 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
   // your 32s are : 31,63,95,127,159,191,223,255,287,319,351,383,415,447,479,511
   Serial.println("Begining html dump of EEPROM.");
 
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+
+  server.send(200, "text/html", "");
+
+  WiFiClient client = server.client();
+
+
    int j = 0;
    bytedump = "<p><table style='width:50%'><tr>";
    for (int i = 0; i < 128; i++) // was 128
@@ -24,8 +31,8 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
    }
      j += 1; 
    }
+  server.sendContent(bytedump);
 
-   server.send(200, "text/html", bytedump);
 
    //bytedump = " ";
 
@@ -44,7 +51,7 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
    }
 
 
-    server.send(200, "", bytedump);
+  server.sendContent(bytedump);
     //server.write(*bytedump, sizeof bytedump); 
 
     //bytedump = " ";
@@ -65,7 +72,7 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
 
    // bytedump += "</table>";
 
-    server.send(200, "", bytedump);
+  server.sendContent(bytedump);
 
  bytedump = "<td></tr><tr>";
    j = 0;
@@ -83,7 +90,7 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
 
    bytedump += "</table>";
 
-    server.send(200, "", bytedump);
+  server.sendContent(bytedump);
 
 
 

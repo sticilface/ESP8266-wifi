@@ -1,5 +1,5 @@
 ////// ----- SSID Handle ---------
-void ICACHE_FLASH_ATTR ssid_command (String value)
+void cache ssid_command (String value)
 {
           Serial.print("*SSID recieved....");
           String buf;
@@ -12,6 +12,7 @@ void ICACHE_FLASH_ATTR ssid_command (String value)
             } else {
               Serial.print("New SSID recieved: ");
               networkrestart = true;   //****** MUST UNCOMMENT.......
+              wifimode = 2; // Set this to sort out the mode, backup.. 
               if (EEPROM.read(APbyte) != flagvalue) EEPROM.write(APbyte, flagvalue); // Set up Emergency ACCESSS BYTE....
               send_mqtt_msg("status","SSID updated: " + value);
               //eeprom_updates_pending = true;
@@ -33,7 +34,7 @@ void ICACHE_FLASH_ATTR ssid_command (String value)
 ////// ----- SSID Handle ---------
 
 
-void ICACHE_FLASH_ATTR password_command (String value)
+void cache password_command (String value)
 {
           Serial.print("*Password recieved....");
           String buf;
@@ -46,6 +47,7 @@ void ICACHE_FLASH_ATTR password_command (String value)
             } else {
               Serial.print("New Password recieved: ");
               networkrestart = true;   //****** MUST UNCOMMENT.......
+              wifimode = 2;
               if (EEPROM.read(APbyte) != flagvalue) EEPROM.write(APbyte, flagvalue);
               send_mqtt_msg("password","SSID updated: " + value);
               //eeprom_updates_pending = true;
@@ -60,7 +62,7 @@ void ICACHE_FLASH_ATTR password_command (String value)
             }
    }
 
-void ICACHE_FLASH_ATTR deviceid_command (String value)
+void cache deviceid_command (String value)
 {
           Serial.print("*Deviceid recieved....");
           String buf;
@@ -86,7 +88,7 @@ void ICACHE_FLASH_ATTR deviceid_command (String value)
    
  /// -- MQTT Server ----
  
-void ICACHE_FLASH_ATTR mqttserver_command (String value)
+void cache mqttserver_command (String value)
 {
           Serial.print("*MQTTServer recieved....");
           Serial.println(value);
@@ -152,7 +154,7 @@ mqttreload = true;
             } */
    }
    
-void ICACHE_FLASH_ATTR debug_command (String value)
+void cache debug_command (String value)
 
 {
  Serial.println("DEBUG COMMAND IS CALLED");
@@ -196,31 +198,32 @@ void ICACHE_FLASH_ATTR debug_command (String value)
 
 
   
-void ICACHE_FLASH_ATTR mqttreloadfunc ()
+void cache mqttreloadfunc ()
 
 {
 
   // if (mqttreload) 
     
       mqttreload = false;
-      Serial.println("Disconnecting MQTT Client:..... ");
+      //Serial.println("Disconnecting MQTT Client:..... ");
       mqttclient.disconnect();      
       delay(10);
-      Serial.println("Disconnecting MQTT wifiClient:..... ");
+      //Serial.println("Disconnecting MQTT wifiClient:..... ");
       wifiClient.stop();
       delay(10);      
-      Serial.println("Creating new MQTT Client:..... ");
+      //Serial.println("Creating new MQTT Client:..... ");
       WiFiClient wifiClient;
       delay(10);
-      Serial.println("Calling pubsubclient:..... ");
+      //Serial.println("Calling pubsubclient:..... ");
       //PubSubClient mqttclient(mqttserver, 1883, callback, wifiClient);
       delay(10);
+      
       initiatemqqt (); 
                          
        
 }
   
-void ICACHE_FLASH_ATTR Serial_Command (String value)
+void cache Serial_Command (String value)
 
 {
   Serial.println("#" + value);

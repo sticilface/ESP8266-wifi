@@ -27,27 +27,51 @@ void cache updateIPaddress()
   }
 }
 
+bool cache firstboot() {
+
+if (EEPROM.read(0) != flagvalue) {
+ EEPROM_wipe();
+ EEPROM.write(0,flagvalue);
+ EEPROM.commit();
+ return true; 
+} else { return false; }
+
+
+
+}
+
  void cache getdeviceID()
 {
   
   Serial.println();  
   //clearbufchar();
     //EepromUtil::eeprom_read_string(deviceidAddress, , BUFSIZE);
-    if(deviceid[0] == 0 || EEPROM.read(0) == 21) 
+    if(deviceid[0] == 0 || EEPROM.read(0) != flagvalue) 
     {
       
-      clientName = "esp-";
-      uint8_t mac[6];// = {12,34,56,78,89,34 };
-      WiFi.macAddress(mac);
+      //clientName = "esp-";
+      //uint8_t mac[6];// = {12,34,56,78,89,34 };
+      //WiFi.macAddress(mac);
       
-      clientName += macToStr(mac);
-      clientName.toCharArray(deviceid, BUFSIZE);      
+      //clientName += macToStr(mac);
+      (getdeviceID_MAC()).toCharArray(deviceid, BUFSIZE);      
+
       Serial.print("No Device name in EEPROM.....Creating Device Name: ");
+
       Serial.println(deviceid);
       //Serial.println();
       } 
 } 
 
+
+String cache getdeviceID_MAC () {
+      
+      clientName = "esp-";
+      uint8_t mac[6];// = {12,34,56,78,89,34 };
+      WiFi.macAddress(mac);
+      clientName += macToStr(mac);
+      return clientName;
+}
 
 
 
@@ -61,9 +85,17 @@ void  restartNetworking()
   LoadParams();
   getdeviceID();
   //Serial.println();
+
+
+  if (wifimode == 1) WiFi.mode(WIFI_STA);
+delay(5); 
+
+
   if (EEPROM.read(ssidAddressbyte) == flagvalue) {
     
       Serial.print("Joining Wifi Network");
+
+
       WiFi.begin(ssid, password);
 
   //WiFi.begin();
@@ -75,28 +107,39 @@ void  restartNetworking()
     if (i == 39) { Serial.print("Failed"); break; } ;
     }
     
- 
-
-
 
   }   else { Serial.print("NO SSID specified...");   }
   
   
   if(WiFi.status() != WL_CONNECTED)
   {
-    Serial.println();
-    Serial.print("Setting up Access Point....");
-    WiFi.mode(WIFI_AP_STA);
+    //Serial.println();
+    //Serial.print("Setting up Access Point....");
+    //WiFi.mode(WIFI_AP_STA);
     wifimode = 2;
-    AP_STA_timer = millis();
-    WiFi.softAP(deviceid);
-    Serial.println(deviceid);
+    //AP_STA_timer = millis();
+    //WiFi.softAP(deviceid);
+    //WiFi.softAP((char*)(getdeviceID_MAC()).c_str(), "melvana");
+    //Serial.println((char*)(getdeviceID_MAC()).c_str());
   } else  {
     Serial.println("");
     Serial.print("Connected to ");
     Serial.println(ssid);
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP()); 
+  }
+
+  if (wifimode == 2 ) {
+    //Serial.println();
+    Serial.print("Setting up Access Point....");
+    WiFi.mode(WIFI_AP_STA);
+    delay(5); 
+    AP_STA_timer = millis();
+    //WiFi.softAP(deviceid);
+    WiFi.softAP((char*)(getdeviceID_MAC()).c_str(), "melvana");
+    Serial.println((char*)(getdeviceID_MAC()).c_str());
+
+
   }
   
   updateIPaddress();
@@ -137,7 +180,8 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
           }
 } 
 
- void ICACHE_FLASH_ATTR scannetworks()
+
+ void cache scannetworks()
 {
   Serial.println("Scanning for Networks");
   wifinetworksfound = WiFi.scanNetworks();

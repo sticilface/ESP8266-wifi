@@ -3,6 +3,9 @@ void setup( void ) {
   // put your setup code here, to run once:
   EEPROM.begin(512);
 
+
+ bool wiped = firstboot(); 
+
   //long serialspeed = 0;
 
   currentspeed = EEPROM.read(SERIALspeedbyte);
@@ -16,7 +19,7 @@ void setup( void ) {
 
     serialspeed = baudrates[currentspeed - 1] ; 
 
-
+  
 
     //currentspeed = 2;
 /*
@@ -33,6 +36,14 @@ void setup( void ) {
   //Serial.setDebugOutput(false);
   delay(10);
   Serial.println();
+  //Serial.print("Wiped = ");
+  //Serial.print(wiped);
+  //Serial.print("   FIRST BIT = ");
+  //Serial.write(EEPROM.read(0));
+  //Serial.println();
+
+  if (wiped) Serial.println("FIRST BOOT EEPROM WIPED"); 
+
   Serial.println("Welcome to Andrew Melvin's ESP Software");
   
   
@@ -63,7 +74,7 @@ void setup( void ) {
 
   delay(2000);
 
-  wifimode = 1;
+  //wifimode = 1;
  //Serial.print("Current wifi mode is : ");
  //Serial.println(WiFi.mode());
 
@@ -125,9 +136,9 @@ if (wifimode == 1) {
 
   ///// ---- WEB SERVER ------/////
   
-  // if (wifimode == 2)  { server.on("/", handle_wifi); } else { server.on("/", handle_root); }
+  if (wifimode == 2)  { server.on("/", handle_wifi); } else { server.on("/", handle_root); }
 
-  server.on("/", handle_root);
+  //server.on("/", handle_root);
   
   server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);

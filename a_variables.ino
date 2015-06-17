@@ -26,8 +26,8 @@ String mqttbuf = " ";
 
 char mqttesptopic[BUFSIZE] = "esp";  //Required to define the GLOBAL MQTT RESPONSE!
 
-int wifinetworksfound = 0;
-int wifimode = 0;
+uint8_t wifinetworksfound = 0;
+uint8_t wifimode = 0;
 
 const int APtimeout = 300000;
 boolean APtimeout_done = false;
