@@ -153,8 +153,8 @@ if (wifimode == 1) {
 
   //Serial.println("HTTP server started");
 
-  //  timer.setInterval(APtimeout, deactivateAP);
-  //  timer.setInterval(MQTTtimeout, initiatemqqt);
+    timer.setInterval(APtimeout, deactivateAP);
+    timer.setInterval(MQTTtimeout, initiatemqqt);
 
    // timer.setInterval(Uptimer_timeout, uptime);
 

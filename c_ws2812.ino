@@ -1,6 +1,9 @@
 // TODO.... 
 // 1.  fix MQTT instructions... currently does not work through opState... and extra effects don't work... must integrate MODEDROP....
-// 2.  squares2 and squares random don't work
+// 2.  consolidate text and order of effects
+// 3.  Place strings to flash for web pages... and parce....  PARTIAL done... 
+// 4.  Sort out wifi config... and AP configuration / timeout... 
+// 5.  nointurrup handles for UDP parce... maybe... 
 
 
 // EEPROM ALLOCATIONS:
@@ -87,16 +90,39 @@ bool updateLEDs = false;
       //----  having this under here works better as the page gets updated before the request data is fired back!
 
       if (paused) { 
-        paused_string = "<a href='/ws2812?mode=play'>PLAY</a> " ; 
+        paused_string = F("<a href='/ws2812?mode=play'>PLAY</a> ") ; 
       } else {
-        paused_string = "<a href='/ws2812?mode=pause'>PAUSE</a>" ; 
+        paused_string = F("<a href='/ws2812?mode=pause'>PAUSE</a>") ; 
       }
 
-  buf = "<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name ='viewport'  width = 'device-width' charset='utf-8'><title>" + String(deviceid) + "</title></head><body><h1> " + String(deviceid) + " </h1>";   
-  if (wifimode == 1) { buf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
-  buf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | "  +  paused_string + " | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
-  buf += "<form name=frmTest action='/ws2812' method='POST'>";
-  buf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
+String content3 = F("\
+<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
+%\
+<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
+<form name=frmTest action='/ws2812' method='POST'>\
+Select Mode <select name='modedrop' onchange='this.form.submit();'>\
+");
+
+  buf = insertvariable ( content3, String(deviceid));
+
+  buf = insertvariable ( buf, String(deviceid));
+  
+  if (wifimode == 1 ) 
+    { buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
+    } else { buf = insertvariable ( buf, " "); } ;
+
+    buf = insertvariable ( buf, paused_string);
+
+
+//  if (wifimode == 1) { buf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
+    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    server.send(200, "text/html", "");
+    WiFiClient client = server.client();
+
+   server.sendContent(buf);
+
+ buf = " ";
+
 
 for (int k=0; k < numberofmodes; k++ ) {
     if (HoldingOpState == k) { 
@@ -110,35 +136,55 @@ for (int k=0; k < numberofmodes; k++ ) {
   buf += "</select>";
   buf += "</form></p>";
 
-    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-    server.send(200, "text/html", "");
-    WiFiClient client = server.client();
+
     server.sendContent(buf);
+
     buf = " "; 
 
   if(wifimode == 1) {
-  buf += "<p><form action='/ws2812' method='POST'";
-  buf += "<p>Color: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "' >"; 
-  buf += "<br>  <input type='submit' value='Submit'/>"; 
-  buf += "</form>"; 
-  }  // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
+  String content0 = F("<p><form action='/ws2812' method='POST'\
+  <p>Color: <input class='color' name='rgbpicker' value = '%' >\
+  <br>  <input type='submit' value='Submit'/>\
+  </form>\
+  ");
 
-  buf += "<form name=sliders action='/ws2812' method='POST'>";
-  buf += "<br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='" + String(CurrentAnimationSpeed) + "' onchange='this.form.submit();' > ";
-  buf += "<br>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "' onchange='this.form.submit();' > ";
-  buf += "<br>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' onchange='this.form.submit();'> ";
-  //httpbuf += "<input type='submit' value='Submit'/>" ; 
-
-  buf += "</form>"; 
-  buf += "<p><form action='/ws2812' method='POST'";
-  buf += "<form action='/ws2812' method='POST'>";    
-  buf += "<p>LEDs: <input type='text' id='leds' name='leds' value='"+ String(pixelCount) + "' >";
-  buf += "<br>PIN: <input type='text' id='ledpin' name='ledpin' value='"+ String(pixelPIN) + "' >";
-  buf += "<br>  <input type='submit' value='Submit'/>" ; 
-  buf += "</form>"; 
-  buf += "Power = " + String(power) + "mA"; 
-  buf += "<br> Adalight order: GRB";
+  buf = insertvariable ( content0, CurrentRGBcolour); 
   
+  server.sendContent(buf);
+
+  }  // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
+  
+
+ // 1 = CurrentAnimationSpeed String(CurrentAnimationSpeed) 
+ // 2 = CurrentBrightness String(CurrentBrightness)
+ // 3 = WS2812interval String(WS2812interval)
+ // 4 = pixelCount String(pixelCount)
+ // 5 = pixelPIN String(pixelPIN)
+ // 6 = String(power) 
+  
+  String content1 = F("\
+  <form name=sliders action='/ws2812' method='POST'>\
+  <br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='%' onchange='this.form.submit();' >\
+  <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
+  <br>Timer: <input type='range' name='timer'min='0' max='2000' value=' %' onchange='this.form.submit();'>\
+  </form>\
+  <p><form action='/ws2812' method='POST'\
+  <form action='/ws2812' method='POST'>\
+  <p>LEDs: <input type='text' id='leds' name='leds' value='%' >\
+  <br>PIN: <input type='text' id='ledpin' name='ledpin' value='%' >\
+  <br>  <input type='submit' value='Submit'/>\
+  </form>\
+  Power = %mA\
+  <br> Adalight order: GRB\
+  ");
+  
+  buf = insertvariable ( content1, String(CurrentAnimationSpeed)); 
+  buf = insertvariable ( buf, String(CurrentBrightness)); 
+  buf = insertvariable ( buf, String(WS2812interval)); 
+  buf = insertvariable ( buf, String(pixelCount)); 
+  buf = insertvariable ( buf, String(pixelPIN)); 
+  buf = insertvariable ( buf, String(power) ); 
+
   buf += htmlendstring; 
  
   //server.send(200, "text/html", buf);
@@ -1642,7 +1688,7 @@ String buf;
 
 
 
-  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
+  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
   buf += " <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>  "; 
   buf += "<form name=form action='/lightsconfig' method='POST'>\n";
   //buf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";

@@ -296,3 +296,16 @@ void OTA_UPDATE() {
 
 }
 */
+
+String cache insertvariable(String Source , String insert) {
+
+int position = Source.indexOf("%");
+String one, two; 
+
+one = Source.substring(0,Source.indexOf('%') );
+two = Source.substring(Source.indexOf('%') +1 , Source.length());
+
+return (one + insert + two); 
+
+}
+

@@ -132,7 +132,7 @@ String buf;
   int mqttconnected = mqttclient.connected();
   
 
-  buf = F("<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head><meta name ='viewport' width = 'device-width' content='text/html' charset='utf-8'><title>Wifi Configuration</title></head><body><h1>Wifi Config</h1>");
+  buf = F("<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head><meta name='viewport' content='initial-scale=1'><title>Wifi Configuration</title></head><body><h1>Wifi Config</h1>");
   buf += "<p>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
   buf += "<br>Current SSID is: " + String(ssid);
   buf += "<br>Current MQTT Server is: " + mqttserver_string + "..." + ((mqttconnected)?"Connected":"Disconnected");
@@ -360,15 +360,42 @@ void handle_misc ()
 
   String selectedhere;  
 //<meta http-equiv='refresh' content='30'/>
-  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> Misc Functions</h1>\n";
-  buf += "<p> Heap Size = " + String(ESP.getFreeHeap()) ; // + "</br>";
-  buf += "<br> Flash Size = " + String(ESP.getFlashChipSize()) ;
-  buf += "<br> Flash Size by ID = " + String(ESP.getFlashChipSizeByChipId()) ;
-  buf += "<br> Flash ID = " + String(ESP.getFlashChipId()) ;
-  buf += "<br> Chip ID = " + String(ESP.getChipId()) + "</p>";
-  buf += "<br> Uptime = " + String(millis()) + "</p>";   
-  buf += "<p><form action='/misc' method='POST'>\n";
-  buf += "<p> Select Speed <select name='serial' onchange='this.form.submit();'>";
+
+  // 1 = String(deviceid)
+  // 2 = String(ESP.getFreeHeap())
+  // 3 = String(ESP.getFlashChipSize())
+  // 4 = String(ESP.getFlashChipSizeByChipId())
+  // 5 = String(ESP.getFlashChipId())
+  // 6 = String(ESP.getChipId())
+  // 7 = String(millis())
+  // 8 = 
+
+
+  String content0 = F("\
+  <!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name='viewport' content='initial-scale=1'><title> % ESP Melvide</title></head><body><h1> Misc Functions</h1>\
+  <p> Heap Size = % \
+  <br> Flash Size = % \
+  <br> Flash Size by ID = % \
+  <br> Flash ID = % \
+  <br> Chip ID = % \
+  <br> Uptime = % \
+  <p><form action='/misc' method='POST'>\
+  <p> Select Speed <select name='serial' onchange='this.form.submit();'>\
+  ");
+
+  buf = insertvariable (content0, String(deviceid)); 
+  buf = insertvariable ( buf, String(ESP.getFreeHeap()));
+  buf = insertvariable ( buf, String(ESP.getFlashChipSize()));
+  buf = insertvariable ( buf, String(ESP.getFlashChipSizeByChipId()));
+  buf = insertvariable ( buf, String(ESP.getFlashChipId()));
+  buf = insertvariable ( buf, String(ESP.getChipId()));
+  buf = insertvariable ( buf, String(millis()));
+
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  server.send(200, "text/html", "");
+  WiFiClient client = server.client();
+  server.sendContent(buf);
+  buf = " "; 
   
   for (uint8_t i = 0; i < numberofbaudrates; i ++ ) {
     if ((currentspeed - 1) == i) { 
@@ -378,14 +405,24 @@ void handle_misc ()
     buf += "<option value='" + String(i) + selectedhere + ">" + String(baudrates[i]) + "</option>";
   }
 
-  buf += "</select>";
-  buf += "</form></p>";
-  buf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
-  buf += "<br><a href='/misc?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
-  buf += "<br><a href='/misc?eeprom=wipe'> EEPROM FORMAT </a>";
-  buf += htmlendstring; 
+  server.sendContent(buf);
 
-  server.send(200, "text/html", buf);
+  String content1 = F("\
+  </select>\
+  </form></p>\
+  <p><a href='/bytedump'> EEPROM DUMP </a>\
+  <br><a href='/misc?eeprom=bytedump'> EEPROM DUMP BYTES </a>\
+  <br><a href='/misc?eeprom=wipe'> EEPROM FORMAT </a>"); 
+  
+
+  
+  server.sendContent(content1);
+
+  //buf = htmlendstring; 
+
+  server.sendContent(htmlendstring); 
+
+  //server.send(200, "text/html", buf);
 
   if (updateEEPROMflag) { 
   EEPROM.write(SERIALspeedbyte, currentspeed);
