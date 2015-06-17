@@ -132,17 +132,25 @@ String buf;
   int mqttconnected = mqttclient.connected();
   
 
-  buf = F("<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>Wifi Configuration</title></head>\n<body><h1>Wifi Config</h1>\n");
+  buf = F("<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head><meta name ='viewport' width = 'device-width' content='text/html' charset='utf-8'><title>Wifi Configuration</title></head><body><h1>Wifi Config</h1>");
   buf += "<p>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
   buf += "<br>Current SSID is: " + String(ssid);
   buf += "<br>Current MQTT Server is: " + mqttserver_string + "..." + ((mqttconnected)?"Connected":"Disconnected");
   buf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
-  buf += F("<br><form action='/wifi' method='POST'>\n");
-  buf += F("\n\nNew Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");
-  buf += F("\n\nMQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>");
+  buf += F("<br><form action='/wifi' method='POST'>");
+  buf += F("New Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");
+  buf += F("MQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>");
 
   //buf += "<input type='radio' name='state' value='1' checked>On<input type='radio' name='state' value='0'>Off<\p>"; 
   buf += "\n\n<p>Please Select Wifi Network...</p>";
+
+    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    server.send(200, "text/html", "");
+    WiFiClient client = server.client();
+    server.sendContent(buf);
+    buf = " ";
+
+
   String checked;
   for (int i = 0; i < wifinetworksfound; ++i)
   {
@@ -153,24 +161,25 @@ String buf;
     {
      checked = " ";
     }
-  buf += "<input type='radio' name='ssid' value='" + String(WiFi.SSID(i)) + "'" + checked + ">" + String(WiFi.SSID(i)) + "(" + String(WiFi.RSSI(i)) + ") <br/>\n";
+  buf += "<input type='radio' name='ssid' value='" + String(WiFi.SSID(i)) + "'" + checked + ">" + String(WiFi.SSID(i)) + "(" + String(WiFi.RSSI(i)) + ") <br/>";
   }
   
   //buf += "\n\nSSID: <input type='text' id='ssid' name='ssid' value=''><br/>";
-  buf += F("\nPassword: <input type='text' name='password' value=''><br/></p>");
+  buf += F("Password: <input type='text' name='password' value=''><br/></p>");
   //buf += "<input type='submit' value='Submit'></form>"; 
-  buf += F("<input type='submit' name='reboot' value='Reboot!'/>\n");
+  buf += F("<input type='submit' name='reboot' value='Reboot!'/>");
   buf += F("  <input type='submit' name ='scan' value='Scan'/>");   
     // working buf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-  buf += F("  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n") ;
+  buf += F("  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>") ;
   buf += F("  <input type='submit' value='Submit'/>") ; 
   buf += F("</form></p>"); 
 
   buf += htmlendstring; 
 
 
+    server.sendContent(buf);
 
-    server.send(200, "text/html", buf);
+    //server.send(200, "text/html", buf);
 
      
     if (networkrestart) restartNetworking(); 

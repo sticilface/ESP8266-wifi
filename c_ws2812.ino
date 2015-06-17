@@ -44,22 +44,20 @@ static const char *VAR_STRING[] = {
 void  cache handle_WS2812 () { // handles the web commands...
 
 
-String buf; 
+String buf, paused_string, selected; 
 
-String paused_string = " " ; 
+
 static int power = 0; 
+
 bool updateLEDs = false;
 
-
-String selected = " "  ;
 
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
 
- if (server.arg("rgbpicker").length() != 0) 
-  { 
+ if (server.arg("rgbpicker").length() != 0)  { 
     //WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
 
     WS2812_Set_New_Colour(server.arg("rgbpicker"));
@@ -92,12 +90,12 @@ String selected = " "  ;
         paused_string = "<a href='/ws2812?mode=play'>PLAY</a> " ; 
       } else {
         paused_string = "<a href='/ws2812?mode=pause'>PAUSE</a>" ; 
-      };
+      }
 
-  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
+  buf = "<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name ='viewport'  width = 'device-width' charset='utf-8'><title>" + String(deviceid) + "</title></head><body><h1> " + String(deviceid) + " </h1>";   
   if (wifimode == 1) { buf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
   buf += "<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | "  +  paused_string + " | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>  ";
-  buf += "<form name=frmTest action='/ws2812' method='POST'>\n";
+  buf += "<form name=frmTest action='/ws2812' method='POST'>";
   buf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
 for (int k=0; k < numberofmodes; k++ ) {
@@ -110,17 +108,22 @@ for (int k=0; k < numberofmodes; k++ ) {
   }
 
   buf += "</select>";
-
   buf += "</form></p>";
+
+    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    server.send(200, "text/html", "");
+    WiFiClient client = server.client();
+    server.sendContent(buf);
+    buf = " "; 
 
   if(wifimode == 1) {
   buf += "<p><form action='/ws2812' method='POST'";
   buf += "<p>Color: <input class='color' name='rgbpicker' value = '" + CurrentRGBcolour + "' >"; 
   buf += "<br>  <input type='submit' value='Submit'/>"; 
   buf += "</form>"; 
-} ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
+  }  // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
 
-  buf += "<form name=sliders action='/ws2812' method='POST'>\n";
+  buf += "<form name=sliders action='/ws2812' method='POST'>";
   buf += "<br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='" + String(CurrentAnimationSpeed) + "' onchange='this.form.submit();' > ";
   buf += "<br>Brightness: <input type='range' name='dim'min='0' max='255' value='" + String(CurrentBrightness) + "' onchange='this.form.submit();' > ";
   buf += "<br>Timer: <input type='range' name='timer'min='0' max='2000' value='"+ String(WS2812interval)+ "' onchange='this.form.submit();'> ";
@@ -138,7 +141,8 @@ for (int k=0; k < numberofmodes; k++ ) {
   
   buf += htmlendstring; 
  
-  server.send(200, "text/html", buf);
+  //server.send(200, "text/html", buf);
+    server.sendContent(buf);
 
 
 
@@ -235,7 +239,7 @@ void  cache WS2812_mode_string (String Value)
   if (Value == "on" | Value == "ON") opState = HoldingOpState = LastOpState;
 
 
-  if (Value == "looparound") { opState = LOOPAROUND; LastOpState = LOOPAROUND;};
+  if (Value == "looparound") { HoldingOpState = LastOpState = LOOPAROUND; Current_Effect_State = POST_EFFECT;};
   if (Value == "pickrandom") { opState = PICKRANDOM; LastOpState = PICKRANDOM; } ;
   if (Value == "fadeinfadeout") { opState = FADEINFADEOUT; LastOpState = FADEINFADEOUT; }; 
   if (Value == "fade") { opState = FADE; LastOpState = FADE; }; 
@@ -438,10 +442,12 @@ void cache StripOFF() {
 //
 //
 //////////////////  
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+if (Current_Effect_State == PRE_EFFECT) { 
+
+  Pre_effect();  
 
 
-if (millis() > (lasteffectupdate + 1000) ){
+//if (millis() > (lasteffectupdate + 1000) ){
   //Serial.print(".");
     //memset(pixelsPOINT, 0, 3 * strip->PixelCount() );
     //strip->Dirty();
@@ -450,27 +456,13 @@ if (millis() > (lasteffectupdate + 1000) ){
             strip->SetPixelColor(i,RgbColor(0,0,0));
             } 
 
-    lasteffectupdate = millis();
-  }
+  //  lasteffectupdate = millis();
+  //}
 
 
-//lasteffectupdate = millis();
+}
 
-//}
-
- /* for (uint16_t i = 0; i < pixelCount; i++)
-  {
-    strip->SetPixelColor(i,RgbColor(0,0,0));
-  } */
-  
-
- // memset(pixelsPOINT, 0, 3 * strip->PixelCount() ); 
-
- // clearpixels();
-
-//strip->Dirty();
-
-    //  END of EFFECT  
+if (Current_Effect_State == RUN_EFFECT) return; 
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
