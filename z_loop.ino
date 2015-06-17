@@ -1,10 +1,11 @@
 void loop( void ) {
   // put your main code here, to run repeatedly:
 
-
+//yield();
   mqttclient.loop();
 
 //delay(1);
+//yield();
 
  server.handleClient();
      
@@ -12,8 +13,10 @@ void loop( void ) {
 //delay(1);
 
  ////////////// -------- PLUGIN CONTROLs -----------------------
+//yield();
 
 timer.run();
+//yield();
 
  
 loop_Plugin();
@@ -23,7 +26,7 @@ loop_Plugin();
  
 //OTA_UPDATE();
 
-
+yield(); 
 
 }
 

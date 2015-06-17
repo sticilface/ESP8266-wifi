@@ -16,7 +16,6 @@ void callback(const MQTT::Publish& pub) {
     
     mqttbuf = pub.payload_string();
 
-   
  // -- 1) Identify ESP commands
  
  if (mqttbuf == "identify") 
@@ -39,6 +38,7 @@ if (topicrecieved.indexOf("/timer") > 0) WS2812timer_command_string(pub.payload_
 if (topicrecieved.indexOf("/brightness") > 0) WS2812_dim_string(pub.payload_string());
 if (topicrecieved.indexOf("/animationspeed") > 0) CurrentAnimationSpeed = (pub.payload_string()).toInt();
 if (topicrecieved.indexOf("/colour") > 0) WS2812_Set_New_Colour(pub.payload_string());
+if (topicrecieved.indexOf("/color") > 0) WS2812_Set_New_Colour(pub.payload_string());
 
 
 

@@ -59,9 +59,9 @@ void setup( void ) {
     wifimode = 1;
     } 
 
-  //scannetworks();
+  scannetworks();
 
-  //delay(2000);
+  delay(2000);
 
   wifimode = 1;
  //Serial.print("Current wifi mode is : ");
@@ -127,7 +127,7 @@ if (wifimode == 1) {
   
   // if (wifimode == 2)  { server.on("/", handle_wifi); } else { server.on("/", handle_root); }
 
-  server.on("/", handle_misc);
+  server.on("/", handle_root);
   
   server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);
@@ -156,7 +156,7 @@ if (wifimode == 1) {
   //  timer.setInterval(APtimeout, deactivateAP);
   //  timer.setInterval(MQTTtimeout, initiatemqqt);
 
-    timer.setInterval(Uptimer_timeout, uptime);
+   // timer.setInterval(Uptimer_timeout, uptime);
 
   //Serial.println("Timers set up");
 

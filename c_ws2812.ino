@@ -1,6 +1,6 @@
 // TODO.... 
 // 1.  fix MQTT instructions... currently does not work through opState... and extra effects don't work... must integrate MODEDROP....
-// 2. spotty pixel... 
+// 2.  squares2 and squares random don't work
 
 
 // EEPROM ALLOCATIONS:
@@ -1167,7 +1167,8 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
-  
+  if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
 
   uint8_t x,y, total_y;
   uint8_t total_x = var7; 
@@ -1226,7 +1227,8 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     }
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+if (Current_Effect_State == POST_EFFECT) Post_effect();  
 
 
 } 
@@ -1235,6 +1237,7 @@ if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; op
 
 
 void cache Squares () {
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
   static int wsPoint = 0;
   
@@ -1285,7 +1288,8 @@ void cache Squares () {
 
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+if (Current_Effect_State == POST_EFFECT) Post_effect();  
 
 } // end of Squares
 
@@ -1295,6 +1299,10 @@ if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; op
 
 
 void cache theatreChaseRainbow() {
+
+  if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
+
   static uint16_t colourpoint = 0; 
   static uint8_t animationstate = 0 ; 
   if (millis() > (lasteffectupdate ) ) {
@@ -1321,7 +1329,8 @@ void cache theatreChaseRainbow() {
   }  //  end of timer..... 
 
 
-if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+if (Current_Effect_State == POST_EFFECT) Post_effect();  
 
 }
 
@@ -1383,8 +1392,14 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 
     // if(millis() > initializetime + initializetimeout) state = MODE_INITIALISE; // this goes to initiaase mode...
 
-    if (Current_Effect_State == PRE_EFFECT) state = MODE_INITIALISE;
-    if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH; 
+    if (Current_Effect_State == PRE_EFFECT) {
+      state = MODE_INITIALISE;
+      Pre_effect();  
+    }
+
+    if (Current_Effect_State == POST_EFFECT) Post_effect();  
+
+    //if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH; 
 
 
   switch (state) {
@@ -1557,8 +1572,8 @@ void cache UDPfunc () {
  if (Current_Effect_State == PRE_EFFECT) {
     Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
     Adalight_Flash();
-    Current_Effect_State = RUN_EFFECT;
     Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
+    Pre_effect();  
     } 
 
 if (Current_Effect_State == RUN_EFFECT) {
@@ -1590,9 +1605,10 @@ int packetSize = Udp.parsePacket();
 
 if (Current_Effect_State == POST_EFFECT) { 
   //Serial.println("UDP END"); 
-  Current_Effect_State = PRE_EFFECT; 
-  opState = HoldingOpState; 
+  //Current_Effect_State = PRE_EFFECT; 
+  //opState = HoldingOpState; 
   Udp.stop(); 
+  Post_effect(); 
   } ; 
 }
 

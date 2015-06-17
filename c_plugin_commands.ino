@@ -8,22 +8,24 @@ const int PixelCount_address = 248;
 
 void cache handle_root () {
 
-// if (wifimode == 1)  { 
-//  handle_WS2812(); 
-// } else {
-//  handle_wifi();
-//  }
+if (wifimode == 1)  { 
+  handle_WS2812(); 
+ } else {
+  handle_wifi();
+  }
+
+/*
   Serial.println();
   Serial.print("handle root hit..."); 
   //handle_wifi();
-  /*
+  
   httpbuf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>" + version + " ESP Melvide</title></head>\n<body><h1> SETUP DEVICE</h1>\n";
 
   httpbuf += "<p> Heap Size = " + String(ESP.getFreeHeap()) + " </p>";
   httpbuf += "<p><a href='/bytedump'> EEPROM DUMP </a>";
   httpbuf += "<br><a href='/wifi?eeprom=bytedump'> EEPROM DUMP BYTES </a>";
   httpbuf += "<br><a href='/wifi?eeprom=wipe'> EEPROM FORMAT </a>";
-  httpbuf += htmlendstring; */ 
+  httpbuf += htmlendstring; 
 
 //////////////////////////
   
@@ -53,7 +55,7 @@ void cache handle_root () {
   );
 
   server.send ( 200, "text/html", temp );
-/*
+
   Serial.println();
   Serial.print(hr);
   Serial.print(":");
@@ -61,14 +63,14 @@ void cache handle_root () {
   Serial.print(":");
   Serial.print(sec % 60);
   Serial.print(":");  
-*/
+
 
     Serial.print("finshed!");
 
 /////////////////////////////////
 
   //server.send(200, "text/html", httpbuf);
-  
+  */
 }
 
 void cache setup_Plugin () {

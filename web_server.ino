@@ -326,9 +326,9 @@ void handle_misc ()
 {
   String buf; 
    //Serial.println();
-  Serial.print("Page hit...(");
-  Serial.print(ESP.getFreeHeap());
-  Serial.print(")...");
+  //Serial.print("Page hit...(");
+  //Serial.print(ESP.getFreeHeap());
+  //Serial.print(")...");
   bool updateEEPROMflag = false; 
   String newhttpbuf; 
 
@@ -383,7 +383,7 @@ void handle_misc ()
   EEPROM.commit();
   updateEEPROMflag = false;
           }; 
-  Serial.println("Page finished.");
+  //Serial.println("Page finished.");
   //Serial.print(ESP.getFreeHeap());
   //Serial.print(")");
 
