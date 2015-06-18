@@ -134,7 +134,7 @@ static const char *MODE_STRING[] = {
 "Random Function", "Art-Net", "HSV Top Bottom", "Linear Top Bottom", "Single Colour Fade", 
 "Random Colour Fade", "HSIcycle", "New-Animations"
 };
-#define numberofmodes 27 /////// DONT FORGET THIS....
+#define numberofmodes 28 /////// DONT FORGET THIS....
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;

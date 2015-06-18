@@ -282,7 +282,7 @@ void  cache WS2812_mode_string (String Value)
 
 
 
-  if (Value == "on" | Value == "ON") opState = HoldingOpState = LastOpState;
+  if (Value == "on" | Value == "ON") { HoldingOpState = LastOpState; Current_Effect_State = POST_EFFECT; } ; 
 
 
   if (Value == "looparound") { HoldingOpState = LastOpState = LOOPAROUND; Current_Effect_State = POST_EFFECT;};
@@ -407,14 +407,33 @@ void cache SetRGBcolour (RgbColor value, uint16_t speed) {
     
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
   
-      if (!(strip->IsAnimating())) {
+      //if (!(strip->IsAnimating())) {
 
-          for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
+
+    //strip->StartAnimating(); // start animations
+  //}
+if (Current_Effect_State == RUN_EFFECT) { 
+
+if (millis() - lasteffectupdate > WS2812interval) {
+
+Serial.println("update single colour called...");
+         // for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
        // strip->SetPixelColor(pixel,value);
-          strip->LinearFadePixelColor(speed, pixel, dim(value));
-    }
-    strip->StartAnimating(); // start animations
-  }
+        //  strip->LinearFadePixelColor(speed, pixel, dim(value));
+
+            animator->FadeTo(speed,value); 
+
+   // }
+
+
+}
+
+
+lasteffectupdate = millis();
+
+}
+
+
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
@@ -488,25 +507,19 @@ void cache StripOFF() {
 //
 //
 //////////////////  
-if (Current_Effect_State == PRE_EFFECT) { 
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+  
+      //if (!(strip->IsAnimating())) {
 
-  Pre_effect();  
+          //for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
+       // strip->SetPixelColor(pixel,value);
+        //  strip->LinearFadePixelColor(speed, pixel, dim(value));
 
+            animator->FadeTo(2000,RgbColor(0,0,0)); 
 
-//if (millis() > (lasteffectupdate + 1000) ){
-  //Serial.print(".");
-    //memset(pixelsPOINT, 0, 3 * strip->PixelCount() );
-    //strip->Dirty();
-      for (uint16_t i = 0; i < pixelCount; i++)
-            {
-            strip->SetPixelColor(i,RgbColor(0,0,0));
-            } 
-
-  //  lasteffectupdate = millis();
+   // }
+    //strip->StartAnimating(); // start animations
   //}
-
-
-}
 
 if (Current_Effect_State == RUN_EFFECT) return; 
 
@@ -629,9 +642,12 @@ switch (opState)
    }
 
 
-if (millis() > update_strip_time + 30) {
-    if (strip->IsAnimating()) strip->UpdateAnimations(); 
+if (millis() - update_strip_time > 30) {
+
+    if (animator->IsAnimating()) animator->UpdateAnimations(); 
+
     strip->Show();
+
     update_strip_time = millis();
 
 } // end of switch case...
@@ -713,7 +729,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 void cache Random_function() {
-
+/*
 static uint8_t random_choice = 0 ; 
 static uint32_t Random_func_next_time = 0;
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
@@ -740,6 +756,8 @@ if (millis() > Random_func_next_time + 1000) Random_func_next_time = 0; // This 
 
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+*/
 }
 
 void cache Random_colour() {
@@ -806,6 +824,8 @@ void setcolour () {
 */
 
 void cache  FadeInFadeOutRinseRepeat(uint8_t peak) {
+
+  /*
   if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
   if (effectState == 0)
@@ -827,10 +847,14 @@ void cache  FadeInFadeOutRinseRepeat(uint8_t peak) {
   effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
   
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+*/
 }
 
 void cache PickRandom(uint8_t peak)
 {
+
+  /*
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
   // pick random set of pixels to animate
   uint8_t count = random(pixelCount);
@@ -851,10 +875,13 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
   }
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+*/
 }
 
 void cache LoopAround(uint8_t peak, uint16_t speed)
 {
+  /*
   // Looping around the ring sample
   uint16_t prevPixel;
   RgbColor prevColor;
@@ -895,6 +922,8 @@ void cache LoopAround(uint8_t peak, uint16_t speed)
   
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+*/
 }
 
 void cache SetRandomSeed()
@@ -1093,7 +1122,7 @@ void cache clearpixels() {
 }
 */
 void cache spiral() {
-
+/*
 static uint16_t currentcolor = 0;
 
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
@@ -1122,6 +1151,8 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
   } // effect update timer
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+*/
 }
 /*
 // FACES ALGO....
@@ -1207,7 +1238,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
-
+/*
   if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
 
@@ -1271,13 +1302,15 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 //if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 if (Current_Effect_State == POST_EFFECT) Post_effect();  
 
-
+*/
 } 
 // end of Squares2
 
 
 
 void cache Squares () {
+
+  /*
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
   static int wsPoint = 0;
@@ -1331,6 +1364,10 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
 
 //if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 if (Current_Effect_State == POST_EFFECT) Post_effect();  
+
+
+
+*/
 
 } // end of Squares
 
@@ -1592,14 +1629,27 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
         }
 
 
-    if (strip)
-    {
+ //   if (strip)
+ //   {
         //StripOFF();
 
-        delete strip;
-    }
+ //       delete strip;
+ //   }
 
-    strip = new NeoPixelBus(count, pin);
+ //   strip = new NeoPixelBus(count, pin);
+
+  if (animator != NULL)
+  {
+    delete animator;
+  }
+  if (strip != NULL)
+  {
+    delete strip;
+  }
+  strip = new NeoPixelBus(count, pin);
+  animator = new NeoPixelAnimator(strip);
+
+
     pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
     if (strip->PixelCount() < 10) var7 = 1;
 
@@ -1793,7 +1843,7 @@ pixelshift_middle(100);
 
 
 void cache pixelshift_middle(uint16_t pixelshift_timer) {
-
+/*
 static long last_pixelshift = 0;
 RgbColor pix_colour = RgbColor(0,0,0); // holds pixel data... 
 uint16_t middle = strip->PixelCount() / 2; 
@@ -1821,9 +1871,10 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 
   last_pixelshift = millis(); 
+
 }
 
-
+*/
 }
  // END of pixel shift
 
@@ -1831,7 +1882,7 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 
 void cache eq1 () {
-
+/*
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
   if (millis() > lasteffectupdate  )  {
@@ -1863,6 +1914,8 @@ pixelshift_middle();
 
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+*/
 }
 
 
@@ -1879,7 +1932,7 @@ void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
 
 
 void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint8_t fadetype) {
-
+/*
 uint8_t x,y,colour_index; 
 uint8_t total_y = return_total_y(count_x); // get total number of rows
 RgbColor colournew;
@@ -1931,10 +1984,12 @@ strip->StartAnimating(); // start animations
 
 //Serial.println("Top Bottom Feed function finished...");
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+*/
 }
 
 void cache Random_Top_Bottom(uint8_t fadetype) { 
-
+/*
 //static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0, total_x = 0;
 
@@ -1945,12 +2000,12 @@ if (var7 == 0 ) {total_x = 13;} else total_x = var7;
     
     if ( (millis() > lasteffectupdate  ) && (!strip->IsAnimating()) ) {
 
-/*
-      Serial.println();
-      Serial.print("Effect updated..(");
-      Serial.print(strip->IsAnimating());
-      Serial.print(") ");
-*/
+
+ //     Serial.println();
+ //     Serial.print("Effect updated..(");
+ //     Serial.print(strip->IsAnimating());
+//      Serial.print(") ");
+
       uint16_t random_animation_speed = random(2000, 20000);
       uint8_t vvv,bbb,dif = 0 ; 
       vvv = random(255);
@@ -1962,12 +2017,12 @@ do {
       } while (dif < 50);
 
 
-      /*Serial.print("top: ");
+      Serial.print("top: ");
       Serial.print(vvv);
       Serial.print(" bottom: ");
       Serial.print(bbb);
       Serial.print(" Abs diff: ");
-      Serial.print(abs(dif)); */
+      Serial.print(abs(dif)); 
 
       RgbColor random_colour_top = Wheel(vvv); //  RgbColor(255,0,0); 
       RgbColor random_colour_bottom = Wheel(bbb); //  RgbColor(255,0,0); 
@@ -2000,12 +2055,18 @@ do {
 
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+*/
 } // end of actual function.....
 
 
 void test_newanimations() {
 
-peak = 128; 
+uint8_t peak = 128; 
+
+
+if (Current_Effect_State == PRE_EFFECT) Pre_effect(); 
+
 
 if (effectState == 0)
     {
@@ -2019,10 +2080,10 @@ if (effectState == 0)
             AnimUpdateCallback animUpdate = [=](float progress)
             {
                 // progress will start at 0.0 and end at 1.0
-                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, color, (uint8_t)(255 * progress));
+                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, color, progress);
                 strip->SetPixelColor(pixel, updatedColor);
             };
-            animations.StartAnimation(pixel, time, animUpdate);
+            animator->StartAnimation(pixel, time, animUpdate);
         }
     }
     else if (effectState == 1)
@@ -2036,16 +2097,16 @@ if (effectState == 0)
             AnimUpdateCallback animUpdate = [=](float progress)
             {
                 // progress will start at 0.0 and end at 1.0
-                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, RgbColor(0, 0, 0), (uint8_t)(255 * progress));
+                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, RgbColor(0, 0, 0), progress);
                 strip->SetPixelColor(pixel, updatedColor);
             };
             // start the animation
-            animations.StartAnimation(pixel, time, animUpdate);
+            animator->StartAnimation(pixel, time, animUpdate);
         }
     }
     effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
 
 
-
+if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
 
