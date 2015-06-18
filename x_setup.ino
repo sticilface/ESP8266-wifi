@@ -136,9 +136,9 @@ if (wifimode == 1) {
 
   ///// ---- WEB SERVER ------/////
   
-  if (wifimode == 2)  { server.on("/", handle_wifi); } else { server.on("/", handle_root); }
+  //if (wifimode == 2)  { server.on("/", handle_wifi); } else { server.on("/", handle_root); }
 
-  //server.on("/", handle_root);
+  server.on("/", handle_root);
   
   server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);

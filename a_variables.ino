@@ -121,7 +121,7 @@ ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
 COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,SQUARES2,
 SQUARESRANDOM,TEST4,SQUARES,EQ1,RANDOM,
 RANDOMFUNC, ARTNET, RANDOM_TOP_BOTTOM, RANDOM_TOP_BOTTOM_LINEAR, SINGLE_COLOUR_FADE,
-RANDOM_COLOUR_FADE, HSICYCLE
+RANDOM_COLOUR_FADE, HSICYCLE, NEWANIMATIONS
 };
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
@@ -132,7 +132,7 @@ static const char *MODE_STRING[] = {
 "Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Squares2",
 "Squares Random","Test4","Squares","EQ1","Random Colour", 
 "Random Function", "Art-Net", "HSV Top Bottom", "Linear Top Bottom", "Single Colour Fade", 
-"Random Colour Fade", "HSIcycle"
+"Random Colour Fade", "HSIcycle", "New-Animations"
 };
 #define numberofmodes 27 /////// DONT FORGET THIS....
 

@@ -619,10 +619,12 @@ switch (opState)
     case RANDOM_COLOUR_FADE:
       Random_Top_Bottom(3);
       break;      
-    //case HSICYCLE:
-    //  HSI_Cycle();
-    //  break;
-
+    case HSICYCLE:
+      HSI_Cycle();
+      break;
+    case NEWANIMATIONS:
+      test_newanimations();
+      break;
       
    }
 
@@ -1045,7 +1047,8 @@ if (Current_Effect_State == PRE_EFFECT) Pre_effect();
 
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
-}
+
+} // end of test 4
 
  void cache rainbow() {
 
@@ -2000,5 +2003,49 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 } // end of actual function.....
 
 
+void test_newanimations() {
 
+peak = 128; 
+
+if (effectState == 0)
+    {
+        for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
+        {
+            uint16_t time = random(800, 1000);
+            RgbColor originalColor = strip->GetPixelColor(pixel);
+            RgbColor color = RgbColor(random(peak), random(peak), random(peak));
+
+            // define the effect to apply, in this case linear blend
+            AnimUpdateCallback animUpdate = [=](float progress)
+            {
+                // progress will start at 0.0 and end at 1.0
+                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, color, (uint8_t)(255 * progress));
+                strip->SetPixelColor(pixel, updatedColor);
+            };
+            animations.StartAnimation(pixel, time, animUpdate);
+        }
+    }
+    else if (effectState == 1)
+    {
+        for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
+        {
+            uint16_t time = random(600, 700);
+            RgbColor originalColor = strip->GetPixelColor(pixel);
+
+            // define the effect to apply, in this case linear blend
+            AnimUpdateCallback animUpdate = [=](float progress)
+            {
+                // progress will start at 0.0 and end at 1.0
+                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, RgbColor(0, 0, 0), (uint8_t)(255 * progress));
+                strip->SetPixelColor(pixel, updatedColor);
+            };
+            // start the animation
+            animations.StartAnimation(pixel, time, animUpdate);
+        }
+    }
+    effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
+
+
+
+}
 
