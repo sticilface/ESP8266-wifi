@@ -1317,7 +1317,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
 
   if (square_size == 0) square_size = 3;  
-  if (numberofpoints == 0) numberofpoints = 5;
+  if (numberofpoints == 0) numberofpoints = 1;
   if (total_x == 0) total_x = 13; 
 
   total_y = return_total_y(total_x); 
@@ -1326,7 +1326,22 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   switch(Current_Effect_State) {
     case PRE_EFFECT:
+
+
     effectState = 0; 
+    
+    /*Serial.print("Pixels = ");
+    Serial.print(pixelCount);
+    Serial.print(" Total_x = ");
+    Serial.print(total_x);
+    Serial.print(" Total_y = ");
+    Serial.print(total_y);
+    Serial.print(" Square_size = ");
+    Serial.print(square_size); 
+    Serial.print(" Number of Points = "); 
+    Serial.println(numberofpoints);
+*/
+
     Pre_effect(); 
 
 
@@ -1355,11 +1370,6 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       if (millis() - lasteffectupdate > WS2812interval) {      
 
-
-
-
-
-
       //for (int i = 0; i < numberofpoints; i++) {
 
       RgbColor color = Wheel(random(255)); // RgbColor(random(255),random(255),random(255));
@@ -1367,12 +1377,51 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
       if (mode == 1) square_size = random(2,7);
 
-      uint8_t x_rand = random(0, total_x - square_size ) ; 
-      uint8_t y_rand = random(0, total_y - square_size ) ;
+      bool coordinates_OK = false;
+      uint8_t x_rand,y_rand;
+      //Serial.println("Generating coordinates.");
+       uint8_t count = 0; 
+
+      do {
+        // Serial.print(".");
+       x_rand = random(0, total_x - square_size + 1) ; 
+       y_rand = random(0, total_y - square_size + 1) ;
+
+        //Serial.print("(");
+        //Serial.print(x_rand);
+        //Serial.print(",");
+        //Serial.print(y_rand);
+        //Serial.print(")..");
+       for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
+
+          uint16_t pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
+        //Serial.println();
+        
+        /*Serial.print("(");
+        Serial.print(x_rand);
+        Serial.print(",");
+        Serial.print(y_rand);
+        Serial.print(")..");
+          Serial.print(pixel);
+          Serial.print("-->");
+          Serial.println(animator->IsAnimating(pixel)); 
+          */
+          if (animator->IsAnimating(pixel)) { break; }; 
+          if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true; }; 
+          }
+          // if (count++ == 5) break; 
+          //Serial.print("Count = "); 
+          //Serial.println(count);
+          //delay(1); 
+       } while (coordinates_OK == false && count++ < 5); 
 
 
       //for (int j =0; j < (square_size * square_size) ; j++) {
-
+      // Serial.println();
+      // Serial.print("Found: x = ");
+      // Serial.print(x_rand);
+      // Serial.print(" y = ");
+      // Serial.println(y_rand);
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
@@ -1902,6 +1951,7 @@ return brightness;
 
 
 void cache handle_lights_config() {
+
 String buf; 
    if (server.args() != 0) { lasteffectupdate = 0; Random_func_timeout = 0; }; 
    if (server.arg("var1").length() != 0) var1 = server.arg("var1").toInt();
@@ -1913,17 +1963,21 @@ String buf;
    if (server.arg("var7").length() != 0) var7 = server.arg("var7").toInt();
    if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
    if (server.arg("var9").length() != 0) var9 = server.arg("var9").toInt();
-   if (server.arg("var10").length() != 0) var10 = server.arg("var10").toInt();
+   if (server.arg("var10").length() != 0) { var10 = server.arg("var10").toInt(); Serial.println("Var 10 updated"); }; 
 
    // String a = ESP.getFlashChipSizeByChipId(); 
    if (server.arg("reset") == "true") { var1 = 0; var2 = 0; var3 = 0; var4 = 0; var5 = 0; var6 = 0; var7 = 0; var8 = 0; var9 = 0; var10 = 0;};
 
 
   String content = F("\
-    <!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'>\
-    <title> % </title></head>\n<body><h1> % </h1>\
+    <!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'>\
+    <title> % </title></head><body><h1> % </h1>\
     <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>\
     <form name=form action='/lightsconfig' method='POST'>");
+
+    buf = insertvariable ( content, String(deviceid));
+
+  buf = insertvariable ( buf, String(deviceid));
     
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
     server.send(200, "text/html", "");
@@ -1939,8 +1993,8 @@ String buf;
     buf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value=''><br>";
   }
 
-  buf += F("  <input type='submit' value='Submit'/>"\
-          "</form></p>"); 
+  buf += F("<input type='submit' value='Submit'>\
+          </form></p>"); 
   buf += htmlendstring; 
 
 
