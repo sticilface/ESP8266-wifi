@@ -125,6 +125,11 @@ void cache setup_Plugin () {
 
       NewColour = RgbColor(R,G,B);
 
+      WebRGBcolour = String(R,HEX);
+      WebRGBcolour += String(G,HEX);
+      WebRGBcolour += String(B,HEX);
+     
+
 
 // initiate PLUGIN
 

@@ -144,6 +144,8 @@ bool paused = false;
 uint16_t CurrentAnimationSpeed = 2000; 
 
 RgbColor NewColour = RgbColor(0,0,0);
+String WebRGBcolour = " "; // This is for the WEBPAGE... takes the value when colour is changed...
+
 
 unsigned int localPort = 8888; // 6454; //8888;      // local port to listen on
 
