@@ -384,21 +384,25 @@ if (Value.indexOf("rgb") >= 0)
 
 
 
-RgbColor cache dim(RgbColor value) {
+RgbColor cache dim(RgbColor original) {
 
   //  int amounttodarken = 255 - CurrentBrightness;
   //  value.Darken(amounttodarken);
   //  return value;
 
-    if (CurrentBrightness == 255) return value; 
+    if (CurrentBrightness == 255) return original; 
 
-     RgbColor newvalue = dimbyhsv(value, (byte) CurrentBrightness);
-
-
-
+    
+ RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, (uint8_t)(127 * ((float)CurrentBrightness/255) ) ) );
 
 
-return(newvalue);
+     // RgbColor newvalue = dimbyhsv(value, (byte) CurrentBrightness);
+
+
+
+
+
+return(updatedColor);
 }
 
 
@@ -432,7 +436,7 @@ void cache SetRGBcolour (RgbColor value, uint16_t speed) {
           //Serial.print(" > ");
           //Serial.println(WS2812interval);
           
-          animator->FadeTo(speed,RgbColor(value)); 
+          animator->FadeTo(speed,dim(RgbColor(value))); 
           }
 
       lasteffectupdate = millis(); 
@@ -511,11 +515,31 @@ void cache StripOFF() {
     break;
 
     case RUN_EFFECT:
+//
+//      if (millis() - lasteffectupdate > 3000) {
+//          animator->FadeTo(2000,RgbColor(0,0,0)); 
+//          }
+//      lasteffectupdate = millis(); 
+
 
       if (millis() - lasteffectupdate > 3000) {
-          animator->FadeTo(2000,RgbColor(0,0,0)); 
-          }
+        for (uint8_t n = 0; n < pixelCount; n++)
+            {
+              RgbColor original = strip->GetPixelColor(n);
+
+        AnimUpdateCallback animUpdate = [=](float progress)
+        {
+            RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, (uint8_t)(127 * (1 - progress) ) ) ) ;
+            
+            strip->SetPixelColor(n, updatedColor);
+        };
+
+        animator->StartAnimation(n, 2000, animUpdate);
+    }
+    }
+
       lasteffectupdate = millis(); 
+
 
     break;
 

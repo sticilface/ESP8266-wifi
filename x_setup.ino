@@ -170,7 +170,7 @@ if (wifimode == 1) {
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
 
-    timer.setInterval(Uptimer_timeout, uptime);
+   // timer.setInterval(Uptimer_timeout, uptime);
 
   //Serial.println("Timers set up");
 
@@ -183,8 +183,8 @@ if (wifimode == 1) {
   //Serial.println("Plugins started");
     //timer.setInterval(32,ws2812_animating);
 
- Serial.print("Current wifi mode is : ");
- Serial.println(wifimode);
+ //Serial.print("Current wifi mode is : ");
+ //Serial.println(wifimode);
 
 
 }

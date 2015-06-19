@@ -262,13 +262,14 @@ void  handle_mqtt() {
 // 1 = String(mqttserver_string)
 
  if(MQTT_enabled) {
-  
-  buf = "<br>MQTT Server is: %..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>";
-  buf = insertvariable ( buf, String(deviceid));
+  buf += "<br>MQTT Server is: " + String(mqttserver_string) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
+
+  //buf = "<br>MQTT Server is: %..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>";
+  //buf = insertvariable ( buf, String(deviceid));
   server.sendContent(buf);
 
 
-  content = F("<br>Current device name is: <a href='http://%.local'>%.local</a>\
+  content = F("<br>Current device name is: <a href='http://%.local'>%</a>\
   <br><form action='/mqtt' method='POST'>\
   New Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>\
   MQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>\
