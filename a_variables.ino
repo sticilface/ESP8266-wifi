@@ -33,7 +33,7 @@ const int APtimeout = 300000;
 boolean APtimeout_done = false;
 const int MQTTtimeout = 600000;
 const int MQTTtemptimeout = 60000;
-const int Uptimer_timeout = 5000;
+const int Uptimer_timeout = 1000;
 
 // Action boolean perams .... memory functions
 boolean networkrestart = false;

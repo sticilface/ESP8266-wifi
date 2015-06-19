@@ -4,7 +4,10 @@
 // 3.  Place strings to flash for web pages... and parce....  PARTIAL done... 
 // 4.  Sort out wifi config... and AP configuration / timeout... 
 // 5.  nointurrup handles for UDP parce... maybe... 
-
+// 6. add switch statements to effect
+// 7. rework effects to use animations class
+// 8. implement dimming by hsv 
+// 9  change off/on... to off and on by hsv coloc blend... 
 
 // EEPROM ALLOCATIONS:
 
@@ -107,7 +110,7 @@ Select Mode <select name='modedrop' onchange='this.form.submit();'>\
 
   buf = insertvariable ( buf, String(deviceid));
   
-  if (wifimode == 1 ) 
+  if (WiFi.status() == WL_CONNECTED) 
     { buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
     } else { buf = insertvariable ( buf, " "); } ;
 
@@ -141,7 +144,7 @@ for (int k=0; k < numberofmodes; k++ ) {
 
     buf = " "; 
 
-  if(wifimode == 1) {
+  if(WiFi.status() == WL_CONNECTED) {
   String content0 = F("<p><form action='/ws2812' method='POST'\
   <p>Color: <input class='color' name='rgbpicker' value = '%' >\
   <br>  <input type='submit' value='Submit'/>\
@@ -166,7 +169,7 @@ for (int k=0; k < numberofmodes; k++ ) {
   <form name=sliders action='/ws2812' method='POST'>\
   <br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='%' onchange='this.form.submit();' >\
   <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
-  <br>Timer: <input type='range' name='timer'min='0' max='2000' value=' %' onchange='this.form.submit();'>\
+  <br>Timer: <input type='range' name='timer'min='0' max='2000' value='%' onchange='this.form.submit();'>\
   </form>\
   <p><form action='/ws2812' method='POST'\
   <form action='/ws2812' method='POST'>\
@@ -497,33 +500,24 @@ opState = HoldingOpState;
 
 void cache StripOFF() {
 
-//  //if (millis() > (lasteffectupdate + WS2812interval) ){
-//  lasteffectupdate = 0; 
-//
-// memset(pixelsPOINT, 0, 3 * strip->PixelCount() ); 
-//
-//  strip->Dirty();
-//
-//
-//
-//////////////////  
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
-  
-      //if (!(strip->IsAnimating())) {
 
-          //for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
-       // strip->SetPixelColor(pixel,value);
-        //  strip->LinearFadePixelColor(speed, pixel, dim(value));
+  switch(Current_Effect_State) {
 
-            animator->FadeTo(2000,RgbColor(0,0,0)); 
+    case PRE_EFFECT:
+    Pre_effect(); 
+    break;
+    case RUN_EFFECT:
 
-   // }
-    //strip->StartAnimating(); // start animations
-  //}
+      if (millis() - lasteffectupdate > WS2812interval) {
+          animator->FadeTo(2000,RgbColor(0,0,0)); 
+          }
+      lasteffectupdate = millis(); 
 
-if (Current_Effect_State == RUN_EFFECT) return; 
-
-if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+    break;
+    case POST_EFFECT:
+    Post_effect(); 
+    break;
+  }
 
 }
 
@@ -2067,6 +2061,9 @@ uint8_t peak = 128;
 
 if (Current_Effect_State == PRE_EFFECT) Pre_effect(); 
 
+if (Current_Effect_State == RUN_EFFECT) {
+
+if (millis() - lasteffectupdate > WS2812interval) {
 
 if (effectState == 0)
     {
@@ -2106,6 +2103,9 @@ if (effectState == 0)
     }
     effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
 
+lasteffectupdate = millis(); 
+}
+}
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }

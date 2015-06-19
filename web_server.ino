@@ -376,6 +376,13 @@ void handle_misc ()
   // 6 = String(ESP.getChipId())
   // 7 = String(millis())
   // 8 = 
+  
+  int sec = millis() / 1000;
+  int min = sec / 60;
+  int hr = min / 60;
+    
+  char Up_time[20]; 
+  snprintf ( Up_time, 20, "%02d:%02d:%02d", hr, min % 60, sec % 60 );
 
 
   String content0 = F("\
@@ -385,7 +392,8 @@ void handle_misc ()
   <br> Flash Size by ID = % \
   <br> Flash ID = % \
   <br> Chip ID = % \
-  <br> Uptime = % \
+  <br> Millis = % \
+  <br> Up Time = % \
   <p><form action='/misc' method='POST'>\
   <p> Select Speed <select name='serial' onchange='this.form.submit();'>\
   ");
@@ -397,7 +405,8 @@ void handle_misc ()
   buf = insertvariable ( buf, String(ESP.getFlashChipId()));
   buf = insertvariable ( buf, String(ESP.getChipId()));
   buf = insertvariable ( buf, String(millis()));
-
+  buf = insertvariable (buf, String(Up_time));
+  
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send(200, "text/html", "");
   WiFiClient client = server.client();

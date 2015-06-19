@@ -8,7 +8,7 @@ const int PixelCount_address = 248;
 
 void cache handle_root () {
 
-if (wifimode == 1)  { 
+if (WiFi.status() == WL_CONNECTED)  { 
   handle_WS2812(); 
  } else {
   handle_wifi();
