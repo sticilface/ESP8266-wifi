@@ -62,6 +62,7 @@ bool updateLEDs = false;
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
+ if (server.arg("paused").length() != 0) paused = (server.arg("paused")).toInt();
 
  if (server.arg("rgbpicker").length() != 0)  { 
     //WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
@@ -93,9 +94,9 @@ bool updateLEDs = false;
       //----  having this under here works better as the page gets updated before the request data is fired back!
 
       if (paused) { 
-        paused_string = F("<a href='/ws2812?mode=play'>PLAY</a> ") ; 
+        paused_string = F("<a href='/ws2812?paused=0'>PLAY</a> ") ; 
       } else {
-        paused_string = F("<a href='/ws2812?mode=pause'>PAUSE</a>") ; 
+        paused_string = F("<a href='/ws2812?paused=1'>PAUSE</a>") ; 
       }
 
 String content3 = F("\
@@ -191,6 +192,8 @@ for (int k=0; k < numberofmodes; k++ ) {
   buf += htmlendstring; 
  
   //server.send(200, "text/html", buf);
+
+
     server.sendContent(buf);
 
 
@@ -250,8 +253,9 @@ void  cache WS2812_mode_string (String Value)
 
 {
 
-  //lasteffectupdate = 0; // RESET EFFECT COUNTER
+  lasteffectupdate = 0 ; // RESET EFFECT COUNTER
   //Random_func_timeout = 0; //RESET additionall timeout... 
+  if (paused) paused = false; // this sets it back to play, if paused when a mode change occurs...
 
   if (Value.toInt() != 0) {  // if the numerical mode does not equal 0 which is off....
 
@@ -337,7 +341,7 @@ void cache WS2812_Set_New_Colour (String instruction) {
       //opState = LastOpState = COLOR; //  this allows you to pick colour base for other MODES.... 
       //String instruction = Value.substring(4,Value.length()+1 );
       //Serial.println("/n RGB command recieved: " + instruction);
-      
+      lasteffectupdate = 0; 
       CurrentRGBcolour = instruction;
       NewColour = HEXtoRGB(instruction);
       EEPROM.write(PixelCount_address + 4, NewColour.R);
@@ -407,38 +411,37 @@ SetRGBcolour(value,CurrentAnimationSpeed);
 }
 
 void cache SetRGBcolour (RgbColor value, uint16_t speed) {
+
+
+    //long  now1 = millis(); 
+    //long interval = now1 - lasteffectupdate; 
     
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
-  
-      //if (!(strip->IsAnimating())) {
+  switch(Current_Effect_State) {
 
 
-    //strip->StartAnimating(); // start animations
-  //}
-if (Current_Effect_State == RUN_EFFECT) { 
+    case PRE_EFFECT:
+    Pre_effect(); 
+    break;
+    case RUN_EFFECT:
 
-if (millis() - lasteffectupdate > WS2812interval) {
+    
+      if (millis() - lasteffectupdate > 3000) {
+          
+          //Serial.print("LED update called interval = ");
+          //Serial.print(interval); 
+          //Serial.print(" > ");
+          //Serial.println(WS2812interval);
+          
+          animator->FadeTo(speed,RgbColor(value)); 
+          }
 
-Serial.println("update single colour called...");
-         // for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
-       // strip->SetPixelColor(pixel,value);
-        //  strip->LinearFadePixelColor(speed, pixel, dim(value));
+      lasteffectupdate = millis(); 
 
-            animator->FadeTo(speed,value); 
-
-   // }
-
-
-}
-
-
-lasteffectupdate = millis();
-
-}
-
-
-
-if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+    break;
+    case POST_EFFECT:
+    Post_effect(); 
+    break;
+  }
 
 
 }
@@ -506,14 +509,16 @@ void cache StripOFF() {
     case PRE_EFFECT:
     Pre_effect(); 
     break;
+
     case RUN_EFFECT:
 
-      if (millis() - lasteffectupdate > WS2812interval) {
+      if (millis() - lasteffectupdate > 3000) {
           animator->FadeTo(2000,RgbColor(0,0,0)); 
           }
       lasteffectupdate = millis(); 
 
     break;
+
     case POST_EFFECT:
     Post_effect(); 
     break;
@@ -659,7 +664,7 @@ if (!ani_update && strip->IsAnimating()) {
 */
 
 
-if (paused) lasteffectupdate = millis() + 1000; 
+if (paused) lasteffectupdate = millis(); 
 
 
 } // end of ws2812 function 
@@ -1733,11 +1738,18 @@ String buf;
    if (server.arg("reset") == "true") { var1 = 0; var2 = 0; var3 = 0; var4 = 0; var5 = 0; var6 = 0; var7 = 0; var8 = 0; var9 = 0; var10 = 0;};
 
 
+  String content = F("\
+    <!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'>\
+    <title> % </title></head>\n<body><h1> % </h1>\
+    <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>\
+    <form name=form action='/lightsconfig' method='POST'>");
+    
+    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    server.send(200, "text/html", "");
+    WiFiClient client = server.client();
+    server.sendContent(buf);
+    buf = " "; 
 
-
-  buf = "<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'>\n<title>" + String(deviceid) + "</title></head>\n<body><h1> " + String(deviceid) + " </h1>\n";   
-  buf += " <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>  "; 
-  buf += "<form name=form action='/lightsconfig' method='POST'>\n";
   //buf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
   for (int k=0; k < 10; k++ ) {
@@ -1746,11 +1758,14 @@ String buf;
     buf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value=''><br>";
   }
 
-  buf += "  <input type='submit' value='Submit'/>" ; 
-  buf += "</form></p>"; 
+  buf += F("  <input type='submit' value='Submit'/>"\
+          "</form></p>"); 
   buf += htmlendstring; 
 
-  server.send(200, "text/html", buf);
+
+  server.sendContent(buf);
+
+  //server.send(200, "text/html", buf);
 
 
 

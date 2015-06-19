@@ -222,54 +222,87 @@ void  handle_mqtt() {
   String MQTT_enabled_checked_yes;
   String MQTT_enabled_checked_no;
 
-  String form_Uptime_enabled_yes;
-  String form_Uptime_enabled_no;
+  String form_Uptime_enabled_yes = F("checked") ;
+  String form_Uptime_enabled_no = F(" ");
 
   int mqttconnected = mqttclient.connected();
 
   if (MQTT_enabled == true) {
 
-  MQTT_enabled_checked_yes = "checked" ;
-  MQTT_enabled_checked_no = " ";
+  MQTT_enabled_checked_yes = F("checked") ;
+  MQTT_enabled_checked_no = F(" ");
   }
   else {
-  MQTT_enabled_checked_yes = " " ;
-  MQTT_enabled_checked_no = "checked";
+  MQTT_enabled_checked_yes = F(" ") ;
+  MQTT_enabled_checked_no = F("checked");
    }
 
   //int MQTT_enabled_checked = MQTT_enabled;
   
-  buf = F("<!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head><meta name ='viewport' content = 'width = device-width' content='text/html; charset=utf-8'>\n<title>MQTT Configuration</title></head>\n<body><h1>MQTT Config</h1>\n");
-  
-  buf += "<form action='/mqtt' method='POST'> ENABLED: <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='NO'" + MQTT_enabled_checked_no  + "> NO <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='YES'"+ MQTT_enabled_checked_yes +  "> YES" ;  
-  buf += F("</form>");
+  String content = F("\
+      <!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
+      <title>MQTT Configuration</title></head><body><h1>MQTT Config</h1>\
+      <form action='/mqtt' method='POST'> ENABLED:\
+      <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='NO' % > NO \
+      <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='YES' %> YES \
+      </form>");
+
+  buf = insertvariable ( content, String(deviceid));
+  buf = insertvariable ( buf, String(deviceid));
+  buf = insertvariable ( buf,  MQTT_enabled_checked_no);
+  buf = insertvariable ( buf,  MQTT_enabled_checked_yes);
+
+
+    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    server.send(200, "text/html", "");
+    WiFiClient client = server.client();
+
+   server.sendContent(buf);
+   buf = F(" ");
+// 1 = String(mqttserver_string)
+
  if(MQTT_enabled) {
   
-  buf += "<br>MQTT Server is: " + String(mqttserver_string) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
-  buf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
-  buf += F("<br><form action='/mqtt' method='POST'>\n");
-  buf += F("\n\nNew Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");
-  buf += F("\n\nMQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>");
-  buf += "\n\nEnable Uptime <input type='radio' name='form_Uptime_enabled' value='NO'" + form_Uptime_enabled_no  + "> NO <input type='radio' name='form_Uptime_enabled' value='YES'"+ form_Uptime_enabled_yes +  "> YES" ;
+  buf = "<br>MQTT Server is: %..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>";
+  buf = insertvariable ( buf, String(deviceid));
+  server.sendContent(buf);
+
+
+  content = F("<br>Current device name is: <a href='http://%.local'>%.local</a>\
+  <br><form action='/mqtt' method='POST'>\
+  New Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>\
+  MQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>\
+  Enable Uptime <input type='radio' name='form_Uptime_enabled' value='NO' %> NO <input type='radio' name='form_Uptime_enabled' value='YES' %> YES\
+  <p><input type='submit' name='reboot' value='Reboot!'/>\
+  <input type='submit' value='Submit'/>\
+  </form></p>"); 
+
+  buf = insertvariable ( content, String(deviceid));
+  buf = insertvariable ( buf, String(deviceid));
+  buf = insertvariable ( buf, form_Uptime_enabled_no);
+  buf = insertvariable ( buf, form_Uptime_enabled_yes);
+
 
   //buf += "<input type='radio' name='state' value='1' checked>On<input type='radio' name='state' value='0'>Off<\p>"; 
   //buf += "\n\nSSID: <input type='text' id='ssid' name='ssid' value=''><br/>";
   //buf += "\nPassword: <input type='text' name='password' value=''><br/></p>";
   //buf += "<input type='submit' value='Submit'></form>"; 
-  buf += "<p><input type='submit' name='reboot' value='Reboot!'/>\n";
+  //buf += "<p><input type='submit' name='reboot' value='Reboot!'/>\n";
   //buf += "  <input type='submit' name ='scan' value='Scan'/>";   
     // working buf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
   //buf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
-  buf += "  <input type='submit' value='Submit'/>" ; 
-  buf += "</form></p>"; 
+  //buf += "  <input type='submit' value='Submit'/>" ; 
+  //buf += "</form></p>"; 
+   server.sendContent(buf);
 
 }
+  server.sendContent(htmlendstring);
 
-  buf += htmlendstring; 
+  //buf += htmlendstring; 
 
 
 
-    server.send(200, "text/html", buf);
+  //  server.send(200, "text/html", buf);
 
      
     if (networkrestart) restartNetworking(); 

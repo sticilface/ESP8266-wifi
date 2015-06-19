@@ -1,6 +1,9 @@
 
 void setup( void ) {
   // put your setup code here, to run once:
+
+  //WiFi.disconnect();
+
   EEPROM.begin(512);
 
 
