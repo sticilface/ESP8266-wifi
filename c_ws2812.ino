@@ -1,7 +1,7 @@
 // TODO.... 
 // 1.  fix MQTT instructions... currently does not work through opState... and extra effects don't work... must integrate MODEDROP....
 // 2.  consolidate text and order of effects
-// 3.  
+// 3.  Auto enable MQTT if IP is entered on wifi config. 
 // 4.  
 // 5.  nointurrup handles for UDP parce... maybe... 
 // 6. 
@@ -17,16 +17,13 @@
 // PixelCount_address + 3 =  LastOpState
 
 
-int lasteffectupdate = 0 ; 
-int WS2812interval = 2000; 
-long Random_func_timeout = 0; 
+
 
 //int spectrumValue[7];
 //int filter=80;
 
-uint16_t effectState = 0;
 
-
+// what!
 uint16_t 
 var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
 var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
@@ -245,8 +242,40 @@ void  cache  WS2812_dim_string (String Value)
 
       Serial.println("Brightness set to: " + String(CurrentBrightness));
 
+      send_mqtt_msg("brightness", String(CurrentBrightness));
+
 }
 
+
+void cache WS2812_effect_string (String request) {
+
+      for (uint8_t i = 0; i < numberofmodes; i++ ) {
+
+        if (request == String(MODE_STRING[i])) {
+
+                // uint8_t chosen_mode = Value.toInt(); // turn it to number...
+        HoldingOpState = (operatingState)i; // assign selection to holdingopstate... 
+        Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
+        LastOpState = (operatingState)i;
+        Serial.print("MQTT MODE MATCH FOUND :"); 
+        Serial.println(MODE_STRING[i]); 
+        break; 
+
+        }
+      } 
+
+   if (HoldingOpState == OFF) { 
+    send_mqtt_msg("mode","off");
+  } else { 
+    send_mqtt_msg("mode", "on");
+  }
+
+
+send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
+
+
+
+}
 
 void  cache WS2812_mode_string (String Value)
 
@@ -258,10 +287,7 @@ void  cache WS2812_mode_string (String Value)
 
   if (Value.toInt() != 0) {  // if the numerical mode does not equal 0 which is off....
 
-      // WS2812_mode_number(Value); 
-
       uint8_t chosen_mode = Value.toInt(); // turn it to number...
-      // opState = (operatingState)chosen_mode; // old way... direct....  
       HoldingOpState = (operatingState)chosen_mode; // assign selection to holdingopstate... 
       Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
       LastOpState = (operatingState)chosen_mode;
@@ -272,37 +298,13 @@ void  cache WS2812_mode_string (String Value)
   Value.toLowerCase();
 
   if (Value == "off" | Value == "OFF") { 
-    //Serial.println("OFF HTTP request recieved..");
-
       if (opState != OFF) { 
-
-          //Serial.println("Lights ON.. Switching off!");
-
-          //LastOpState = opState;
           Current_Effect_State = POST_EFFECT; //  Set this to TERMINATE current effect.... 
-          //opState = OFF; 
           HoldingOpState = OFF; 
-
       } 
   }
 
-
-
   if (Value == "on" | Value == "ON") { HoldingOpState = LastOpState; Current_Effect_State = POST_EFFECT; } ; 
-
-
-  if (Value == "looparound") { HoldingOpState = LastOpState = LOOPAROUND; Current_Effect_State = POST_EFFECT;};
-  if (Value == "pickrandom") { opState = PICKRANDOM; LastOpState = PICKRANDOM; } ;
-  if (Value == "fadeinfadeout") { opState = FADEINFADEOUT; LastOpState = FADEINFADEOUT; }; 
-  if (Value == "fade") { opState = FADE; LastOpState = FADE; }; 
-  if (Value == "rainbow") { opState = RAINBOW; LastOpState = RAINBOW; }; 
-  if (Value == "adalight") { LastOpState =  opState = ADALIGHT;}; 
-  if (Value == "coolblobs") { opState = COOLBLOBS; LastOpState = COOLBLOBS;  }; 
-  if (Value == "udp") { opState = UDP; LastOpState = UDP;  }; 
-  if (Value == "colour") { opState = LastOpState = COLOR; }; 
-  if (Value == "chaserainbow") { opState = LastOpState = ChaseRainbow; }; 
-  if (Value == "test") {opState = LastOpState = TEST; };
-
 
   if (Value == "refresh" ) { 
     lasteffectupdate = 0;  
@@ -311,26 +313,18 @@ void  cache WS2812_mode_string (String Value)
   if (Value == "pause") paused = true;
   if (Value == "play") paused = false; 
 
-  if (Value.indexOf("rgb") >= 0) 
-    {
-      //opState = LastOpState = COLOR; //  this allows you to pick colour base for other MODES.... 
-      String instruction = Value.substring(4,Value.length()+1 );
-      Serial.println("/n RGB command recieved: " + instruction);
-      WebRGBcolour = instruction;
-      NewColour = HEXtoRGB(instruction);
-      EEPROM.write(PixelCount_address + 4, NewColour.R);
-      EEPROM.write(PixelCount_address + 5, NewColour.G);
-      EEPROM.write(PixelCount_address + 6, NewColour.B);
-      EEPROM.commit();
-  }
-
 }
 
+   if (HoldingOpState == OFF) { 
+    send_mqtt_msg("mode","off");
+  } else { 
+    send_mqtt_msg("mode", "on");
+  }
 
   EEPROM.write(PixelCount_address + 3, LastOpState);
   EEPROM.commit();
 
-  //if (opState == OFF) opState = HoldingOpState ; // This line ensures that if there is nothing running the effect is started... 
+send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
 
 }
 
@@ -355,7 +349,7 @@ void cache WS2812_Set_New_Colour (String instruction) {
       //Serial.print(" ");       
       //Serial.println(NewColour.B,HEX); 
   
-
+      send_mqtt_msg("colour", WebRGBcolour); 
 }
 
 
@@ -367,6 +361,7 @@ lasteffectupdate = 0;
 
 WS2812interval = Value.toInt();
 
+send_mqtt_msg("timer", Value); 
 }
 
 
@@ -575,6 +570,7 @@ void cache initiateWS2812 ()
   strip->Begin();
   StripOFF();
   SetRandomSeed();
+
 
 }
 
@@ -870,7 +866,7 @@ void cache  FadeInFadeOutRinseRepeat(uint8_t peak) {
   /*
   if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
-  if (effectState == 0)
+  if (effectPosition == 0)
   {
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
     {
@@ -878,7 +874,7 @@ void cache  FadeInFadeOutRinseRepeat(uint8_t peak) {
       strip->LinearFadePixelColor(time, pixel, RgbColor(random(peak), random(peak), random(peak)));
     }
   }
-  else if (effectState == 1)
+  else if (effectPosition == 1)
   {
     for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
     {
@@ -886,7 +882,7 @@ void cache  FadeInFadeOutRinseRepeat(uint8_t peak) {
       strip->LinearFadePixelColor(time, pixel, RgbColor(0, 0, 0));
     }
   }
-  effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
+  effectPosition = (effectPosition + 1) % 2; // next effectPosition and keep within the number of effectPositions
   
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
@@ -931,36 +927,36 @@ void cache LoopAround(uint8_t peak, uint16_t speed)
   if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
   // fade previous one dark
-  prevPixel = (effectState + (pixelCount - 5)) % pixelCount; 
+  prevPixel = (effectPosition + (pixelCount - 5)) % pixelCount; 
   strip->LinearFadePixelColor(speed, prevPixel, RgbColor(0, 0, 0));
   
   // fade previous one dark
-  prevPixel = (effectState + (pixelCount - 4)) % pixelCount; 
+  prevPixel = (effectPosition + (pixelCount - 4)) % pixelCount; 
   prevColor = strip->GetPixelColor( prevPixel );
   prevColor.Darken(prevColor.CalculateBrightness() / 2);
   strip->LinearFadePixelColor(speed, prevPixel, prevColor);
   
   // fade previous one dark
-  prevPixel = (effectState + (pixelCount - 3)) % pixelCount; 
+  prevPixel = (effectPosition + (pixelCount - 3)) % pixelCount; 
   prevColor = strip->GetPixelColor( prevPixel );
   prevColor.Darken(prevColor.CalculateBrightness() / 2);
   strip->LinearFadePixelColor(speed, prevPixel, prevColor);
   
   // fade previous one dark
-  prevPixel = (effectState + (pixelCount - 2)) % pixelCount; 
+  prevPixel = (effectPosition + (pixelCount - 2)) % pixelCount; 
   prevColor = strip->GetPixelColor( prevPixel );
   prevColor.Darken(prevColor.CalculateBrightness() / 2);
   strip->LinearFadePixelColor(speed, prevPixel, prevColor);
   
   // fade previous one dark
-  prevPixel = (effectState + (pixelCount - 1)) % pixelCount; 
+  prevPixel = (effectPosition + (pixelCount - 1)) % pixelCount; 
   prevColor = strip->GetPixelColor( prevPixel );
   prevColor.Darken(prevColor.CalculateBrightness() / 2);
   strip->LinearFadePixelColor(speed, prevPixel, prevColor);
   
   // fade current one light
-  strip->LinearFadePixelColor(speed, effectState, RgbColor(random(peak), random(peak), random(peak)));
-  effectState = (effectState + 1) % pixelCount;
+  strip->LinearFadePixelColor(speed, effectPosition, RgbColor(random(peak), random(peak), random(peak)));
+  effectPosition = (effectPosition + 1) % pixelCount;
   
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
@@ -1006,12 +1002,12 @@ void cache Fade() {
 
 switch(Current_Effect_State) {
     case PRE_EFFECT:
-    effectState = 0; 
+    effectPosition = 0; 
     Pre_effect(); 
     for (uint16_t i = 0; i < pixelCount; i++)
             {
               RgbColor original = strip->GetPixelColor(i);
-        RgbColor col = Wheel(effectState++);
+        RgbColor col = Wheel(effectPosition++);
         AnimUpdateCallback animUpdate = [=](float progress)
         {
            RgbColor updatedColor = RgbColor::LinearBlend(original, dim(col) ,  progress) ;
@@ -1024,11 +1020,11 @@ switch(Current_Effect_State) {
     case RUN_EFFECT:  
     if (animator->IsAnimating()) { break; } ; //  This line stops the effect from running if it is still in the warm up! 
       if (millis() - lasteffectupdate > WS2812interval) { 
-            RgbColor col = Wheel(effectState++);
+            RgbColor col = Wheel(effectPosition++);
             for (uint16_t i=0; i < pixelCount; i++) {
                 strip->SetPixelColor(i, dim(col));    
               }
-          if (effectState==256) effectState=0; 
+          if (effectPosition==256) effectPosition=0; 
           lasteffectupdate = millis(); 
           }
     break;
@@ -1043,7 +1039,7 @@ switch(Current_Effect_State) {
 void  cache Rainbowcycle() {
   switch(Current_Effect_State) {
     case PRE_EFFECT:
-    effectState = 0; 
+    effectPosition = 0; 
     Pre_effect(); 
     for (uint16_t i = 0; i < pixelCount; i++)
             {
@@ -1051,23 +1047,23 @@ void  cache Rainbowcycle() {
         
         AnimUpdateCallback animUpdate = [=](float progress)
         {
-           RgbColor updatedColor = RgbColor::LinearBlend(original, dim(Wheel(i * 256 / pixelCount + effectState)) ,  progress) ;
+           RgbColor updatedColor = RgbColor::LinearBlend(original, dim(Wheel(i * 256 / pixelCount + effectPosition)) ,  progress) ;
             strip->SetPixelColor(i, updatedColor);
         };
         animator->StartAnimation(i, 2000, animUpdate);
         lasteffectupdate = millis();  
-    effectState++; 
+    effectPosition++; 
     }
     break;
     case RUN_EFFECT:  
     if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
       if (millis() - lasteffectupdate > WS2812interval) {      
            for(uint16_t i=0; i< pixelCount; i++) {
-                strip->SetPixelColor(i, dim(Wheel(i * 256 / pixelCount + effectState)));
+                strip->SetPixelColor(i, dim(Wheel(i * 256 / pixelCount + effectPosition)));
             }
-          if (effectState==256*5) effectState=0; 
+          if (effectPosition==256*5) effectPosition=0; 
           lasteffectupdate = millis(); 
-          effectState++;
+          effectPosition++;
           }
     break;
     case POST_EFFECT:
@@ -1328,7 +1324,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     case PRE_EFFECT:
 
 
-    effectState = 0; 
+    effectPosition = 0; 
     
     /*Serial.print("Pixels = ");
     Serial.print(pixelCount);
@@ -1345,19 +1341,19 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     Pre_effect(); 
 
 
- //   for (uint16_t i = 0; i < pixelCount; i++)
- //           {
- //             RgbColor original = strip->GetPixelColor(i);
- //       
- //       AnimUpdateCallback animUpdate = [=](float progress)
- //       {
- //          RgbColor updatedColor = RgbColor::LinearBlend(original, dim(Wheel(i * 256 / pixelCount + effectState)) ,  progress) ;
- //           strip->SetPixelColor(i, updatedColor);
- //       };
- //       animator->StartAnimation(i, 2000, animUpdate);
- //       lasteffectupdate = millis();  
- //   effectState++; 
- //   }
+   for (uint16_t i = 0; i < pixelCount; i++)
+            {
+              RgbColor original = strip->GetPixelColor(i);
+        
+        AnimUpdateCallback animUpdate = [=](float progress)
+        {
+           RgbColor updatedColor = RgbColor::LinearBlend(original, RgbColor(0,0,0) ,  progress) ;
+            strip->SetPixelColor(i, updatedColor);
+        };
+        animator->StartAnimation(i, 2000, animUpdate);
+        lasteffectupdate = millis();  
+ //   effectPosition++; 
+   }
 
 
 
@@ -1382,38 +1378,23 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       //Serial.println("Generating coordinates.");
        uint8_t count = 0; 
 
-      do {
+      
         // Serial.print(".");
        x_rand = random(0, total_x - square_size + 1) ; 
        y_rand = random(0, total_y - square_size + 1) ;
 
-        //Serial.print("(");
-        //Serial.print(x_rand);
-        //Serial.print(",");
-        //Serial.print(y_rand);
-        //Serial.print(")..");
        for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
 
           uint16_t pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
-        //Serial.println();
-        
-        /*Serial.print("(");
-        Serial.print(x_rand);
-        Serial.print(",");
-        Serial.print(y_rand);
-        Serial.print(")..");
-          Serial.print(pixel);
-          Serial.print("-->");
-          Serial.println(animator->IsAnimating(pixel)); 
-          */
-          if (animator->IsAnimating(pixel)) { break; }; 
+
+          if (animator->IsAnimating(pixel)) { coordinates_OK = false; break; }; 
           if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true; }; 
           }
           // if (count++ == 5) break; 
           //Serial.print("Count = "); 
           //Serial.println(count);
           //delay(1); 
-       } while (coordinates_OK == false && count++ < 5); 
+       
 
 
       //for (int j =0; j < (square_size * square_size) ; j++) {
@@ -1422,6 +1403,8 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       // Serial.print(x_rand);
       // Serial.print(" y = ");
       // Serial.println(y_rand);
+
+    if (coordinates_OK) {
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
@@ -1460,7 +1443,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
           }
     
-
+        }
 
 
     break;
@@ -2315,7 +2298,7 @@ if (Current_Effect_State == RUN_EFFECT) {
 
 if (millis() - lasteffectupdate > WS2812interval) {
 
-if (effectState == 0)
+if (effectPosition == 0)
     {
         for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
         {
@@ -2333,7 +2316,7 @@ if (effectState == 0)
             animator->StartAnimation(pixel, time, animUpdate);
         }
     }
-    else if (effectState == 1)
+    else if (effectPosition == 1)
     {
         for (uint8_t pixel = 0; pixel < pixelCount; pixel++)
         {
@@ -2351,7 +2334,7 @@ if (effectState == 0)
             animator->StartAnimation(pixel, time, animUpdate);
         }
     }
-    effectState = (effectState + 1) % 2; // next effectState and keep within the number of effectStates
+    effectPosition = (effectPosition + 1) % 2; // next effectPosition and keep within the number of effectPositions
 
 lasteffectupdate = millis(); 
 }

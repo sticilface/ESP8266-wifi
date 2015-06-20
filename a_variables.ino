@@ -127,14 +127,19 @@ operatingState opState = OFF;
 operatingState LastOpState = OFF;
 operatingState HoldingOpState = OFF; 
 static const char *MODE_STRING[] = {
-"Off", "Rainbow", "Color", "Chase Rainbow", "Fade", 
-"AdaLight", "test", "Looparound", "Pick Random", "Fade in Fade Out", 
-"Cool Blobs", "UDP", "Rainbow Cycle","Spiral","Squares2",
-"Squares Random","Test4","Squares","EQ1","Random Colour", 
-"Random Function", "Art-Net", "HSV Top Bottom", "Linear Top Bottom", "Single Colour Fade", 
-"Random Colour Fade", "HSIcycle", "New-Animations"
+"Off", "Rainbow", "Color", "Chase-Rainbow", "Fade", 
+"AdaLight", "test", "Looparound", "Pick-Random", "Fadein-FadeOut", 
+"Cool-Blobs", "UDP", "Rainbow-Cycle","Spiral","Squares2",
+"Squares-Random","Test4","Squares","EQ1","Random-Colour", 
+"Random-Function", "Art-Net", "HSV-Top-Bottom", "Linear-Top-Bottom", "Single-Colour-Fade", 
+"Random-Colour-Fade", "HSIcycle", "New-Animations"
 };
 #define numberofmodes 28 /////// DONT FORGET THIS....
+
+
+unsigned long lasteffectupdate = 0; 
+uint16_t WS2812interval = 2000; 
+
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
@@ -151,4 +156,8 @@ unsigned int localPort = 8888; // 6454; //8888;      // local port to listen on
 
 enum effectState { PRE_EFFECT = 0, RUN_EFFECT, POST_EFFECT};
 effectState Current_Effect_State = PRE_EFFECT; 
+
+unsigned long Random_func_timeout = 0;
+
+uint16_t effectPosition = 0;
 

@@ -127,8 +127,8 @@ if (wifimode == 1) {
 
 */ 
 
-
-  //Serial.print(deviceid);
+    Serial.print("Device name: ");
+    Serial.println(deviceid);
   //Serial.println(".local)");
   
   

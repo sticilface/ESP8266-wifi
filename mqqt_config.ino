@@ -6,48 +6,48 @@
 
 void callback(const MQTT::Publish& pub) {
 
-  Serial.print("MQTT Message Recieved: ");
-  Serial.print(pub.topic());
-  Serial.print(" => ");
-  Serial.println(pub.payload_string());
+  //Serial.print("MQTT Message Recieved: ");
+  //Serial.print(pub.topic());
+  //Serial.print(" => ");
+  //Serial.println(pub.payload_string());
 
 
-    String topicrecieved = pub.topic();
+    //String topicrecieved = pub.topic();
     
-    mqttbuf = pub.payload_string();
+  //  mqttbuf = pub.payload_string();
 
  // -- 1) Identify ESP commands
- 
- if (mqttbuf == "identify") 
+ if (pub.payload_string() == "identify") 
       {
                 Serial.print("Identify Request Recieved: ");
                 String temp = "esp/" + String(deviceid);
-                temp.toCharArray(mqttcharbuf,200);
-                char iparray[20];
-                LocalIP.toCharArray(iparray,20) ; // WiFi.localIP();
-                if(mqttclient.publish(mqttcharbuf, iparray)) Serial.println("Sent"); 
+                //temp.toCharArray(mqttcharbuf,200);
+                //char iparray[20];
+                //LocalIP.toCharArray(iparray,20) ; // WiFi.localIP();
+                
+                if(mqttclient.publish(temp, LocalIP)) Serial.println("Sent"); 
       } 
       
-if (mqttbuf == "reboot") ESP.reset(); //system_restart(); // abort();
+if (pub.payload_string() == "reboot") ESP.reset(); //system_restart(); // abort();
 
 
 //  NEW METHODS.... 
-
-if (topicrecieved.indexOf("/mode") > 0) WS2812_mode_string(pub.payload_string());
-if (topicrecieved.indexOf("/timer") > 0) WS2812timer_command_string(pub.payload_string());
-if (topicrecieved.indexOf("/brightness") > 0) WS2812_dim_string(pub.payload_string());
-if (topicrecieved.indexOf("/animationspeed") > 0) CurrentAnimationSpeed = (pub.payload_string()).toInt();
-if (topicrecieved.indexOf("/colour") > 0) WS2812_Set_New_Colour(pub.payload_string());
-if (topicrecieved.indexOf("/color") > 0) WS2812_Set_New_Colour(pub.payload_string());
-
-
+if ((pub.topic()).indexOf("/effect/set") > 0) WS2812_effect_string(pub.payload_string());
+if ((pub.topic()).indexOf("/mode/set") > 0) WS2812_mode_string(pub.payload_string());
+if ((pub.topic()).indexOf("/timer/set") > 0) WS2812timer_command_string(pub.payload_string());
+if ((pub.topic()).indexOf("/brightness/set") > 0) WS2812_dim_string(pub.payload_string());
+if ((pub.topic()).indexOf("/animationspeed/set") > 0) CurrentAnimationSpeed = (pub.payload_string()).toInt();
+if ((pub.topic()).indexOf("/colour/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
+if ((pub.topic()).indexOf("/color/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
 
 
-if (mqttbuf.indexOf('=') > 0) 
+/*
+
+if ((pub.payload_string()).indexOf('=') > 0) 
       {
-       String instruction = mqttbuf.substring(0,mqttbuf.indexOf('=') );
+       String instruction = (pub.payload_string()).substring(0,mqttbuf.indexOf('=') );
 
-       String value = mqttbuf.substring(mqttbuf.indexOf('=') +1 ,mqttbuf.length());
+       String value = (pub.payload_string()).substring((pub.payload_string()).indexOf('=') +1 ,(pub.payload_string()).length());
        
        // Command_Handler (instruction,value);
          if (instruction == "ssid") ssid_command(value);
@@ -62,15 +62,15 @@ if (mqttbuf.indexOf('=') > 0)
         if (mqttreload) mqttreloadfunc();
        
 
-        if (instruction == "mode")  WS2812_mode_string(value);
-        if (instruction == "timer")  WS2812timer_command_string(value);
-        if (instruction == "brightness")  WS2812_dim_string(value);
-        if (instruction == "animationspeed") CurrentAnimationSpeed = value.toInt();
+       // if (instruction == "mode")  WS2812_mode_string(value);
+       // if (instruction == "timer")  WS2812timer_command_string(value);
+       // if (instruction == "brightness")  WS2812_dim_string(value);
+       // if (instruction == "animationspeed") CurrentAnimationSpeed = value.toInt();
 
        
       } 
       
-
+*/
 
 
 } // --- end of mqtt callback
@@ -88,7 +88,7 @@ void  initiatemqqt ()
         String topicString = String(deviceid) + "/Status";
         char topic[50]; 
         topicString.toCharArray(topic,50);
-        String MainTopicString = String(deviceid) + "/#";
+        String MainTopicString = String(deviceid) + "/+/+";
 
 
 
@@ -116,15 +116,16 @@ void  initiatemqqt ()
 
             mqttclient.subscribe(MQTT::Subscribe(mqttclient.next_packet_id())
                    .add_topic(topic, 2) // this is the main topic deviceid/#
-                   .add_topic(mqttesptopic, 2)  // this is the esp topic... 
+                   .add_topic(mqttesptopic, 2)
+                   .add_topic(deviceid,2)  // this is the esp topic... 
                    );
 
                 send_mqtt_msg( String(deviceid), LocalIP,2); // the 2 signifies that it publishes under the esp/ topic and not device
-                delay(5);
+                //delay(5);
                 send_mqtt_msg( "IP", LocalIP);                
-                delay(5);
+                //delay(5);
                 send_mqtt_msg( "Version", version);                
-                delay(5);
+                //delay(5);
                 send_mqtt_msg( "Status", "Device Ready");
               
             } else
@@ -156,26 +157,36 @@ void  send_mqtt_msg (String topic, String message, int type )
 {
   if (!MQTT_enabled) return;
 
-  char mqtttopicbuf[200];
+  //char mqtttopicbuf[1000];
  
- if ( type == 1 ) topic = String(deviceid) +"/" + topic;
+ if ( type == 1 ) topic = String(deviceid) +  "/" + topic;
  if ( type == 2 ) topic = "esp/" + topic;
  
  
      
-   topic.toCharArray(mqtttopicbuf,200);
-   message.toCharArray(mqttcharbuf,200);
+  // topic.toCharArray(mqtttopicbuf,200);
+  // message.toCharArray(mqttcharbuf,200);
  
   if (mqttclient.connected()) 
     {
-       if(mqttclient.publish(mqtttopicbuf, mqttcharbuf))
-       {
-            Serial.println("MQTT msg SENT: " + topic + ", Message: " + message);
-        } else {
-            Serial.println("MQTT msg Failed: " + topic + ", Message: " + message);
-        }
+       //if(mqttclient.publish((char*)topic.c_str(), (char*)message.c_str()))
+     // if(mqttclient.publish(topic, message))
+     //  {
+     //       Serial.println("MQTT msg SENT: " + topic + ", Message: " + message);
+     //   } else {
+     //       Serial.println("MQTT msg Failed: " + topic + ", Message: " + message);
+     //   }
+
+  mqttclient.publish(MQTT::Publish((char*)topic.c_str(), (char*)message.c_str())
+                .set_qos(2, mqttclient.next_packet_id())
+               );
+
+
+
+
         
     }
+    delay(5);
     
 }
 
