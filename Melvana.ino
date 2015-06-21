@@ -1,3 +1,4 @@
+#define HSL_FLOAT
 
 
 

@@ -34,7 +34,7 @@ static const char *VAR_STRING[] = {
 "Var3              ", // var 3
 "Var4              ", // var 4
 "Var5              ", // var 5
-"Var6              ", // var 6
+"Effect Option     ", // var 6
 "Total_X           ", // var 7
 "Number of effects ", // var 8
 "Var9              ", // var 9
@@ -383,9 +383,14 @@ if (Value.indexOf("rgb") >= 0)
 } */
 
 
-
-
 RgbColor cache dim(RgbColor original) {
+
+dim (original, CurrentBrightness); 
+
+}
+
+
+RgbColor cache dim(RgbColor original, uint8_t brightness) {
 
   //  int amounttodarken = 255 - CurrentBrightness;
   //  value.Darken(amounttodarken);
@@ -394,11 +399,23 @@ RgbColor cache dim(RgbColor original) {
     if (CurrentBrightness == 255) return original; 
 
     
- RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, (uint8_t)(127 * ((float)CurrentBrightness/255) ) ) );
 
 
      // RgbColor newvalue = dimbyhsv(value, (byte) CurrentBrightness);
+#ifdef HSL_FLOAT
 
+    float newHSL =  ( HslColor(original).L  * ((float)brightness/255) );
+
+ RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, newHSL  ) );
+
+
+
+#else
+
+ RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, (uint8_t)(127 * ((float)brightness/255) ) ) );
+ 
+
+#endif
 
 
 
@@ -533,9 +550,20 @@ void cache StripOFF() {
 
         AnimUpdateCallback animUpdate = [=](float progress)
         {
-            //uint8_t valuepassed = (uint8_t)  ((float) (HslColor(original).L) / 255) * ( 255   *   (1 - progress) ); 
+
+#ifdef HSL_FLOAT
+            float valuepassed = (float) ( HslColor(original).L - (HslColor(original).L  * progress) ); 
+            RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, valuepassed  ))  ;  
+
+
+#else
+
             uint8_t valuepassed = (uint8_t) ( HslColor(original).L - (HslColor(original).L  * progress) ); 
-            RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, valuepassed  ))  ;            
+            RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, valuepassed  ))  ;    
+
+#endif
+
+
             //Serial.print(progress);
             //Serial.print(" --> ");
             //Serial.println(valuepassed);
@@ -678,7 +706,7 @@ switch (opState)
 
 if (millis() - update_strip_time > 30) {
 
-    if (animator->IsAnimating()) animator->UpdateAnimations(); 
+    if ( animator->IsAnimating() ) animator->UpdateAnimations(); 
 
     strip->Show();
 
@@ -1301,8 +1329,22 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 */
 
+
 // Working 
 
+
+void cache fade_to_black() {
+     for (uint16_t i = 0; i < pixelCount; i++)
+            {
+        RgbColor original = strip->GetPixelColor(i);
+        AnimUpdateCallback animUpdate = [=](float progress)
+        {
+           RgbColor updatedColor = RgbColor::LinearBlend(original, RgbColor(0,0,0) ,  progress) ;
+            strip->SetPixelColor(i, updatedColor);
+        };
+        animator->StartAnimation(i, 2000, animUpdate);
+   }
+}
 
 void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
@@ -1310,7 +1352,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint8_t total_x = var7; 
   uint8_t square_size = var10;
   uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
-
+  uint8_t effect_option = var6;
 
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 1;
@@ -1321,6 +1363,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
 
   switch(Current_Effect_State) {
+
     case PRE_EFFECT:
 
 
@@ -1338,24 +1381,14 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     Serial.println(numberofpoints);
 */
 
+
+    if (effect_option == 0) fade_to_black(); 
+
+    if (effect_option == 1) top_bottom_fade( dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255) ), dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255)  ), total_x, CurrentAnimationSpeed); 
+ 
+    lasteffectupdate = millis(); 
+
     Pre_effect(); 
-
-
-   for (uint16_t i = 0; i < pixelCount; i++)
-            {
-              RgbColor original = strip->GetPixelColor(i);
-        
-        AnimUpdateCallback animUpdate = [=](float progress)
-        {
-           RgbColor updatedColor = RgbColor::LinearBlend(original, RgbColor(0,0,0) ,  progress) ;
-            strip->SetPixelColor(i, updatedColor);
-        };
-        animator->StartAnimation(i, 2000, animUpdate);
-        lasteffectupdate = millis();  
- //   effectPosition++; 
-   }
-
-
 
     break;
     case RUN_EFFECT:  
@@ -1405,10 +1438,12 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       // Serial.println(y_rand);
 
     if (coordinates_OK) {
+      
+      uint16_t time = random(( CurrentAnimationSpeed / 10 ), (CurrentAnimationSpeed * 10)); //generate same time for each object
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
-            uint16_t time = 5000; // random(800, 1000);
+            
 
             uint16_t pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
   
@@ -1426,7 +1461,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
             };
 
-            animator->StartAnimation(pixel, time, animUpdate);
+            animator->StartAnimation(pixel, time , animUpdate); // might change this to be a random variant...
         }
 
 
@@ -2145,75 +2180,67 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 */
 }
 
+void cache Set_Colour_ToptoBottom() {
 
+
+
+
+
+
+
+}
 
 
 
 
 
 // Overloaded func for topbottom fade...
-void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
+//void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
 
-  top_bottom_fade(Top,Bottom,count_x,0);
-}
+//  top_bottom_fade(Top,Bottom,count_x,0);
+//}
 
 
-void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint8_t fadetype) {
-/*
-uint8_t x,y,colour_index; 
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint16_t time) {
+
+uint8_t x,y,colour_steps; 
+float colour_stepsF; 
 uint8_t total_y = return_total_y(count_x); // get total number of rows
-RgbColor colournew;
-
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+RgbColor colourRGB;
+HslColor colourHSL; 
+//if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
 
 for (y = 0; y < total_y; y++) {
 
-  colour_index = map(y,1,total_y-1,1,254);  // map steps of blend.........
+  colour_steps = map(y,1,total_y-1,1,254);  // map steps of blend.........
 
-if (y == 0) colour_index = 0; 
-if (y == total_y - 1) colour_index = 255;
 
-        if (var1 == 0) var1 = 20;
-        if (var2 == 0) var2 = 20; 
-  
-    if (fadetype == 1 ) { 
-      colournew = colournew.LinearBlend(Bottom, Top, colour_index); 
-      } else if (fadetype == 2) {
-        colournew = Hsv_COLOR_range_rgb(NewColour, var1,var2,colour_index);  // give fade from HSV Hue 50 deg below and 50 deg above
-      } else if (fadetype == 3) {
+if (y == 0) colour_steps = 0; // this stets the top blend.  
+if (y == total_y - 1) colour_steps = 255;  // this sets the bottom blend
 
-        colournew = Hsv_COLOR_range_rgb(Top, var1,var2,colour_index);  
-      } else {       
-        colournew = HsvFADErgb(Bottom,Top,colour_index);
-      } // generate new colour.... based on value passed in fade type.
+  colour_stepsF = (float)colour_steps / 255.0;  // this converts it to float for new lib...
 
+colourRGB = RgbColor(HslColor::LinearBlend(HslColor(Top), HslColor(Bottom), colour_stepsF)); 
 
 
     for( x = 0; x < count_x; x++) {
+
+
         uint16_t pixel = return_pixel(x,y, count_x); 
-
+        RgbColor original = strip->GetPixelColor(pixel);
         if (pixel >= strip->PixelCount()) break;
-        //Serial.print(pixel);
-        //Serial.print(",");
-        //strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand,y_rand,total_x), dim(colour));
-        strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel , dim(colournew)); //CurrentAnimationSpeed
-        
-        //strip->SetPixelColor( pixel, colournew);
 
-    }
-  
-  //Serial.print(")  ");
-
-}
+        AnimUpdateCallback animUpdate = [=](float progress)
+            {
+                RgbColor updatedColor = RgbColor::LinearBlend(original, colourRGB ,  progress) ;
+                strip->SetPixelColor(pixel, updatedColor);
+            };
+            animator->StartAnimation(pixel, time, animUpdate);
+    } // END of x ......
+}  // END of y......
     
-strip->StartAnimating(); // start animations
-
-//Serial.println("Top Bottom Feed function finished...");
-if (Current_Effect_State == POST_EFFECT) Post_effect(); 
-
-*/
-}
+} // END of tom_bottom_fade
 
 void cache Random_Top_Bottom(uint8_t fadetype) { 
 /*

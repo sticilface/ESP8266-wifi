@@ -144,7 +144,7 @@ void cache setup_Plugin () {
 
 void OnceOnlyTask () {
 
-  ///Serial.println("Once only task hit"); 
+  //Serial.println("Once only task hit"); 
   String message = "effect:"; 
 
   for (uint8_t i = 0; i < numberofmodes; i++)  {
@@ -152,21 +152,14 @@ void OnceOnlyTask () {
     if (i < (numberofmodes - 1)) { message += ","; }; 
    }
 
-   //mqttclient.publish("speed/effectlista" , (char*)message.c_str() ); 
-
-
-  // mqttclient.publish(MQTT::Publish("speed/effectlista", (char*)message.c_str())
-  //              .set_retain()
-  //              .set_qos(1, mqttclient.next_packet_id())
-  //              .set_dup()
-  //            );
-
+   send_mqtt_msg("effectlist",message); 
 
 
    delay(10);
 
    if (opState == OFF) { 
     send_mqtt_msg("mode","off");
+    send_mqtt_msg("effect","off");
   } else { 
     send_mqtt_msg("mode", "on");
   }
