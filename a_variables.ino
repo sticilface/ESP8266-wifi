@@ -115,6 +115,9 @@ const int bitaddress = 500;
 #define PIN_7 0x40
 #define PIN_8 0x80
 
+
+BlendMethod Blend = HSL; 
+
 enum operatingState { 
 OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, 
 ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,

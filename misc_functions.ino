@@ -264,17 +264,37 @@ void cache uptime ()
 
 {
    // send_mqtt_msg("Uptime", String(millis()/60000));
-  int sec = millis() / 1000;
-  int min = sec / 60;
-  int hr = min / 60;
-  char Up_time[20]; 
-  snprintf ( Up_time, 20, "%02d:%02d:%02d", hr, min % 60, sec % 60 );
+  long time = millis(); 
+ // int sec = millis() / 1000;
+ // int min = sec / 60;
+ // int hr = min / 60;
+ // char Up_time[20]; 
+ // snprintf ( Up_time, 20, "%02d:%02d:%02d", hr, min % 60, sec % 60 );
 
-  Serial.print("Uptime ");
-  Serial.print(Up_time);
-  Serial.print("   HEAP = ");
+//  Serial.print("Uptime ");
+//  Serial.print(Up_time);
+ Serial.print(" HEAP = ");
   Serial.print(ESP.getFreeHeap());
-  Serial.println();
+  //Serial.print();
+  Serial.print(" ");
+  if (animator->IsAnimating()) { 
+    Serial.print("* (");
+  } else {
+    Serial.print("- (");
+  }
+  Serial.print(time);
+  Serial.print(" - ");
+  Serial.print(lasteffectupdate);
+  Serial.print(" > ");
+  Serial.print(WS2812interval);
+
+  Serial.print(") ("); 
+  if  ( (millis() - lasteffectupdate > WS2812interval) || (lasteffectupdate == 0 ) )  {
+    Serial.print("Update available");
+  } else {
+    Serial.print("waiting");
+  } ;
+  Serial.println(")");
 
 
 

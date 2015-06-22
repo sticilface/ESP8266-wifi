@@ -19,3 +19,4 @@
 
 
 #include <NeoPixelBus.h>
+#include "enumerates.h"

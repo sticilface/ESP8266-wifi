@@ -29,8 +29,8 @@ var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
 var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
 
 static const char *VAR_STRING[] = {
-"Floor             ", // var 1
-"Ceiling           ", // var 2
+"Ceiling           ", // var 1
+"Floor             ", // var 2
 "Var3              ", // var 3
 "Var4              ", // var 4
 "Var5              ", // var 5
@@ -60,8 +60,8 @@ bool updateLEDs = false;
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
  if (server.arg("paused").length() != 0) {
       paused = (server.arg("paused")).toInt();
-      if (paused) animator->Pause(); 
-      if (!paused) animator->Resume(); 
+   //   if (paused) animator->Pause(); 
+   //   if (!paused) animator->Resume(); 
     }
 
  if (server.arg("rgbpicker").length() != 0)  { 
@@ -539,15 +539,9 @@ void cache SetRGBcolour (RgbColor value, uint16_t speed) {
     break;
     case RUN_EFFECT:
 
-    
       if (millis() - lasteffectupdate > 3000) {
-          
-          //Serial.print("LED update called interval = ");
-          //Serial.print(interval); 
-          //Serial.print(" > ");
-          //Serial.println(WS2812interval);
-          
-          animator->FadeTo(speed,dim(RgbColor(value))); 
+          //animator->FadeTo(speed,dim(RgbColor(value))); 
+          fade_to(dim(value), speed, RGB);
           }
 
       lasteffectupdate = millis(); 
@@ -652,7 +646,9 @@ void cache StripOFF() {
             //float inverseprogress = (1.0 - progress); 
             //RgbColor updatedColor = RgbColor(HslColor(originalHUE , originalSAT, NewLIG  ))  ;  
 
-            float NewLIG = ( (float)(HslColor(original)).L - ((float)(HslColor(original)).L  * progress) ); 
+   // WORKING         float NewLIG = ( (float)(HslColor(original)).L - ((float)(HslColor(original)).L  * progress) ); 
+            float NewLIG = HslColor(original).L - (HslColor(original).L  * progress) ; 
+
             RgbColor updatedColor = RgbColor(HslColor( (HslColor(original)).H, (HslColor(original)).S, NewLIG  ))  ; 
 
 #else
@@ -687,7 +683,7 @@ void cache StripOFF() {
     }
     //}
 
-     // lasteffectupdate = millis(); 
+      // lasteffectupdate = millis(); 
     break;
 
     case RUN_EFFECT:
@@ -796,16 +792,16 @@ switch (opState)
     //  Art_Net_func ();
     //  break;
     case RANDOM_TOP_BOTTOM:
-      Random_Top_Bottom(0);
+      Effect_Top_Bottom(TWOCOLOUR,HSL);
       break;
     case RANDOM_TOP_BOTTOM_LINEAR:
-      Random_Top_Bottom(1);
+      Effect_Top_Bottom(TWOCOLOUR, RGB);
       break;    
     case SINGLE_COLOUR_FADE:
-      Random_Top_Bottom(2);
+      Effect_Top_Bottom(SINGLECOLOUR, HSL);
       break;  
     case RANDOM_COLOUR_FADE:
-      Random_Top_Bottom(3);
+      Effect_Top_Bottom(RANDOMSINGLECOLOUR,HSL);
       break;      
     case HSICYCLE:
       HSI_Cycle();
@@ -1446,19 +1442,44 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 // Working 
 
+void cache fade_to(RgbColor Colour) {
+fade_to(Colour,2000,HSL); 
+}
 
-void cache fade_to_black() {
+void cache fade_to(RgbColor Colour, uint16_t time ) {
+fade_to(Colour,time,HSL); 
+}
+
+//void cache testblendmethod(BlendMethod(test) ) {
+
+
+//}
+
+
+void cache fade_to(RgbColor NewColour, uint16_t time, BlendMethod method ) {
+    
      for (uint16_t i = 0; i < pixelCount; i++)
+            
             {
+
         RgbColor original = strip->GetPixelColor(i);
+        NewColour = dim(NewColour);
 
         AnimUpdateCallback animUpdate = [=](float progress)
         {
-           RgbColor updatedColor = RgbColor::LinearBlend(original, RgbColor(0,0,0) ,  progress) ;
-          
-          strip->SetPixelColor(i, updatedColor);
+           if (method == RGB) { 
+            RgbColor updatedColor = RgbColor::LinearBlend(original, NewColour ,  progress) ;   
+            strip->SetPixelColor(i, updatedColor); 
+          }; 
+
+           if (method == HSL) { 
+            HslColor updatedColor = HslColor::LinearBlend(HslColor(original), HslColor(NewColour), progress); 
+            strip->SetPixelColor(i, updatedColor);  
+          };         
+           
         };
-        animator->StartAnimation(i, 2000, animUpdate);
+
+        animator->StartAnimation(i, time, animUpdate);
    }
 }
 
@@ -1498,7 +1519,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 */
 
 
-    if (effect_option == 1) fade_to_black(); 
+    if (effect_option == 1) fade_to(RgbColor(0,0,0)); 
 
 
 
@@ -1509,13 +1530,16 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
 
   //  if (effect_option == 0) top_bottom_fade( dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255) ), dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255)  ), total_x, CurrentAnimationSpeed); 
+    
      if (effect_option == 0) { 
-          ///Serial.println(".....................");
-          dimoffset = (float)CurrentBrightness / 3.0f; 
-          RgbColor Top =     dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset );
-          RgbColor Bottom =  dim ( Wheel (  random(0,255)  ) ,(uint8_t)dimoffset ) ;
-          //Serial.println(".....................");
 
+          dimoffset = (float)CurrentBrightness / 3.0f; 
+          Serial.print("Dimm Offset = ");
+          Serial.println(dimoffset);
+
+          RgbColor Top =     dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset );
+          RgbColor Bottom =  dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset ) ;
+         
           top_bottom_fade(  Top , Bottom , total_x, CurrentAnimationSpeed); 
     }
 
@@ -1527,11 +1551,11 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     break;
     case RUN_EFFECT:  
 
-    //if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
+    if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
       
 
 
-      if (millis() - lasteffectupdate > WS2812interval) {      
+      if (millis() - lasteffectupdate > WS2812interval || lasteffectupdate == 0 ) {      
 
       //for (int i = 0; i < numberofpoints; i++) {
 
@@ -2330,60 +2354,164 @@ void cache Set_Colour_ToptoBottom() {
 
 
 // Overloaded func for topbottom fade...
-//void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
 
-//  top_bottom_fade(Top,Bottom,count_x,0);
-//}
+  top_bottom_fade(Top,Bottom, count_x, CurrentAnimationSpeed, HSL);
+}
+
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x,uint16_t time) {
+
+  top_bottom_fade(Top,Bottom, count_x, time, HSL);
+}
 
 
-void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint16_t time) {
+
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint16_t time, BlendMethod Method) {
 
 uint8_t x,y;
 float colour_steps; 
 // float colour_stepsF; 
 uint8_t total_y = return_total_y(count_x); // get total number of rows
-//RgbColor colourRGB;
+RgbColor colourRGB;
 HslColor colourHSL; 
 //if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
 
 for (y = 0; y < total_y; y++) {
-
-  // colour_steps = map(y,1,total_y-1,1,254);  // map steps of blend.........
-
-
-  colour_steps = (float) y / (float) total_y; 
-
-  //Serial.print("steps: ");
-  //Serial.print(colour_steps);
-
-if (y == 0) colour_steps = 0.0f; // this stets the top blend.  
-if (y == total_y - 1) colour_steps = 1.0f;  // this sets the bottom blend
-
+    colour_steps = (float) y / (float) total_y; 
+    if (y == 0) colour_steps = 0.0f; // this stets the top blend.  
+    if (y == total_y - 1) colour_steps = 1.0f;  // this sets the bottom blend
   // colour_stepsF = (float)colour_steps / 255.0;  // this converts it to float for new lib...
 
-colourHSL = HslColor::LinearBlend(HslColor(Top), HslColor(Bottom), colour_steps); 
-
-
+    if (Method == RGB) { colourRGB = RgbColor::LinearBlend(Top, Bottom, colour_steps); };
+    if (Method == HSL) { colourHSL = HslColor::LinearBlend(HslColor(Top), HslColor(Bottom), colour_steps); };
+ 
     for( x = 0; x < count_x; x++) {
-
-
-        uint16_t pixel = return_pixel(x,y, count_x); 
-        HslColor original = HslColor(strip->GetPixelColor(pixel));
-        if (pixel >= strip->PixelCount()) break;
+        uint16_t pixel = return_pixel(x,y, count_x);  // which pixel
+        RgbColor original = strip->GetPixelColor(pixel); // get the orginal colour of it, RGB
+        if (pixel >= strip->PixelCount()) break; // escape if out of bounds...
 
         AnimUpdateCallback animUpdate = [=](float progress)
             {
-                HslColor updatedColor = HslColor::LinearBlend(original, colourHSL ,  progress) ;
+              if (Method == HSL) {
+                HslColor updatedColor = HslColor::LinearBlend(HslColor(original), colourHSL ,  progress) ;
                 strip->SetPixelColor(pixel, updatedColor);
+              } else if (Method == RGB) {
+                RgbColor updatedColor = RgbColor::LinearBlend(original, colourRGB, progress) ;
+                strip->SetPixelColor(pixel, updatedColor);
+              }; 
             };
             animator->StartAnimation(pixel, time, animUpdate);
     } // END of x ......
+
 }  // END of y......
     
 } // END of tom_bottom_fade
 
-void cache Random_Top_Bottom(uint8_t fadetype) { 
+
+  //  case RANDOM_TOP_BOTTOM:
+  //    Effect_Top_Bottom(TWOCOLOUR,HSL);
+  //    break;
+  //  case RANDOM_TOP_BOTTOM_LINEAR:
+  //    Effect_Top_Bottom(TWOCOLOUR, RGB);
+  //    break;    
+  //  case SINGLE_COLOUR_FADE:
+  //    Effect_Top_Bottom(SINGLECOLOUR, HSL);
+  //    break;  
+  //  case RANDOM_COLOUR_FADE:
+  //    Effect_Top_Bottom(RANDOMSINGLECOLOUR,HSL);
+
+RgbColor Manipulate_Hue(RgbColor original, float amount ) {
+
+HslColor OriginalHSL = HslColor(original); 
+
+float NewHue = OriginalHSL.H + amount; 
+
+return RgbColor( HslColor(NewHue, OriginalHSL.S, OriginalHSL.L) ); 
+
+}
+
+// "Ceiling           ", // var 1
+// "Floor             ", // var 2
+
+
+void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) { 
+  uint8_t total_x; 
+  uint32_t random_time; 
+  float Ceiling, Floor; 
+  RgbColor colour_top, colour_bottom; 
+
+  switch(Current_Effect_State) {
+
+
+    case PRE_EFFECT:
+    Pre_effect(); 
+    Serial.println("Top Bottom PRE...");
+    lasteffectupdate = 0; 
+    break;
+    case RUN_EFFECT: // 
+    random_time = (random(WS2812interval*30, (WS2812interval * 300) ));
+      if (  
+            ( 
+              ( millis() - lasteffectupdate > random_time ) ||  ( lasteffectupdate == 0 )
+            ) 
+                &&  (animator->IsAnimating() == false ) 
+          ) 
+
+          { // only generate new effect if NOT blending..
+       
+          if (var1 == 0) { Ceiling = 0.2f; } else { Ceiling = (float)var1 / 255.0f ; }; 
+          if (var2 == 0) { Floor = -0.2f; } else { Floor = ((float)var2 / 255.0f) * -1 ; } ;
+          if (var7 == 0 && pixelCount > 10) { 
+            total_x = 13; 
+          } else if (var7 == 0 && pixelCount < 10) {
+            total_x = 1; 
+          } else { 
+            total_x = var7; 
+          }; 
+
+          //Serial.print("Total X = ");
+          //Serial.println(total_x);
+
+if (Setting == TWOCOLOUR) {
+       colour_top    = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
+       colour_bottom = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
+} else if (Setting == SINGLECOLOUR) {
+       colour_top    = Manipulate_Hue(NewColour, Ceiling); 
+       colour_bottom = Manipulate_Hue(NewColour, Floor);
+} else if (Setting == RANDOMSINGLECOLOUR) {
+       RgbColor random_colour_choice = Wheel(random(0,255));     
+       colour_top    = Manipulate_Hue(random_colour_choice, Ceiling); 
+       colour_bottom = Manipulate_Hue(random_colour_choice, Floor);
+}; 
+      colour_top = dim(colour_top);
+      colour_bottom = dim(colour_bottom); 
+
+      top_bottom_fade(colour_top,colour_bottom, total_x, CurrentAnimationSpeed, Method); 
+      lasteffectupdate = millis(); 
+          }
+
+    break;
+    case POST_EFFECT:
+    Post_effect(); 
+        Serial.println("Top Bottom POST...");
+    break;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 //static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
 static uint8_t current_r = 0, total_x = 0;
