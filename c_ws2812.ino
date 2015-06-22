@@ -817,7 +817,7 @@ switch (opState)
 
 if (millis() - update_strip_time > 30) {
 
-    if ( animator->IsAnimating() ) animator->UpdateAnimations(); 
+    if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
 
     strip->Show();
 
