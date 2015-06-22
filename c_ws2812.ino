@@ -60,8 +60,8 @@ bool updateLEDs = false;
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
  if (server.arg("paused").length() != 0) {
       paused = (server.arg("paused")).toInt();
-   //   if (paused) animator->Pause(); 
-   //   if (!paused) animator->Resume(); 
+      if (paused) animator->Pause(); 
+      if (!paused) animator->Resume(); 
     }
 
  if (server.arg("rgbpicker").length() != 0)  { 
@@ -707,6 +707,8 @@ void cache initiateWS2812 ()
   strip->Begin();
   StripOFF();
   SetRandomSeed();
+  animator->Resume(); 
+
 
 
 }
@@ -815,7 +817,7 @@ switch (opState)
 
 if (millis() - update_strip_time > 30) {
 
-    if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
+    if ( animator->IsAnimating() ) animator->UpdateAnimations(); 
 
     strip->Show();
 
@@ -1443,11 +1445,11 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 // Working 
 
 void cache fade_to(RgbColor Colour) {
-fade_to(Colour,2000,HSL); 
+fade_to(Colour,2000,RGB); 
 }
 
 void cache fade_to(RgbColor Colour, uint16_t time ) {
-fade_to(Colour,time,HSL); 
+fade_to(Colour,time,RGB); 
 }
 
 //void cache testblendmethod(BlendMethod(test) ) {
@@ -1463,12 +1465,12 @@ void cache fade_to(RgbColor NewColour, uint16_t time, BlendMethod method ) {
             {
 
         RgbColor original = strip->GetPixelColor(i);
-        NewColour = dim(NewColour);
+        // NewColour = dim(NewColour);
 
         AnimUpdateCallback animUpdate = [=](float progress)
         {
-           if (method == RGB) { 
-            RgbColor updatedColor = RgbColor::LinearBlend(original, NewColour ,  progress) ;   
+          if (method == RGB) { 
+            RgbColor updatedColor = RgbColor::LinearBlend(original, NewColour , progress) ;   
             strip->SetPixelColor(i, updatedColor); 
           }; 
 
@@ -1490,7 +1492,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint8_t square_size = var10;
   uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
   uint8_t effect_option = var6;
-  float dimoffset ; 
+  uint8_t dimoffset ; 
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 1;
   if (total_x == 0) total_x = 13; 
@@ -1519,7 +1521,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 */
 
 
-    if (effect_option == 1) fade_to(RgbColor(0,0,0)); 
+    if (effect_option == 1) fade_to(RgbColor(0,0,0), HSL); 
 
 
 
@@ -1533,9 +1535,9 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     
      if (effect_option == 0) { 
 
-          dimoffset = (float)CurrentBrightness / 3.0f; 
-          Serial.print("Dimm Offset = ");
-          Serial.println(dimoffset);
+          dimoffset = CurrentBrightness / 5;
+          //Serial.print("Dimm Offset = ");
+          //Serial.println(dimoffset);
 
           RgbColor Top =     dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset );
           RgbColor Bottom =  dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset ) ;
@@ -1543,19 +1545,21 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           top_bottom_fade(  Top , Bottom , total_x, CurrentAnimationSpeed); 
     }
 
+    Pre_effect();  // PRE effect SETS LAST EFFECT UPDATE TO ZERO... ? is this requires?
 
     lasteffectupdate = millis(); 
 
-    Pre_effect(); 
 
     break;
     case RUN_EFFECT:  
 
-    if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
       
+      if ( lasteffectupdate == 0 ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
+        Current_Effect_State = PRE_EFFECT;
+        break; 
+      }
 
-
-      if (millis() - lasteffectupdate > WS2812interval || lasteffectupdate == 0 ) {      
+      if (millis() - lasteffectupdate > WS2812interval ) {      
 
       //for (int i = 0; i < numberofpoints; i++) {
 
@@ -2378,13 +2382,16 @@ HslColor colourHSL;
 
 
 for (y = 0; y < total_y; y++) {
+
     colour_steps = (float) y / (float) total_y; 
     if (y == 0) colour_steps = 0.0f; // this stets the top blend.  
     if (y == total_y - 1) colour_steps = 1.0f;  // this sets the bottom blend
   // colour_stepsF = (float)colour_steps / 255.0;  // this converts it to float for new lib...
 
     if (Method == RGB) { colourRGB = RgbColor::LinearBlend(Top, Bottom, colour_steps); };
-    if (Method == HSL) { colourHSL = HslColor::LinearBlend(HslColor(Top), HslColor(Bottom), colour_steps); };
+    if (Method == HSL) { colourHSL = HslColor::LinearBlend(HslColor(Top), HslColor(Bottom), colour_steps); 
+                         colourRGB = RgbColor(colourHSL) ;
+                        };
  
     for( x = 0; x < count_x; x++) {
         uint16_t pixel = return_pixel(x,y, count_x);  // which pixel
@@ -2393,13 +2400,13 @@ for (y = 0; y < total_y; y++) {
 
         AnimUpdateCallback animUpdate = [=](float progress)
             {
-              if (Method == HSL) {
-                HslColor updatedColor = HslColor::LinearBlend(HslColor(original), colourHSL ,  progress) ;
-                strip->SetPixelColor(pixel, updatedColor);
-              } else if (Method == RGB) {
+             // if (Method == HSL) {
+             //   HslColor updatedColor = RgbColor::LinearBlend(HslColor(original), colourHSL ,  progress) ;
+             //   strip->SetPixelColor(pixel, updatedColor);
+             // } else if (Method == RGB) {
                 RgbColor updatedColor = RgbColor::LinearBlend(original, colourRGB, progress) ;
                 strip->SetPixelColor(pixel, updatedColor);
-              }; 
+             // }; 
             };
             animator->StartAnimation(pixel, time, animUpdate);
     } // END of x ......

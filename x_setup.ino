@@ -170,7 +170,7 @@ if (wifimode == 1) {
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
 
-   // timer.setInterval(Uptimer_timeout, uptime);
+    timer.setInterval(Uptimer_timeout, uptime);
 
   //Serial.println("Timers set up");
 
