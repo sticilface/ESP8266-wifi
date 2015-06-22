@@ -58,7 +58,11 @@ bool updateLEDs = false;
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
- if (server.arg("paused").length() != 0) paused = (server.arg("paused")).toInt();
+ if (server.arg("paused").length() != 0) {
+      paused = (server.arg("paused")).toInt();
+      if (paused) animator->Pause(); 
+      if (!paused) animator->Resume(); 
+    }
 
  if (server.arg("rgbpicker").length() != 0)  { 
     //WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
@@ -350,6 +354,42 @@ void cache WS2812_Set_New_Colour (String instruction) {
       //Serial.println(NewColour.B,HEX); 
   
       send_mqtt_msg("colour", WebRGBcolour); 
+/*
+#ifdef HSL_FLOAT
+
+              float originalHUE = (HslColor(NewColour)).H;
+              float originalSAT = (HslColor(NewColour)).S;
+              float originalLIG = (HslColor(NewColour)).L;
+              Serial.print("HSL components (float): ");
+              Serial.print(originalHUE);
+              Serial.print(",");
+              Serial.print(originalSAT);
+              Serial.print(",");
+              Serial.println(originalLIG);
+#else
+              uint8_t originalHUE = (HslColor(NewColour)).H;
+              uint8_t originalSAT = (HslColor(NewColour)).S;
+              uint8_t originalLIG = (HslColor(NewColour)).L;
+              Serial.print("HSL components (int): ");
+              Serial.print(originalHUE);
+              Serial.print(",");
+              Serial.print(originalSAT);
+              Serial.print(",");
+              Serial.println(originalLIG);             
+
+#endif
+
+              uint8_t originalR = NewColour.R;
+              uint8_t originalG = NewColour.G;
+              uint8_t originalB = NewColour.B;
+              Serial.print("RGB components: ");
+              Serial.print(originalR);
+              Serial.print(",");
+              Serial.print(originalG);
+              Serial.print(",");
+              Serial.println(originalB);  
+*/
+
 }
 
 
@@ -396,31 +436,84 @@ RgbColor cache dim(RgbColor original, uint8_t brightness) {
   //  value.Darken(amounttodarken);
   //  return value;
 
-    if (CurrentBrightness == 255) return original; 
+   // if (CurrentBrightness == 255) return original; 
+             // Serial.print("Original HSL = ");
+           // Serial.print((HslColor(original)).L); 
 
-    
+/*  Serial.print("IN: RGB(");
+  Serial.print(original.R);
+  Serial.print(",");
+  Serial.print(original.G);
+  Serial.print(",");
+  Serial.print(original.B);
+  Serial.print(") = ");
+*/
 
-
-     // RgbColor newvalue = dimbyhsv(value, (byte) CurrentBrightness);
 #ifdef HSL_FLOAT
 
-    float newHSL =  ( HslColor(original).L  * ((float)brightness/255) );
+     // RgbColor newvalue = dimbyhsv(value, (byte) CurrentBrightness);
+              float originalHUE = HslColor(original).H;
+              float originalSAT = HslColor(original).S;
+              float originalLIG = HslColor(original).L;
 
- RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, newHSL  ) );
 
+    float newLIG =  originalLIG   * ( (float)brightness / 255.0f ) ; 
+/*
+  Serial.print(" HSL(");
+  Serial.print(originalHUE);
+  Serial.print(",");
+  Serial.print(originalSAT);
+  Serial.print(",");
+  Serial.print(originalLIG);
+  Serial.print(")");
 
+  Serial.print(" --> ");
+
+  Serial.print(" HSL(");
+  Serial.print(originalHUE);
+  Serial.print(",");
+  Serial.print(originalSAT);
+  Serial.print(",");
+  Serial.print(newLIG);
+  Serial.print(")");
+*/
 
 #else
 
- RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, (uint8_t)(127 * ((float)brightness/255) ) ) );
+              uint8_t originalHUE = (HslColor(original)).H;
+              uint8_t originalSAT = (HslColor(original)).S;
+              uint8_t originalLIG = (HslColor(original)).L;
+
+
+    uint8_t newLIG = (uint8_t)  ( HslColor(original).L * ( (float)  brightness / 255.0f )); 
+    //HslColor updatedColor = HslColor( HslColor(original).H, HslColor(original).S, newLIG ) );
  
 
 #endif
 
 
+ return RgbColor( HslColor(originalHUE, originalSAT, newLIG )  );
+
+ // Serial.print(" = RGB(");
+ // Serial.print(updatedColor.R);
+ // Serial.print(",");
+ // Serial.print(updatedColor.G);
+ // Serial.print(",");
+ // Serial.print(updatedColor.B);
+ // Serial.println(")");
+
+  //  Serial.print("HSL = ");
+  //  Serial.print((HslColor(original)).L);
+  //  Serial.print(" -- ");
+  //  Serial.print(brightness);
+  //  Serial.print("(");
+  //  float bright = (float) (brightness)  / 255.0f ; 
+  //  Serial.print(bright);
+  //  Serial.print(") --> ");
+  //  Serial.println(newLIG);
 
 
-return(updatedColor);
+//return(updatedColor);
 }
 
 
@@ -541,27 +634,47 @@ void cache StripOFF() {
         for (uint8_t n = 0; n < pixelCount; n++)
             {
               RgbColor original = strip->GetPixelColor(n);
-              //uint8_t originalHSL = HslColor(original).L;  
-              //Serial.print("Original HSL = ");
-              //Serial.print(originalHSL); 
-              //float Ratio_HSL = (float) HslColor(original).L / 255; 
-              //Serial.print(" Ratio -> ");
-              //Serial.println(Ratio_HSL);
+
+#ifdef HSL_FLOAT
+
+              float originalHUE = (HslColor(original)).H;
+              float originalSAT = (HslColor(original)).S;
+              float originalLIG = (HslColor(original)).L;
+#endif
+
 
         AnimUpdateCallback animUpdate = [=](float progress)
         {
 
 #ifdef HSL_FLOAT
-            float valuepassed = (float) ( HslColor(original).L - (HslColor(original).L  * progress) ); 
-            RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, valuepassed  ))  ;  
+            // float originalHSL = HslColor(original).L; 
+            //float NewLIG = originalLIG  * (1.0 - progress); 
+            //float inverseprogress = (1.0 - progress); 
+            //RgbColor updatedColor = RgbColor(HslColor(originalHUE , originalSAT, NewLIG  ))  ;  
 
+            float NewLIG = ( (float)(HslColor(original)).L - ((float)(HslColor(original)).L  * progress) ); 
+            RgbColor updatedColor = RgbColor(HslColor( (HslColor(original)).H, (HslColor(original)).S, NewLIG  ))  ; 
 
 #else
 
-            uint8_t valuepassed = (uint8_t) ( HslColor(original).L - (HslColor(original).L  * progress) ); 
-            RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, valuepassed  ))  ;    
+            uint8_t NewLIG = (uint8_t) ( HslColor(original).L - (HslColor(original).L  * progress) ); 
+            RgbColor updatedColor = RgbColor(HslColor( HslColor(original).H, HslColor(original).S, NewLIG  ))  ;    
 
 #endif
+
+           // if (n == 0) { 
+           // Serial.print("Original HSL = ");
+           // Serial.print((HslColor(original)).L); 
+           // Serial.print(": ");
+           // Serial.print(progress);
+            //Serial.print(" -- ");
+            //Serial.print(inverseprogress);
+           // Serial.print(" --> ");
+           // Serial.println(NewLIG);
+
+
+
+           // } // end of if...
 
 
             //Serial.print(progress);
@@ -706,7 +819,7 @@ switch (opState)
 
 if (millis() - update_strip_time > 30) {
 
-    if ( animator->IsAnimating() ) animator->UpdateAnimations(); 
+    if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
 
     strip->Show();
 
@@ -1012,7 +1125,8 @@ void cache SetRandomSeed()
 }
 
 
-RgbColor  cache Wheel (byte WheelPos) {
+RgbColor cache Wheel (byte WheelPos) {
+
   WheelPos = 255 - WheelPos;
   if(WheelPos < 85) {
    return  RgbColor(255 - WheelPos * 3, 0, WheelPos * 3);
@@ -1337,10 +1451,12 @@ void cache fade_to_black() {
      for (uint16_t i = 0; i < pixelCount; i++)
             {
         RgbColor original = strip->GetPixelColor(i);
+
         AnimUpdateCallback animUpdate = [=](float progress)
         {
            RgbColor updatedColor = RgbColor::LinearBlend(original, RgbColor(0,0,0) ,  progress) ;
-            strip->SetPixelColor(i, updatedColor);
+          
+          strip->SetPixelColor(i, updatedColor);
         };
         animator->StartAnimation(i, 2000, animUpdate);
    }
@@ -1353,7 +1469,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint8_t square_size = var10;
   uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
   uint8_t effect_option = var6;
-
+  float dimoffset ; 
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 1;
   if (total_x == 0) total_x = 13; 
@@ -1382,10 +1498,28 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 */
 
 
-    if (effect_option == 0) fade_to_black(); 
+    if (effect_option == 1) fade_to_black(); 
 
-    if (effect_option == 1) top_bottom_fade( dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255) ), dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255)  ), total_x, CurrentAnimationSpeed); 
- 
+
+
+    // dimoffset = constrain( dimoffset ,0 , 255); 
+
+    //Serial.print("dimoffset = ");
+    //Serial.println(dimoffset); 
+
+
+  //  if (effect_option == 0) top_bottom_fade( dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255) ), dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255)  ), total_x, CurrentAnimationSpeed); 
+     if (effect_option == 0) { 
+          ///Serial.println(".....................");
+          dimoffset = (float)CurrentBrightness / 3.0f; 
+          RgbColor Top =     dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset );
+          RgbColor Bottom =  dim ( Wheel (  random(0,255)  ) ,(uint8_t)dimoffset ) ;
+          //Serial.println(".....................");
+
+          top_bottom_fade(  Top , Bottom , total_x, CurrentAnimationSpeed); 
+    }
+
+
     lasteffectupdate = millis(); 
 
     Pre_effect(); 
@@ -1401,7 +1535,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       //for (int i = 0; i < numberofpoints; i++) {
 
-      RgbColor color = Wheel(random(255)); // RgbColor(random(255),random(255),random(255));
+      RgbColor color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
 
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
       if (mode == 1) square_size = random(2,7);
@@ -1439,7 +1573,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     if (coordinates_OK) {
       
-      uint16_t time = random(( CurrentAnimationSpeed / 10 ), (CurrentAnimationSpeed * 10)); //generate same time for each object
+      uint16_t time = random(( CurrentAnimationSpeed  ), (CurrentAnimationSpeed * 10)); //generate same time for each object
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
@@ -1717,12 +1851,11 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 
     // if(millis() > initializetime + initializetimeout) state = MODE_INITIALISE; // this goes to initiaase mode...
 
-    if (Current_Effect_State == PRE_EFFECT) {
-      state = MODE_INITIALISE;
-      Pre_effect();  
-    }
+    if (Current_Effect_State == PRE_EFFECT) { state = MODE_INITIALISE; } ; 
+      //Pre_effect();  
+    // }
 
-    if (Current_Effect_State == POST_EFFECT) Post_effect();  
+    if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH;  
 
     //if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH; 
 
@@ -1730,10 +1863,11 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
   switch (state) {
 
     case MODE_INITIALISE:
-
+      Serial.println("Begining of Adalight");
       Adalight_Flash(); 
       state = MODE_HEADER;
-      Current_Effect_State = RUN_EFFECT;
+      Pre_effect();  
+      //Current_Effect_State = RUN_EFFECT;
 
     case MODE_HEADER:
 
@@ -1805,10 +1939,11 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 
     case MODE_FINISH:
 
-      //Serial.print("END OF ADALIGHT..."); 
-      Current_Effect_State = PRE_EFFECT; 
-      opState = HoldingOpState; 
+      Serial.print("END OF ADALIGHT..."); 
+      //Current_Effect_State = PRE_EFFECT; 
+      //opState = HoldingOpState; 
       //state == MODE_INITIALISE; 
+      Post_effect();  
 
     break; 
 }
@@ -2203,37 +2338,43 @@ void cache Set_Colour_ToptoBottom() {
 
 void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint16_t time) {
 
-uint8_t x,y,colour_steps; 
-float colour_stepsF; 
+uint8_t x,y;
+float colour_steps; 
+// float colour_stepsF; 
 uint8_t total_y = return_total_y(count_x); // get total number of rows
-RgbColor colourRGB;
+//RgbColor colourRGB;
 HslColor colourHSL; 
 //if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
 
 for (y = 0; y < total_y; y++) {
 
-  colour_steps = map(y,1,total_y-1,1,254);  // map steps of blend.........
+  // colour_steps = map(y,1,total_y-1,1,254);  // map steps of blend.........
 
 
-if (y == 0) colour_steps = 0; // this stets the top blend.  
-if (y == total_y - 1) colour_steps = 255;  // this sets the bottom blend
+  colour_steps = (float) y / (float) total_y; 
 
-  colour_stepsF = (float)colour_steps / 255.0;  // this converts it to float for new lib...
+  //Serial.print("steps: ");
+  //Serial.print(colour_steps);
 
-colourRGB = RgbColor(HslColor::LinearBlend(HslColor(Top), HslColor(Bottom), colour_stepsF)); 
+if (y == 0) colour_steps = 0.0f; // this stets the top blend.  
+if (y == total_y - 1) colour_steps = 1.0f;  // this sets the bottom blend
+
+  // colour_stepsF = (float)colour_steps / 255.0;  // this converts it to float for new lib...
+
+colourHSL = HslColor::LinearBlend(HslColor(Top), HslColor(Bottom), colour_steps); 
 
 
     for( x = 0; x < count_x; x++) {
 
 
         uint16_t pixel = return_pixel(x,y, count_x); 
-        RgbColor original = strip->GetPixelColor(pixel);
+        HslColor original = HslColor(strip->GetPixelColor(pixel));
         if (pixel >= strip->PixelCount()) break;
 
         AnimUpdateCallback animUpdate = [=](float progress)
             {
-                RgbColor updatedColor = RgbColor::LinearBlend(original, colourRGB ,  progress) ;
+                HslColor updatedColor = HslColor::LinearBlend(original, colourHSL ,  progress) ;
                 strip->SetPixelColor(pixel, updatedColor);
             };
             animator->StartAnimation(pixel, time, animUpdate);

@@ -177,6 +177,14 @@ if (wifimode == 1) {
   // OTA updater...
   //listener.begin(8266);
   //
+
+#ifdef HSL_FLOAT
+
+Serial.println("HSL Floats ENABLED"); 
+
+#endif
+
+
   
   setup_Plugin ();
 
