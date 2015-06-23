@@ -93,8 +93,11 @@ delay(5);
 
   if (EEPROM.read(ssidAddressbyte) == flagvalue) {
     
-      Serial.print("Joining Wifi Network");
-
+      //Serial.print("Joining Wifi Network (");
+      //Serial.print(ssid);
+      //Serial.print(",");
+      //Serial.print(password);
+      //Serial.print(")");
 
       WiFi.begin(ssid, password);
 
@@ -104,7 +107,7 @@ delay(5);
     delay(500);
     i++;
     Serial.print(".");
-    if (i == 39) { Serial.print("Failed"); break; } ;
+    if (i == 100) { Serial.print("Failed"); break; } ;
     }
     
 

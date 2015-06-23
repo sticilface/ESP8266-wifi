@@ -4,8 +4,8 @@
 // 3.  Auto enable MQTT if IP is entered on wifi config. 
 // 4.  put safety exit for HoldingState so it falls thorugh if NOT handled within timeframce..
 // 5.  nointurrup handles for UDP parce... maybe... 
-// 6. 
-// 7. rework effects to use animations class
+// 6.  Maybe get changes in current dim level to Walk the pixel buffer... and NOT reset the animation effect state
+// 7. rework effects to use animations class in progress
 // 8.  
 // 9   
 
@@ -1857,6 +1857,7 @@ void cache Adalight_Flash() {
           }
         strip->Show(); 
     delay(200);
+
     strip->ClearTo(RgbColor(0,0,0));
 
   }
@@ -2078,49 +2079,45 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
 void cache UDPfunc () {
 
-//static boolean Adalight_configured = false;
+int packetSize; 
 
- if (Current_Effect_State == PRE_EFFECT) {
-    Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
-    Adalight_Flash();
-    Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
-    Pre_effect();  
-    } 
+  switch(Current_Effect_State) {
 
-if (Current_Effect_State == RUN_EFFECT) {
+    case PRE_EFFECT:
 
-int packetSize = Udp.parsePacket();
+      Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
+      Adalight_Flash();
+      Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
+      
+      Pre_effect(); 
 
-  if(Udp.available())
-  {
-        Serial.println("UDP packet recieved...");
+    break; 
 
-    RgbColor col = RgbColor(0,0,0);
-    int currentpixel = 0;
-    for (int i = 0; i < packetSize; i = i + 3) {
-      if (currentpixel > pixelCount) break;
-        col.R = Udp.read();
-        col.G = Udp.read();
-        col.B = Udp.read();
-        strip->SetPixelColor(currentpixel,col);
-        currentpixel++;
-      }
+    case RUN_EFFECT:
 
-//strip->Show();
+      packetSize = Udp.parsePacket();
 
-    }
+        if  (Udp.available())  {
+             for (int i = 0; i < packetSize; i = i + 3) {
 
+                if (i > pixelCount * 3) break; 
+                                                         // direct buffer is GRB
+                    pixelsPOINT[i + 1] = Udp.read();
+                    pixelsPOINT[i] =     Udp.read();
+                    pixelsPOINT[i + 2] = Udp.read();
+              }
+              Udp.flush();
+              strip->Dirty(); 
+        }
+      
+      break;
+
+    case POST_EFFECT: 
+
+      Udp.stop(); 
+      Post_effect(); 
+      break; 
 }
-
-
-
-if (Current_Effect_State == POST_EFFECT) { 
-  //Serial.println("UDP END"); 
-  //Current_Effect_State = PRE_EFFECT; 
-  //opState = HoldingOpState; 
-  Udp.stop(); 
-  Post_effect(); 
-  } ; 
 }
 
 int cache getPixelPower () {

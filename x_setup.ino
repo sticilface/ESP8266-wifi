@@ -81,7 +81,7 @@ void setup( void ) {
  //Serial.print("Current wifi mode is : ");
  //Serial.println(WiFi.mode());
 
-  LoadParams();
+  //LoadParams();
 
 
   restartNetworking();

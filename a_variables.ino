@@ -3,8 +3,8 @@
 // Wifi parameters
 const int BUFSIZE = 32; //was 16 
 
-char ssid[BUFSIZE]; // = "fyffest";
-char password[BUFSIZE]; //  = "wellcometrust";
+char ssid[BUFSIZE] ; //= "fyffest";
+char password[BUFSIZE] ;//  = "wellcometrust";
 
 //const char *ssidb = "fyffest";
 //const char *passwordb = "wellcometrust";
