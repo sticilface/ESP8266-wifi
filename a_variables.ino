@@ -42,22 +42,33 @@ boolean mqttreloadvar2 = false;
 boolean mqttreload = false;
 
 
-const byte flagvalue = 199;  // Used to identify which settings are saved. 
+const byte flagvalue = 199;  // Used to identify which settings are saved. // NOT a memory location... 
 
-const int deviceidAddress = 32;
-const int ssidAddress = 64;
-const int passwordAddress = 96;
-const int mqttAddress = 128;  // ends at 144 so begin new data at 208?  gives space for another 2 variables 
-const int serialspeed_address = 208;  // next slot 240
+const uint16_t deviceidAddress = 32;
+const uint16_t ssidAddress = 64;
+const uint16_t passwordAddress = 96;
+const uint16_t mqttAddress = 128;  // ends at 144 so begin new data at 208?  gives space for another 2 variables 
+const uint16_t serialspeed_address = 132;  // next slot 240
+const uint16_t PixelPIN_address = 133;
+const uint16_t PixelCount_address = 134;  //( to 135)   double so requires 2..
+const uint16_t Pixel_LastOpState = 136;  //( to 135)   double so requires 2..
 
-const int deviceidAddressbyte = 1;
-const int ssidAddressbyte = 2;
-const int passwordAddressbyte = 3;
-const int mqttAddressbyte = 4;
-const int APbyte = 5; // Used to set emergency access mode...
-const int MQTTenabledbyte = 6;
-const int DEBUGenabledbyte = 7;
-const int SERIALspeedbyte = 8;
+
+const uint16_t START_address_settings = 160;
+
+
+const uint8_t deviceidAddressbyte = 1;
+const uint8_t ssidAddressbyte = 2;
+const uint8_t passwordAddressbyte = 3;
+const uint8_t mqttAddressbyte = 4;
+const uint8_t APbyte = 5; // Used to set emergency access mode...
+const uint8_t MQTTenabledbyte = 6;
+const uint8_t DEBUGenabledbyte = 7;
+const uint8_t SERIALspeedbyte = 8;
+
+const uint8_t PixelPIN_enablebyte = 9; 
+const uint8_t PixelCount_enablebyte = 10;
+
 
 
 
@@ -148,6 +159,7 @@ uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness = 255; 
 bool paused = false; 
+bool LED_Settings_Changed = false; 
 
 uint16_t CurrentAnimationSpeed = 2000; 
 
@@ -163,4 +175,20 @@ effectState Current_Effect_State = PRE_EFFECT;
 unsigned long Random_func_timeout = 0;
 
 uint16_t effectPosition = 0;
+
+uint16_t 
+var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
+var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
+
+static const char *VAR_STRING[] = {
+"Ceiling           ", // var 1
+"Floor             ", // var 2
+"Var3              ", // var 3
+"Var4              ", // var 4
+"Var5              ", // var 5
+"Effect Option     ", // var 6
+"Total_X           ", // var 7
+"Number of effects ", // var 8
+"Var9              ", // var 9
+"Size of effect    "};// var 10
 

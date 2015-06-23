@@ -1,8 +1,3 @@
-const int PixelPIN_enablebyte = 9; 
-const int PixelCount_enablebyte = 10;
-
-const int PixelPIN_address = 240;
-const int PixelCount_address = 248;
 
 
 
@@ -79,56 +74,56 @@ void cache setup_Plugin () {
   
   server.on("/lightsconfig", handle_lights_config);
 
-    if (EEPROM.read(PixelPIN_enablebyte) == flagvalue) {
+uint8_t temp,tempb; 
+/// LOAD FIRST ROW OF PIXEL SETTINGS..... 
 
-      // Serial.println("PixelPIN_byte HIT");
+  // PIN, Pixel COUNT, Last OP State  
+
+    if (EEPROM.read(PixelPIN_enablebyte) == flagvalue) {
       pixelPIN = EEPROM.read(PixelPIN_address);
-      // Serial.println("EEprom Read: PixelPIN = " + String(pixelPIN));
       if (isnan(pixelPIN)) pixelPIN = 2;
       }
 
-// Brightness
-
-    if (isnan(CurrentBrightness) || CurrentBrightness == 0) CurrentBrightness = 255;
 
 // Last Op State
 
-
-    uint8_t c = EEPROM.read(PixelCount_address + 3);
-
-    if (isnan(c)) c = 0;
-    LastOpState = (operatingState)c;
+//
+//     temp = EEPROM.read(Pixel_LastOpState);
+//
+//    if (isnan(temp)) temp = 0;
+//    LastOpState = (operatingState)temp;
 
 //  Number of pixels as DOUBLE... 
 
     if (EEPROM.read(PixelCount_enablebyte) == flagvalue) 
      {     
 
-        uint8_t a = EEPROM.read(PixelCount_address);
-        uint8_t b = EEPROM.read(PixelCount_address+1);
-        if(isnan(a)) a = 0;
-        if(isnan(b)) b = 0;
-        pixelCount = a*256+b;
+         temp = EEPROM.read(PixelCount_address);
+         tempb = EEPROM.read(PixelCount_address+1);
 
-      if (pixelCount > 600) pixelCount = 20;
+        if(isnan(temp)) temp = 0;
+        if(isnan(tempb)) tempb = 0;
+
+        pixelCount = temp*256+tempb;
+
+       // Serial.print("Loaded pixels = (");
+       // Serial.print(temp);
+       // Serial.print(",");
+       // Serial.print(tempb);
+       // Serial.print(") = ");
+       // Serial.println(pixelCount); 
+
+
+      if (pixelCount > 300 || pixelCount == 0) pixelCount = 20;
 
 
       } 
 
       //Serial.print("/n Saved Colours are: ");
 
-// SAVED COLOURS
+// SAVED SETTINGS..... 
 
-      uint8_t R = EEPROM.read(PixelCount_address + 4);
-      uint8_t G = EEPROM.read(PixelCount_address + 5);
-      uint8_t B = EEPROM.read(PixelCount_address + 6);
-
-      NewColour = RgbColor(R,G,B);
-
-      WebRGBcolour = String(R,HEX);
-      WebRGBcolour += String(G,HEX);
-      WebRGBcolour += String(B,HEX);
-     
+  Load_LED_Defaults(START_address_settings); 
 
 
 // initiate PLUGIN
@@ -141,6 +136,22 @@ void cache setup_Plugin () {
   timer.setTimeout(10000, OnceOnlyTask);
 
 }
+
+// PixelCount_address + 0 = 248 =  Number of Pixels (double)
+// PixelCount_address + 1 = 249 =  Number of pixels (double)
+// PixelCount_address + 2 = 250 =  
+// PixelCount_address + 3 = 251 =  LastOpState
+// PixelCount_address + 4 = 252 =  RED
+// PixelCount_address + 5 = 253 =  GREEN
+// PixelCount_address + 3 = 254 =  BLUE
+
+/// START SETTINGS AT 256...
+
+// order of bytes is......  
+
+// 
+
+
 
 void OnceOnlyTask () {
 
@@ -172,6 +183,12 @@ void OnceOnlyTask () {
 
 void loop_Plugin () {
 
+
+
+if(LED_Settings_Changed) {
+  Save_LED_Defaults(START_address_settings);
+  LED_Settings_Changed = false; 
+}
 
 
       ws2812();

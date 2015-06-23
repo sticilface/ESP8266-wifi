@@ -2,7 +2,7 @@
 // 1.  fix MQTT instructions... currently does not work through opState... and extra effects don't work... must integrate MODEDROP....
 // 2.  consolidate text and order of effects
 // 3.  Auto enable MQTT if IP is entered on wifi config. 
-// 4.  
+// 4.  put safety exit for HoldingState so it falls thorugh if NOT handled within timeframce..
 // 5.  nointurrup handles for UDP parce... maybe... 
 // 6. 
 // 7. rework effects to use animations class
@@ -16,7 +16,7 @@
 // PixelCount_address + 2 =  
 // PixelCount_address + 3 =  LastOpState
 
-
+// START OF SAVED SETTINGS 160
 
 
 //int spectrumValue[7];
@@ -24,21 +24,7 @@
 
 
 // what!
-uint16_t 
-var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
-var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
 
-static const char *VAR_STRING[] = {
-"Ceiling           ", // var 1
-"Floor             ", // var 2
-"Var3              ", // var 3
-"Var4              ", // var 4
-"Var5              ", // var 5
-"Effect Option     ", // var 6
-"Total_X           ", // var 7
-"Number of effects ", // var 8
-"Var9              ", // var 9
-"Size of effect    "};// var 10
 
 
 
@@ -57,7 +43,7 @@ bool updateLEDs = false;
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
- if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  Animationspped_command_string(server.arg("anispeed"));
+ if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  AnimationSpeed_command_string(server.arg("anispeed"));
  if (server.arg("paused").length() != 0) {
       paused = (server.arg("paused")).toInt();
       if (paused) animator->Pause(); 
@@ -204,27 +190,30 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 }
 
-void cache Animationspped_command_string (String Value) {
+void cache AnimationSpeed_command_string (String Value) {
 
   uint16_t newvalue = Value.toInt();
 
   CurrentAnimationSpeed = newvalue; 
   lasteffectupdate = 0; 
+
+  LED_Settings_Changed = true; 
 }
 
 
 
-// Takes MODE selected by number, changes OpState, SAVES NEW MODE TO EEPROM, incase of reboot....
+// THINK THIS IS REDUNDANT FUNCTION NOW... 
 void cache WS2812_mode_number(String Value) {
 
       lasteffectupdate = 0;
       uint8_t chosen_mode = Value.toInt();
       Serial.println("MODE DROP recieved: " + Value);
       opState = (operatingState)chosen_mode;
-      if (chosen_mode != 0) LastOpState = (operatingState)chosen_mode;
-      EEPROM.write(PixelCount_address + 3, LastOpState);
-      EEPROM.commit();
 
+      if (chosen_mode != 0)  { 
+        LastOpState = (operatingState)chosen_mode;
+      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+      }
 }
 
 //  might need to add an effect function timeout thing....  to reset effect and call update with NEW dim setting... 
@@ -239,8 +228,8 @@ void  cache  WS2812_dim_string (String Value)
 
       CurrentBrightness  = a;
 
-      EEPROM.write(PixelCount_address + 2, CurrentBrightness);
-      EEPROM.commit();
+      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+
      
       // if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
@@ -261,8 +250,9 @@ void cache WS2812_effect_string (String request) {
         HoldingOpState = (operatingState)i; // assign selection to holdingopstate... 
         Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
         LastOpState = (operatingState)i;
-        Serial.print("MQTT MODE MATCH FOUND :"); 
-        Serial.println(MODE_STRING[i]); 
+
+      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+
         break; 
 
         }
@@ -325,10 +315,10 @@ void  cache WS2812_mode_string (String Value)
     send_mqtt_msg("mode", "on");
   }
 
-  EEPROM.write(PixelCount_address + 3, LastOpState);
-  EEPROM.commit();
+      
+      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
 
-send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
+    send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
 
 }
 
@@ -341,10 +331,9 @@ void cache WS2812_Set_New_Colour (String instruction) {
       lasteffectupdate = 0; 
       WebRGBcolour = instruction;
       NewColour = HEXtoRGB(instruction);
-      EEPROM.write(PixelCount_address + 4, NewColour.R);
-      EEPROM.write(PixelCount_address + 5, NewColour.G);
-      EEPROM.write(PixelCount_address + 6, NewColour.B);
-      EEPROM.commit();
+
+      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+
 
       //Serial.print("NEW RGB COLOUR..");
       //Serial.print(NewColour.R,HEX); 
@@ -720,7 +709,7 @@ void cache ws2812 ()  // put switch cases here...
 
 {
 static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
-
+static unsigned long HoldingState_Failover = 0; 
   //Serial.print("ws2812 called case = " + String(opState));
   //wsPoint += 1;
 
@@ -825,6 +814,24 @@ if (millis() - update_strip_time > 30) {
 
 } // end of switch case...
 
+
+if (opState != HoldingOpState) {
+  static bool triggered = false; 
+  if (!triggered) { 
+    Serial.print("timer started");
+    HoldingState_Failover = millis(); 
+    triggered = true; 
+  } 
+  Serial.print(".");
+
+  if (millis() - HoldingState_Failover > 5000) {
+    opState = HoldingOpState;
+    triggered = false; 
+    Current_Effect_State = PRE_EFFECT; 
+    Serial.println("failover activated");
+  }
+
+}
 /*
 static bool ani_update = false;
 
@@ -836,6 +843,9 @@ if (!ani_update && strip->IsAnimating()) {
   ani_update = false;
 }
 */
+
+//    send_mqtt_msg("effect", MODE_STRING[opState]); 
+
 
 
 if (paused) lasteffectupdate = millis(); 
@@ -1992,7 +2002,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   
  bool commitchanges = false; 
 
-    //Serial.println("Change Neopixels called"); 
+    Serial.println("Change Neopixels called"); 
 
 
         uint8_t pixelPINstored = EEPROM.read(PixelPIN_address);    
@@ -2002,30 +2012,38 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
         uint8_t b = EEPROM.read(PixelCount_address+1);
         if(isnan(a)) a = 0;
         if(isnan(b)) b = 0;
+        //Serial.print("Stored pixels = (");
+        //Serial.print(a);
+        //Serial.print(",");
+        //Serial.print(b);
+        //Serial.print(") = ");
         uint16_t pixelCountstored = a*256+b;
-
-        //int b=EEPROM.read(PixelCount_address+1);
-        //nt pixelCountstored = a*256+b;
+        //Serial.println(pixelCountstored); 
 
 
     if (count != pixelCountstored) {
-    //Serial.println("Pixel count changed..."); 
+    Serial.println("Pixel count changed..."); 
 
       int a = pixelCount/256;
       int b = pixelCount % 256;        
       
         EEPROM.write(PixelCount_address,a);
         EEPROM.write(PixelCount_address+1,b);
+        
+        //Serial.print("New pixels = (");
+        //Serial.print(a);
+        //Serial.print(",");
+        //Serial.print(b);
+        //Serial.print(") = ");
+        //Serial.println(count); 
+
 
         commitchanges = true;
 
     if (EEPROM.read(PixelCount_enablebyte) != flagvalue) EEPROM.write(PixelCount_enablebyte,flagvalue) ;
-     //Serial.println("pixel count byte updated");
     }
 
     if (pin != pixelPINstored) {
-    //Serial.println("Change Neopixels PIN called"); 
-
         EEPROM.write(PixelPIN_address, (byte)pin);
     if (EEPROM.read(PixelPIN_enablebyte) != flagvalue) EEPROM.write(PixelPIN_enablebyte,flagvalue) ;
      
@@ -2039,14 +2057,6 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
         }
 
 
- //   if (strip)
- //   {
-        //StripOFF();
-
- //       delete strip;
- //   }
-
- //   strip = new NeoPixelBus(count, pin);
 
   if (animator != NULL)
   {
@@ -2058,10 +2068,10 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   }
   strip = new NeoPixelBus(count, pin);
   animator = new NeoPixelAnimator(strip);
+  pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
+    
 
-
-    pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
-    if (strip->PixelCount() < 10) var7 = 1;
+  if (strip->PixelCount() < 10) var7 = 1;
 
 
 }
@@ -2134,7 +2144,12 @@ return brightness;
 void cache handle_lights_config() {
 
 String buf; 
-   if (server.args() != 0) { lasteffectupdate = 0; Random_func_timeout = 0; }; 
+
+   if (server.args() != 0) { 
+      lasteffectupdate = 0; 
+      Random_func_timeout = 0; 
+      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+      }; 
    if (server.arg("var1").length() != 0) var1 = server.arg("var1").toInt();
    if (server.arg("var2").length() != 0) var2 = server.arg("var2").toInt(); // colour point min
    if (server.arg("var3").length() != 0) var3 = server.arg("var3").toInt(); // colour point max
@@ -2171,7 +2186,21 @@ String buf;
   for (int k=0; k < 10; k++ ) {
   //buf += "<option value='" + String(k) + selected + ">" + String(MODE_STRING[k]) + "</option>";
    // buf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
-    buf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value=''><br>";
+    String inserted; 
+
+    if (k ==0) inserted = String(var1);
+    if (k ==1) inserted = String(var2);
+    if (k ==2) inserted = String(var3);
+    if (k ==3) inserted = String(var4);
+    if (k ==4) inserted = String(var5);
+    if (k ==5) inserted = String(var6);
+    if (k ==6) inserted = String(var7);
+    if (k ==7) inserted = String(var8);
+    if (k ==8) inserted = String(var9);
+    if (k ==9) inserted = String(var10);
+
+
+    buf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value='"+ inserted +"'><br>";
   }
 
   buf += F("<input type='submit' value='Submit'>\
