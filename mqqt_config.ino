@@ -39,6 +39,8 @@ if ((pub.topic()).indexOf("/brightness/set") > 0) WS2812_dim_string(pub.payload_
 if ((pub.topic()).indexOf("/animationspeed/set") > 0) AnimationSpeed_command_string (    pub.payload_string()  );
 if ((pub.topic()).indexOf("/colour/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
 if ((pub.topic()).indexOf("/color/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
+if ((pub.topic()).indexOf("/loadpreset/set") > 0) WS2812_preset_string(pub.payload_string());
+if ((pub.topic()).indexOf("/savepreset/set") > 0) { Save_LED_Settings(pub.payload_string().toInt()); };
 
 
 /*

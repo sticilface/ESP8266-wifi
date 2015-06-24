@@ -109,8 +109,8 @@ uint16_t address = START_address_settings + (32 * location);
       var9 = EEPROM.read(address++); 
       var10 = EEPROM.read(address++); 
 
-    Serial.print("Settings Loaded for : ");
-     Serial.println(location);
+   // Serial.print("Settings Loaded for : ");
+    // Serial.println(location);
 }
 
 
@@ -167,7 +167,11 @@ Serial.println(address);
      EEPROM.write(address++, var10);
 
      EEPROM.commit();
-     Serial.print("Settings Saved for : ");
-     Serial.println(location);
+     //Serial.print("Settings Saved for : ");
+     //Serial.println(location);
+
+     String msg  = String(location) + " Saved";
+     if (location != 0)  send_mqtt_msg("Status", msg); 
+
 }
 

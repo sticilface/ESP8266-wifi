@@ -208,8 +208,8 @@ void cache WS2812_preset_string(String Value) {
 
       lasteffectupdate = 0;
       uint8_t preset = Value.toInt();
-      Serial.print("Preset recieved: ");
-      Serial.print(preset);
+      //Serial.print("Preset recieved: ");
+      //Serial.print(preset);
       if (preset >= 0 || preset > 10)  {
 
         Load_LED_Defaults (preset) ; 
@@ -219,7 +219,7 @@ void cache WS2812_preset_string(String Value) {
         HoldingOpState =  LastOpState;
         Current_Effect_State = POST_EFFECT; 
       } ; 
-      Serial.print("...Loaded"); 
+      //Serial.print("...Loaded"); 
 }
 
 
@@ -251,7 +251,7 @@ void  cache  WS2812_dim_string (String Value)
 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
 
-     Dim_Strip(CurrentBrightness); 
+    // Dim_Strip(CurrentBrightness);  // this is not working yet...  maybe implement...
 
       // if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
@@ -440,23 +440,52 @@ dim (original, CurrentBrightness);
 
 }
 
-
+////  DOESn't work....  
 void cache Dim_Strip(uint8_t brightness) {
 
+     for (uint16_t i = 0; i < pixelCount; i++)
+            
+            {
 
-for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
-
-HslColor original = strip->GetPixelColor(pixel);
+            HslColor original = strip->GetPixelColor(i);
 
               float originalHUE = HslColor(original).H;
               float originalSAT = HslColor(original).S;
               float originalLIG = HslColor(original).L;
 
 
-    float newLIG =  originalLIG   * ( (float)brightness / 255.0f ) ; 
-    strip->SetPixelColor(pixel, HslColor(originalHUE, originalSAT, newLIG ) );
+            float newLIG =  originalLIG   * ( (float)brightness / 255.0f ) ; 
 
-}
+      if (i == 0 ) {
+        Serial.print("Original = ");
+        Serial.print(originalLIG);
+        Serial.print("  ---> New = ");
+        Serial.println(newLIG); 
+      }
+
+
+        AnimUpdateCallback animUpdate = [=](float progress)
+        {
+         // if (method == RGB) { 
+            RgbColor updatedColor = RgbColor::LinearBlend(original, HslColor(originalHUE,originalSAT,newLIG) , progress) ;   
+            strip->SetPixelColor(i, updatedColor); 
+        //  }; 
+
+      //     if (method == HSL) { 
+      //      HslColor updatedColor = HslColor::LinearBlend(HslColor(original), HslColor(NewColour), progress); 
+      //      strip->SetPixelColor(i, updatedColor);  
+      //    };         
+           
+        };
+
+        animator->StartAnimation(i, CurrentAnimationSpeed , animUpdate);
+   }
+
+
+
+
+
+
 
 }
 
@@ -1204,31 +1233,23 @@ void cache Fade() {
 
 switch(Current_Effect_State) {
     case PRE_EFFECT:
+
     effectPosition = 0; 
     Pre_effect(); 
-    for (uint16_t i = 0; i < pixelCount; i++)
-            {
-              RgbColor original = strip->GetPixelColor(i);
-        RgbColor col = Wheel(effectPosition++);
-        AnimUpdateCallback animUpdate = [=](float progress)
-        {
-           RgbColor updatedColor = RgbColor::LinearBlend(original, dim(col) ,  progress) ;
-            strip->SetPixelColor(i, updatedColor);
-        };
-        animator->StartAnimation(i, 2000, animUpdate);
-        lasteffectupdate = millis();  
-    }
+
     break;
     case RUN_EFFECT:  
-    if (animator->IsAnimating()) { break; } ; //  This line stops the effect from running if it is still in the warm up! 
-      if (millis() - lasteffectupdate > WS2812interval) { 
-            RgbColor col = Wheel(effectPosition++);
-            for (uint16_t i=0; i < pixelCount; i++) {
-                strip->SetPixelColor(i, dim(col));    
-              }
-          if (effectPosition==256) effectPosition=0; 
-          lasteffectupdate = millis(); 
-          }
+
+ if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still animating! 
+     
+      if (millis() - lasteffectupdate > ( WS2812interval * 150 )) {      
+
+
+     fade_to(   dim(Wheel(random(0,255) ) ) , CurrentAnimationSpeed, RGB ) ;
+     lasteffectupdate = millis(); 
+};
+
+
     break;
     case POST_EFFECT:
     Post_effect(); 
@@ -1260,6 +1281,7 @@ void  cache Rainbowcycle() {
     case RUN_EFFECT:  
     if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
       if (millis() - lasteffectupdate > WS2812interval) {      
+
            for(uint16_t i=0; i< pixelCount; i++) {
                 strip->SetPixelColor(i, dim(Wheel(i * 256 / pixelCount + effectPosition)));
             }
