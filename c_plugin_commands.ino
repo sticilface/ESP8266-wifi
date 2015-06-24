@@ -123,7 +123,7 @@ uint8_t temp,tempb;
 
 // SAVED SETTINGS..... 
 
-  Load_LED_Defaults(START_address_settings); 
+  Load_LED_Defaults(0); 
 
 
 // initiate PLUGIN
@@ -185,10 +185,6 @@ void loop_Plugin () {
 
 
 
-if(LED_Settings_Changed) {
-  Save_LED_Defaults(START_address_settings);
-  LED_Settings_Changed = false; 
-}
 
 
       ws2812();

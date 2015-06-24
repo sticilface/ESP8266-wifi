@@ -49,8 +49,12 @@ delay(100);
 }
 
 
-void Load_LED_Defaults (uint16_t address) {
+void Load_LED_Defaults (uint8_t location) {
 uint8_t temp,tempb; 
+// START_address_settings
+
+uint16_t address = START_address_settings + (32 * location); 
+
 
   // START_address_settings = 160; 
 
@@ -104,13 +108,23 @@ uint8_t temp,tempb;
       var8 = EEPROM.read(address++); 
       var9 = EEPROM.read(address++); 
       var10 = EEPROM.read(address++); 
+
+    Serial.print("Settings Loaded for : ");
+     Serial.println(location);
 }
 
 
 
 
 
-void Save_LED_Defaults (uint16_t address) {
+void Save_LED_Settings (uint8_t location) {
+
+  if ( location < 0 || location > 10) return; 
+
+  uint16_t address = START_address_settings + (32 * location); 
+
+Serial.print("Saving LED data, address = ");
+Serial.println(address);
 
   // START_address_settings = 160; 
 
@@ -119,8 +133,6 @@ void Save_LED_Defaults (uint16_t address) {
 
 // 2 --------------------------------   Timer ---------------------------------
     
-
-
      EEPROM.write(address++, WS2812interval / 256 );
      EEPROM.write(address++, WS2812interval % 256 );
 
@@ -155,6 +167,7 @@ void Save_LED_Defaults (uint16_t address) {
      EEPROM.write(address++, var10);
 
      EEPROM.commit();
-
+     Serial.print("Settings Saved for : ");
+     Serial.println(location);
 }
 

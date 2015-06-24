@@ -39,8 +39,11 @@ static int power = 0;
 
 bool updateLEDs = false;
 
+  Serial.print("Current Preset = ");
+  Serial.println(CurrentPreset);
 
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
+ if (server.arg("preset").length() != 0) WS2812_preset_string(server.arg("preset"));
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  AnimationSpeed_command_string(server.arg("anispeed"));
@@ -89,6 +92,7 @@ String content3 = F("\
 <!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
 %\
 <br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
+<br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
 <form name=frmTest action='/ws2812' method='POST'>\
 Select Mode <select name='modedrop' onchange='this.form.submit();'>\
 ");
@@ -158,7 +162,7 @@ for (int k=0; k < numberofmodes; k++ ) {
   <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
   <br>Timer: <input type='range' name='timer'min='0' max='2000' value='%' onchange='this.form.submit();'>\
   </form>\
-  <p><form action='/ws2812' method='POST'\
+  <p>\
   <form action='/ws2812' method='POST'>\
   <p>LEDs: <input type='text' id='leds' name='leds' value='%' >\
   <br>PIN: <input type='text' id='ledpin' name='ledpin' value='%' >\
@@ -200,6 +204,23 @@ void cache AnimationSpeed_command_string (String Value) {
   LED_Settings_Changed = true; 
 }
 
+void cache WS2812_preset_string(String Value) {
+
+      lasteffectupdate = 0;
+      uint8_t preset = Value.toInt();
+      Serial.print("Preset recieved: ");
+      Serial.print(preset);
+      if (preset >= 0 || preset > 10)  {
+
+        Load_LED_Defaults (preset) ; 
+        CurrentPreset = preset; 
+        //Serial.print("Op State = "); 
+        //Serial.print()
+        HoldingOpState =  LastOpState;
+        Current_Effect_State = POST_EFFECT; 
+      } ; 
+      Serial.print("...Loaded"); 
+}
 
 
 // THINK THIS IS REDUNDANT FUNCTION NOW... 
@@ -221,7 +242,7 @@ void cache WS2812_mode_number(String Value) {
 
 void  cache  WS2812_dim_string (String Value)
 {
-      lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
+      //lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
       int a = Value.toInt();
       if (a > 255) a = 255;
       if (a < 0) a = 0;
@@ -230,7 +251,8 @@ void  cache  WS2812_dim_string (String Value)
 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
 
-     
+     Dim_Strip(CurrentBrightness); 
+
       // if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
       Serial.println("Brightness set to: " + String(CurrentBrightness));
@@ -417,6 +439,28 @@ RgbColor cache dim(RgbColor original) {
 dim (original, CurrentBrightness); 
 
 }
+
+
+void cache Dim_Strip(uint8_t brightness) {
+
+
+for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
+
+HslColor original = strip->GetPixelColor(pixel);
+
+              float originalHUE = HslColor(original).H;
+              float originalSAT = HslColor(original).S;
+              float originalLIG = HslColor(original).L;
+
+
+    float newLIG =  originalLIG   * ( (float)brightness / 255.0f ) ; 
+    strip->SetPixelColor(pixel, HslColor(originalHUE, originalSAT, newLIG ) );
+
+}
+
+}
+
+
 
 
 RgbColor cache dim(RgbColor original, uint8_t brightness) {
@@ -832,6 +876,14 @@ if (opState != HoldingOpState) {
   }
 
 }
+
+
+if(LED_Settings_Changed) {
+  Save_LED_Settings(0);
+  LED_Settings_Changed = false; 
+}
+
+
 /*
 static bool ani_update = false;
 
@@ -2088,7 +2140,6 @@ int packetSize;
       Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
       Adalight_Flash();
       Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
-      
       Pre_effect(); 
 
     break; 
@@ -2157,7 +2208,9 @@ String buf;
    if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
    if (server.arg("var9").length() != 0) var9 = server.arg("var9").toInt();
    if (server.arg("var10").length() != 0) { var10 = server.arg("var10").toInt(); Serial.println("Var 10 updated"); }; 
-
+  
+   if (server.arg("preset").length() != 0) Save_LED_Settings(  server.arg("preset").toInt() );
+  
    // String a = ESP.getFlashChipSizeByChipId(); 
    if (server.arg("reset") == "true") { var1 = 0; var2 = 0; var3 = 0; var4 = 0; var5 = 0; var6 = 0; var7 = 0; var8 = 0; var9 = 0; var10 = 0;};
 
@@ -2170,7 +2223,7 @@ String buf;
 
     buf = insertvariable ( content, String(deviceid));
 
-  buf = insertvariable ( buf, String(deviceid));
+    buf = insertvariable ( buf, String(deviceid));
     
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
     server.send(200, "text/html", "");
@@ -2201,7 +2254,12 @@ String buf;
   }
 
   buf += F("<input type='submit' value='Submit'>\
-          </form></p>"); 
+          </form></p>\
+          <form action='/lightsconfig' method='POST'>\
+          <p>Save Preset: <input type='text' id='leds' name='preset' value='' >\
+          <br><input type='submit' value='Submit'/>\
+          </form>");
+
   buf += htmlendstring; 
 
 

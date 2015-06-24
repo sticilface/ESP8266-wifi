@@ -155,11 +155,13 @@ unsigned long lasteffectupdate = 0;
 uint16_t WS2812interval = 2000; 
 
 
+uint8_t CurrentPreset = 0;
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness = 255; 
 bool paused = false; 
 bool LED_Settings_Changed = false; 
+
 
 uint16_t CurrentAnimationSpeed = 2000; 
 
