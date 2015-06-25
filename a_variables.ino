@@ -1,7 +1,9 @@
 //#define cache ICACHE_FLASH_ATTR
-#define cache  
+#define cache  ICACHE_FLASH_ATTR
 // Wifi parameters
 const int BUFSIZE = 32; //was 16 
+const String version = "WS2812-OTA";
+
 
 char ssid[BUFSIZE] ; //= "fyffest";
 char password[BUFSIZE] ;//  = "wellcometrust";

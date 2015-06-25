@@ -369,6 +369,8 @@ void OTA_UPDATE() {
     mqttclient.disconnect();
     listener.stop();
 
+    delay(1000);
+
     if (!ESP.updateSketch(cl, sz)) {
       Serial.println("Update failed");
     strip->ClearTo(RgbColor(255,0,0));

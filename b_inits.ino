@@ -18,7 +18,6 @@ MDNSResponder mdns;
  /// set timer....
 SimpleTimer timer;
 
-const String version = "WS2812";
 
 
   //NeoPixelBus strip = NeoPixelBus(120, 2);
