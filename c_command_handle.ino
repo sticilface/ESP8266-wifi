@@ -23,7 +23,7 @@ void cache ssid_command (String value)
               
 
               /// Save changes
-              Save_String(ssid, ssidAddress,ssidAddressbyte);
+              Save_String(ssid, ssidAddress, ssidAddressbyte);
 
             }
    }

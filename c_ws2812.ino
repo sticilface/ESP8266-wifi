@@ -2281,7 +2281,7 @@ String buf;
           </form></p>\
           <form action='/lightsconfig' method='POST'>\
           <p>Save Preset: <input type='text' id='leds' name='preset' value='' >\
-          <br><input type='submit' value='Submit'/>\
+          <br><input type='submit'  value='Save'/>\
           </form>");
 
   buf += htmlendstring; 

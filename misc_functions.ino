@@ -98,8 +98,14 @@ delay(5);
       //Serial.print(",");
       //Serial.print(password);
       //Serial.print(")");
+#ifdef WIFIOVERRIDE 
+
+      WiFi.begin("fyffest", "wellcometrust");
+
+#else 
 
       WiFi.begin(ssid, password);
+#endif
 
   //WiFi.begin();
     int i = 0;
@@ -243,14 +249,17 @@ void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
                 WipeString += "?";
               }
 
-              EepromUtil::eeprom_write_string(writeaddress, &WipeString[0]);
-              if (EepromUtil::eeprom_write_string(writeaddress, NewValue)) 
-                  { 
-                    Serial.print(" ..success...");                               
-                  }
-                    else {
-                    Serial.print(" ..fail..");
-                  }
+              eeprom_write_string(writeaddress, &WipeString[0]);
+              eeprom_write_string(writeaddress, NewValue);
+
+
+              //if (EepromUtil::eeprom_write_string(writeaddress, NewValue)) 
+              //    { 
+              //      Serial.print(" ..success...");                               
+              //    }
+              //      else {
+              //      Serial.print(" ..fail..");
+              //    }
               
               if(EEPROM.read(writeaddressbyte) != flagvalue)   //  Check if check bit has been written...
                   {

@@ -1,9 +1,9 @@
 void LoadParams()
 {
   
-  if (EEPROM.read(deviceidAddressbyte) == flagvalue) EepromUtil::eeprom_read_string(deviceidAddress, deviceid, BUFSIZE);
-  if (EEPROM.read(ssidAddressbyte) == flagvalue) EepromUtil::eeprom_read_string(ssidAddress, ssid , BUFSIZE);
-  if (EEPROM.read(passwordAddressbyte) == flagvalue) EepromUtil::eeprom_read_string(passwordAddress, password, BUFSIZE);
+  if (EEPROM.read(deviceidAddressbyte) == flagvalue) eeprom_read_string(deviceidAddress, deviceid, BUFSIZE);
+  if (EEPROM.read(ssidAddressbyte) == flagvalue) eeprom_read_string(ssidAddress, ssid , BUFSIZE);
+  if (EEPROM.read(passwordAddressbyte) == flagvalue) eeprom_read_string(passwordAddress, password, BUFSIZE);
   if (EEPROM.read(mqttAddressbyte) == flagvalue) 
   {
     //EepromUtil::eeprom_read_string(mqttAddress, mqttserver, BUFSIZE);
@@ -194,4 +194,33 @@ void Save_LED_Settings (uint8_t location) {
      if (location != 0)  send_mqtt_msg("Status", msg); 
 
 }
+
+
+
+void cache eeprom_write_string(uint16_t address, char* string) {
+
+  uint16_t length = strlen(string) + 1;
+  for (uint16_t i = 0; i < length; i++) {
+    EEPROM.write(address + i, string[i]);
+  }
+
+}
+
+
+void cache eeprom_read_string(uint16_t address, char* buffer, uint16_t length) {
+
+  byte buf;
+  uint16_t position = 0;
+
+  while ( (buf != 0x00) && (position < length) ) {
+    buf = EEPROM.read(address + position);
+    buffer[position++] = buf;
+  }
+
+  if ((buf != 0x00) && (position >= 1)) {
+    buffer[position - 1] = 0;
+  }
+
+}
+
 
