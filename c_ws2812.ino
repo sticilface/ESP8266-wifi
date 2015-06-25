@@ -39,8 +39,8 @@ static int power = 0;
 
 bool updateLEDs = false;
 
-  Serial.print("Current Preset = ");
-  Serial.println(CurrentPreset);
+ // Serial.print("Current Preset = ");
+ // Serial.println(CurrentPreset);
 
  if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
  if (server.arg("preset").length() != 0) WS2812_preset_string(server.arg("preset"));
@@ -142,7 +142,7 @@ for (int k=0; k < numberofmodes; k++ ) {
   </form>\
   ");
 
-  buf = insertvariable ( content0, WebRGBcolour); 
+  buf = insertvariable ( content0, WebRGBcolour);  //WebRGBcolour
   
   server.sendContent(buf);
 
@@ -218,6 +218,8 @@ void cache WS2812_preset_string(String Value) {
         //Serial.print()
         HoldingOpState =  LastOpState;
         Current_Effect_State = POST_EFFECT; 
+            send_mqtt_msg("Preset", Value); 
+
       } ; 
       //Serial.print("...Loaded"); 
 }
@@ -242,7 +244,7 @@ void cache WS2812_mode_number(String Value) {
 
 void  cache  WS2812_dim_string (String Value)
 {
-      //lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
+      lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
       int a = Value.toInt();
       if (a > 255) a = 255;
       if (a < 0) a = 0;
@@ -2750,5 +2752,41 @@ lasteffectupdate = millis();
 }
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+}
+
+
+
+void cache aaa(RgbColor a) {
+
+
+
+}
+
+void cache aaa(HslColor b) {
+
+
+  
+}
+
+void cache aaa(String b) {
+
+
+}
+
+void cache send_status () {
+
+     if (opState == OFF) { 
+    send_mqtt_msg("mode","off");
+    send_mqtt_msg("effect","off");
+  } else { 
+    send_mqtt_msg("mode", "on");
+  }
+
+    //delay(10);
+    send_mqtt_msg("timer", String(WS2812interval));
+    send_mqtt_msg("brightness", String(CurrentBrightness));
+
+
+
 }
 

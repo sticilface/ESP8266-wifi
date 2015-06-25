@@ -340,13 +340,20 @@ long cache EEPROMReadlong(long address)
       return ((four << 0) & 0xFF) + ((three << 8) & 0xFFFF) + ((two << 16) & 0xFFFFFF) + ((one << 24) & 0xFFFFFFFF);
       }
 
-/*
+
 void OTA_UPDATE() {
+
+
+
 
   
   int cb = listener.parsePacket();
   
   if (cb) {
+    isOTAupdate = true; 
+    strip->ClearTo(RgbColor(0,255,0));
+    strip->Show(); 
+
     IPAddress remote = listener.remoteIP();
     int cmd  = listener.parseInt();
     int port = listener.parseInt();
@@ -358,17 +365,22 @@ void OTA_UPDATE() {
       Serial.println("failed to connect");
       return;
     }
-
+   
+    mqttclient.disconnect();
     listener.stop();
 
     if (!ESP.updateSketch(cl, sz)) {
       Serial.println("Update failed");
-    }
+    strip->ClearTo(RgbColor(255,0,0));
+    strip->Show(); 
+    delay(1000);
+    ESP.reset(); 
+    } 
   }
 
 
 }
-*/
+
 
 String cache insertvariable(String Source , String insert) {
 

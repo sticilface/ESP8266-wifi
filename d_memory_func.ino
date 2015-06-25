@@ -90,11 +90,21 @@ uint16_t address = START_address_settings + (32 * location);
       uint8_t G = EEPROM.read(address++);
       uint8_t B = EEPROM.read(address++);
 
+
+      String Rstring, Gstring, Bstring;
+
       NewColour = RgbColor(R,G,B);
 
-      WebRGBcolour = String(R,HEX);
-      WebRGBcolour += String(G,HEX);
-      WebRGBcolour += String(B,HEX);
+      if (R == 0) { Rstring = "00" ;} else  Rstring = String(R,HEX); 
+      if (G == 0) { Gstring = "00" ;} else  Gstring = String(G,HEX);       
+      if (B == 0) { Bstring = "00" ;} else  Bstring = String(B,HEX); 
+
+
+      WebRGBcolour = Rstring + Gstring + Bstring; 
+
+      WebRGBcolour.toUpperCase();
+
+ 
      
 // 6--------------------------------  Vars 1 - 10   -------------------------
 
@@ -111,9 +121,19 @@ uint16_t address = START_address_settings + (32 * location);
 
    // Serial.print("Settings Loaded for : ");
     // Serial.println(location);
+
+
+if (location != 0) {
+
+    send_mqtt_msg("loadpreset",String("0"));
+    String msg  = String(location) + " Loaded";
+    send_mqtt_msg("Status", msg); 
+    send_status();
+
 }
 
 
+}
 
 
 
@@ -123,8 +143,8 @@ void Save_LED_Settings (uint8_t location) {
 
   uint16_t address = START_address_settings + (32 * location); 
 
-Serial.print("Saving LED data, address = ");
-Serial.println(address);
+//Serial.print("Saving LED data, address = ");
+//Serial.println(address);
 
   // START_address_settings = 160; 
 
@@ -149,9 +169,9 @@ Serial.println(address);
 
 // 5--------------------------------  R G B  -------------------------
 
-      EEPROM.write( address++, NewColour.R);
+      EEPROM.write(address++, NewColour.R);
       EEPROM.write(address++, NewColour.G);
-      EEPROM.write(address++ , NewColour.B);
+      EEPROM.write(address++, NewColour.B);
      
 // 6--------------------------------  Vars 1 - 10   -------------------------
 

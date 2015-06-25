@@ -1,30 +1,17 @@
 void loop( void ) {
   // put your main code here, to run repeatedly:
+if (!isOTAupdate) {
 
-//yield();
   mqttclient.loop();
-
-//delay(1);
-//yield();
-
- server.handleClient();
-     
-
-//delay(1);
-
- ////////////// -------- PLUGIN CONTROLs -----------------------
-//yield();
-
-timer.run();
-//yield();
-
- 
-loop_Plugin();
- 
+  server.handleClient();
+  timer.run();
+  loop_Plugin();
 //if (wifimode == 1) mdns.update();  
 
+};
+
  
-//OTA_UPDATE();
+OTA_UPDATE();
 
 yield(); 
 

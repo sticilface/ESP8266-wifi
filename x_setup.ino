@@ -35,7 +35,7 @@ void setup( void ) {
   Serial.begin(serialspeed); // 921600 460800 115200
   //Serial.begin(115200); // 921600 460800 115200
 
-  //Serial.setDebugOutput(true);
+  Serial.setDebugOutput(true);
   //Serial.setDebugOutput(false);
   delay(10);
   Serial.println();
@@ -48,6 +48,11 @@ void setup( void ) {
   if (wiped) Serial.println("FIRST BOOT EEPROM WIPED"); 
 
   Serial.println("Welcome to Andrew Melvin's ESP Software");
+  Serial.println("OTA enabled");
+  Serial.print("Sketch size: ");
+  Serial.println(ESP.getSketchSize());
+  Serial.print("Free size: ");
+  Serial.println(ESP.getFreeSketchSpace());
   
   
   
@@ -174,9 +179,9 @@ if (wifimode == 1) {
 
   //Serial.println("Timers set up");
 
-  // OTA updater...
-  //listener.begin(8266);
-  //
+ //  OTA updater...
+  listener.begin(8266);
+  
 
 #ifdef HSL_FLOAT
 

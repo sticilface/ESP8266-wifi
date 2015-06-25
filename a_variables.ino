@@ -20,6 +20,7 @@ char bufchar[BUFSIZE];
 //String httpbuf = " ";
 //String bytedump = " ";
 
+bool isOTAupdate = false; 
 char mqttcharbuf[200];
 
 String mqttbuf = " ";
@@ -92,7 +93,7 @@ boolean Plugin_enable = false;
 
 
 IPAddress MQTTserver(0,0,0,0);
-IPAddress multicast_ip_addr(224,0,0,0);
+const IPAddress multicast_ip_addr(224,0,0,0);
 ////////////////////-----------MQTT---------------///////////////////
 
 char mqtttopic[BUFSIZE];// = "esp";
@@ -161,12 +162,12 @@ uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness = 255; 
 bool paused = false; 
 bool LED_Settings_Changed = false; 
-
-
 uint16_t CurrentAnimationSpeed = 2000; 
 
+
 RgbColor NewColour = RgbColor(0,0,0);
-String WebRGBcolour = " "; // This is for the WEBPAGE... takes the value when colour is changed...
+
+String WebRGBcolour = "000000"; // This is for the WEBPAGE... takes the value when colour is changed...
 
 
 unsigned int localPort = 8888; // 6454; //8888;      // local port to listen on

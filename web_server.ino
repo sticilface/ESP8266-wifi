@@ -40,7 +40,10 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
    j = 0;
    for (int i = 128; i < 256; i++) // was 128 -- > 256
    {
-   char value = EEPROM.read(i);
+   //char value = ;
+   char value[4]; 
+   snprintf ( value, 4, "%03d", EEPROM.read(i) );
+
    bytedump += "<td>" + String(value) + "</td>";
    if (j == 31) 
    { 
@@ -60,7 +63,8 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
    j = 0;
    for (int i = 256; i < 384; i++) // was 128 -- > 256
    {
-   char value = EEPROM.read(i);
+   char value[4]; 
+   snprintf ( value, 4, "%03d", EEPROM.read(i) );
    bytedump += "<td>" + String(value) + "</td>";
    if (j == 31) 
    { 
@@ -78,7 +82,8 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
    j = 0;
    for (int i = 384; i < 512; i++) // was 128 -- > 256
    {
-   char value = EEPROM.read(i);
+   char value[4]; 
+   snprintf ( value, 4, "%03d", EEPROM.read(i) );
    bytedump += "<td>" + String(value) + "</td>";
    if (j == 31) 
    { 
@@ -392,6 +397,8 @@ void handle_misc ()
   <br> Flash Size by ID = % \
   <br> Flash ID = % \
   <br> Chip ID = % \
+  <br> Sketch Size = % \
+  <br> Free Space = % \
   <br> Millis = % \
   <br> Up Time = % \
   <p><form action='/misc' method='POST'>\
@@ -404,8 +411,10 @@ void handle_misc ()
   buf = insertvariable ( buf, String(ESP.getFlashChipSizeByChipId()));
   buf = insertvariable ( buf, String(ESP.getFlashChipId()));
   buf = insertvariable ( buf, String(ESP.getChipId()));
+  buf = insertvariable ( buf, String(ESP.getSketchSize()  ));
+  buf = insertvariable ( buf, String(ESP.getFreeSketchSpace()));
   buf = insertvariable ( buf, String(millis()));
-  buf = insertvariable (buf, String(Up_time));
+  buf = insertvariable  (buf, String(Up_time));
   
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send(200, "text/html", "");
