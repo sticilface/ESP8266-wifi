@@ -1,28 +1,22 @@
 ////// ----- SSID Handle ---------
 void cache ssid_command (String value)
 {
-          Serial.print("*SSID recieved....");
-          String buf;
-          buf = value.substring(0,BUFSIZE-1);
-          buf.toCharArray(bufchar, BUFSIZE);
-          if (strcmp(ssid, bufchar) == 0)
+          //String buf;
+          value = value.substring(0,BUFSIZE-1);
+
+          value.toCharArray(bufchar, BUFSIZE);
+
+          if (strcmp(ssid, bufchar) != 0)
             {
-              Serial.println("No change. Exiting SSID command");
-              return;
-            } else {
-              Serial.print("New SSID recieved: ");
+              Serial.print("New SSID: ");
               networkrestart = true;   //****** MUST UNCOMMENT.......
               wifimode = 2; // Set this to sort out the mode, backup.. 
               if (EEPROM.read(APbyte) != flagvalue) EEPROM.write(APbyte, flagvalue); // Set up Emergency ACCESSS BYTE....
-              send_mqtt_msg("status","SSID updated: " + value);
-              //eeprom_updates_pending = true;
+              send_mqtt_msg("status","SSID-> " + value);
               for (int i = 0; i < BUFSIZE; ++i) {
                  ssid[i] = bufchar[i];
               }
               Serial.println(ssid);     
-              
-
-              /// Save changes
               Save_String(ssid, ssidAddress, ssidAddressbyte);
 
             }
@@ -36,27 +30,21 @@ void cache ssid_command (String value)
 
 void cache password_command (String value)
 {
-          Serial.print("*Password recieved....");
-          String buf;
-          buf = value.substring(0,BUFSIZE-1);
-          buf.toCharArray(bufchar, BUFSIZE);
-          if (strcmp(password, bufchar) == 0)
+          value = value.substring(0,BUFSIZE-1);
+          value.toCharArray(bufchar, BUFSIZE);
+          if (strcmp(password, bufchar) != 0)
             {
-              Serial.println("No change. Exiting Password command");
-              return;
-            } else {
-              Serial.print("New Password recieved: ");
+              Serial.print("New Password: ");
               networkrestart = true;   //****** MUST UNCOMMENT.......
               wifimode = 2;
               if (EEPROM.read(APbyte) != flagvalue) EEPROM.write(APbyte, flagvalue);
-              send_mqtt_msg("password","SSID updated: " + value);
-              //eeprom_updates_pending = true;
+              send_mqtt_msg("password","SSID-> " + value);
+
               for (int i = 0; i < BUFSIZE; ++i) {
                  password[i] = bufchar[i];
               }
               Serial.println(password);     
-              
-              Save_String(password, passwordAddress,passwordAddressbyte);
+              Save_String(password, passwordAddress, passwordAddressbyte);
 
 
             }
@@ -64,18 +52,13 @@ void cache password_command (String value)
 
 void cache deviceid_command (String value)
 {
-          Serial.print("*Deviceid recieved....");
-          String buf;
-          buf = value.substring(0,BUFSIZE-1);
-          buf.toCharArray(bufchar, BUFSIZE);
-          if (strcmp(deviceid, bufchar) == 0)
+          value = value.substring(0,BUFSIZE-1);
+          value.toCharArray(bufchar, BUFSIZE);
+          if (strcmp(deviceid, bufchar) != 0)
             {
-              Serial.println("No change. Exiting Deviceid command");
-              return;
-            } else {
-              Serial.print("New Deviceid recieved: ");
-              send_mqtt_msg("status","DeviceID updated: " + value);
-              //eeprom_updates_pending = true;
+              Serial.print("New Deviceid: ");
+              send_mqtt_msg("status","DeviceID-> " + value);
+
               for (int i = 0; i < BUFSIZE; ++i) {
                  deviceid[i] = bufchar[i];
               }
@@ -90,8 +73,7 @@ void cache deviceid_command (String value)
  
 void cache mqttserver_command (String value)
 {
-          Serial.print("*MQTTServer recieved....");
-          Serial.println(value);
+
           IPAddress tempaddress;
   for (int i = 0; i < 4; i++) {
    String token = value.substring(0,value.indexOf('.'));
@@ -101,62 +83,31 @@ void cache mqttserver_command (String value)
    tempaddress[i] = (byte)tokenInt;
    }
 
-   if (MQTTserver == tempaddress) {
-    Serial.println("No change. Exiting MQTTServer command");
-    return;
-    } else {
-   Serial.print("MQTTserver IPAddress CHANGED: ");
+   if (MQTTserver != tempaddress) {
+   Serial.print("MQTTserver IPAddress: ");
    MQTTserver = tempaddress;
-   send_mqtt_msg("Status","MQTTServer updated: " + MQTTserver);
+   send_mqtt_msg("Status","MQTTServer-> " + MQTTserver);
    Serial.println(tempaddress);
 
    for (int i=0; i<4; i++) {  // SAVE NEW TO EEPROM
     EEPROM.write( mqttAddress+i,(byte)MQTTserver[i]);
    }
+
     EEPROM.write (mqttAddressbyte,flagvalue);
     EEPROM.commit();
- /*
 
-   IPAddress READtest;
-     for (int i=0; i<4; i++) {  // SAVE NEW TO EEPROM
-    READtest[i] = EEPROM.read( mqttAddress+i);
+    mqttreload = true;
+
+    }
+
+
    }
 
-  Serial.print("READ test : " );
-  Serial.println(READtest);
 
-*/
-mqttreload = true;
-
- }
-
-
-/*
-          String buf;
-          buf = value.substring(0,BUFSIZE-1);
-          buf.toCharArray(bufchar, BUFSIZE);
-          if (strcmp(mqttserver, bufchar) == 0)
-            {
-              Serial.println("No change. Exiting MQTTServer command");
-              return;
-            } else {
-              Serial.print("New MQTTServer recieved: ");
-              send_mqtt_msg("Status","MQTTServer updated: " + value);
-              //eeprom_updates_pending = true;
-              for (int i = 0; i < BUFSIZE; ++i) {
-                 mqttserver[i] = bufchar[i];
-              }
-              Serial.println(mqttserver);     
-              Save_String(mqttserver, mqttAddress,mqttAddressbyte);
-
-               mqttreload = true;
-
-            } */
-   }
    
-void cache debug_command (String value)
+void cache debug_command (String value)    {
 
-{
+
  Serial.println("DEBUG COMMAND IS CALLED");
 
  if(value == "timer")
@@ -209,19 +160,21 @@ void cache mqttreloadfunc ()
       mqttclient.disconnect();      
       delay(10);
       //Serial.println("Disconnecting MQTT wifiClient:..... ");
-      wifiClient.stop();
-      delay(10);      
+  //    wifiClient.stop();
+  //    delay(10);      
       //Serial.println("Creating new MQTT Client:..... ");
-      WiFiClient wifiClient;
-      delay(10);
+  //    WiFiClient wifiClient;
+  //    delay(10);
       //Serial.println("Calling pubsubclient:..... ");
       //PubSubClient mqttclient(mqttserver, 1883, callback, wifiClient);
-      delay(10);
+   //   delay(10);
       
       initiatemqqt (); 
                          
        
 }
+
+
   
 void cache Serial_Command (String value)
 

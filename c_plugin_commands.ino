@@ -168,18 +168,14 @@ void OnceOnlyTask () {
 
    delay(10);
 
-   if (opState == OFF) { 
-    send_mqtt_msg("mode","off");
-    send_mqtt_msg("effect","off");
-  } else { 
-    send_mqtt_msg("mode", "on");
-  }
+  send_current_settings(); 
 
-    delay(100);
-    send_mqtt_msg("timer", String(WS2812interval));
-    send_mqtt_msg("brightness", String(CurrentBrightness));
   
 }
+
+
+
+
 
 void loop_Plugin () {
 

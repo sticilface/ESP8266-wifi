@@ -170,6 +170,7 @@ for (int k=0; k < numberofmodes; k++ ) {
   </form>\
   Power = %mA\
   <br> Adalight order: GRB\
+  <br> Current Mode: % \
   ");
   
   buf = insertvariable ( content1, String(CurrentAnimationSpeed)); 
@@ -178,6 +179,15 @@ for (int k=0; k < numberofmodes; k++ ) {
   buf = insertvariable ( buf, String(pixelCount)); 
   buf = insertvariable ( buf, String(pixelPIN)); 
   buf = insertvariable ( buf, String(power) ); 
+
+  String loaded_var; 
+
+  if (current_loaded_preset == 0)  { loaded_var = "none" ; } else { loaded_var = String(current_loaded_preset) ; } ; 
+  if (current_loaded_preset_changed) { loaded_var += " (unsaved changes)" ; }; 
+
+
+  buf = insertvariable ( buf, loaded_var ); 
+
 
   buf += htmlendstring; 
  
@@ -200,9 +210,63 @@ void cache AnimationSpeed_command_string (String Value) {
 
   CurrentAnimationSpeed = newvalue; 
   lasteffectupdate = 0; 
+  current_loaded_preset_changed = true; 
 
   LED_Settings_Changed = true; 
 }
+
+
+
+void cache WS2812_toggle_string(String Value) {
+  Serial.print("toggle hit, original mode = "); 
+  Serial.println(current_loaded_preset); 
+
+      if (Value == "toggle") {
+
+      lasteffectupdate = 0;
+  current_loaded_preset_changed = true; 
+
+
+        if (opState == OFF)  {
+          Serial.println("OFF, so turned ON"); 
+          HoldingOpState = LastOpState;
+          Current_Effect_State = POST_EFFECT;
+
+
+        } else {
+          Serial.print("ON..advancing: "); 
+
+          current_loaded_preset++;  // advance to next saved.... 
+          Serial.print(current_loaded_preset);
+          Serial.print(",");
+
+          if (current_loaded_preset > 10) current_loaded_preset = 1;
+
+          for (uint8_t i = 0; i < 10; i++ ) { // go through 10 saved ONLY.....
+              uint16_t address = START_address_settings + (32 * current_loaded_preset); 
+              uint8_t saved = EEPROM.read(address);
+              if (saved != 0) break; 
+              current_loaded_preset++;        
+              if (current_loaded_preset > 10) current_loaded_preset = 1;
+              Serial.print(current_loaded_preset);
+              Serial.print(",");
+          }
+          Serial.print("  scan end.... mode asked for = ");
+          Serial.print(current_loaded_preset);
+          WS2812_preset_string(String(current_loaded_preset));
+
+
+        }
+
+
+
+
+      }
+
+}
+
+
+
 
 void cache WS2812_preset_string(String Value) {
 
@@ -210,18 +274,39 @@ void cache WS2812_preset_string(String Value) {
       uint8_t preset = Value.toInt();
       //Serial.print("Preset recieved: ");
       //Serial.print(preset);
-      if (preset >= 0 || preset > 10)  {
+
+      if (preset > 10) preset = 1;
+      if (preset < 0 ) preset = 1; 
 
         Load_LED_Defaults (preset) ; 
-        CurrentPreset = preset; 
+        // CurrentPreset = preset; 
+        current_loaded_preset = preset;
+        current_loaded_preset_changed = false; 
+
         //Serial.print("Op State = "); 
         //Serial.print()
         HoldingOpState =  LastOpState;
         Current_Effect_State = POST_EFFECT; 
             send_mqtt_msg("Preset", Value); 
 
-      } ; 
+      
       //Serial.print("...Loaded"); 
+}
+
+void cache send_current_settings () {
+
+   if (opState == OFF) { 
+    send_mqtt_msg("mode","off");
+    send_mqtt_msg("effect","off");
+  } else { 
+    send_mqtt_msg("mode", "on");
+  }
+
+    delay(100);
+    send_mqtt_msg("timer", String(WS2812interval));
+    send_mqtt_msg("brightness", String(CurrentBrightness));
+
+
 }
 
 
@@ -245,6 +330,8 @@ void cache WS2812_mode_number(String Value) {
 void  cache  WS2812_dim_string (String Value)
 {
       lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
+      current_loaded_preset_changed = true; 
+
       int a = Value.toInt();
       if (a > 255) a = 255;
       if (a < 0) a = 0;
@@ -300,6 +387,7 @@ void  cache WS2812_mode_string (String Value)
 {
 
   lasteffectupdate = 0 ; // RESET EFFECT COUNTER
+
   //Random_func_timeout = 0; //RESET additionall timeout... 
   if (paused) paused = false; // this sets it back to play, if paused when a mode change occurs...
 
@@ -1607,7 +1695,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 */
 
 
-    if (effect_option == 1) fade_to(RgbColor(0,0,0), HSL); 
+    if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
 
 
 
@@ -1645,7 +1733,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
         break; 
       }
 
-      if (millis() - lasteffectupdate > WS2812interval ) {      
+      if (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) {      
 
       //for (int i = 0; i < numberofpoints; i++) {
 
@@ -1687,7 +1775,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     if (coordinates_OK) {
       
-      uint16_t time = random(( CurrentAnimationSpeed  ), (CurrentAnimationSpeed * 10)); //generate same time for each object
+      uint32_t time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
@@ -2226,7 +2314,7 @@ String buf;
    if (server.arg("var2").length() != 0) var2 = server.arg("var2").toInt(); // colour point min
    if (server.arg("var3").length() != 0) var3 = server.arg("var3").toInt(); // colour point max
    if (server.arg("var4").length() != 0) var4 = server.arg("var4").toInt();
-   if (server.arg("var5").length() != 0) var5 = server.arg("var5").toInt();
+   if (server.arg("var5").length() != 0) IntervalMultiplier = server.arg("var5").toInt();
    if (server.arg("var6").length() != 0) var6 = server.arg("var6").toInt();
    if (server.arg("var7").length() != 0) var7 = server.arg("var7").toInt();
    if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
@@ -2236,7 +2324,7 @@ String buf;
    if (server.arg("preset").length() != 0) Save_LED_Settings(  server.arg("preset").toInt() );
   
    // String a = ESP.getFlashChipSizeByChipId(); 
-   if (server.arg("reset") == "true") { var1 = 0; var2 = 0; var3 = 0; var4 = 0; var5 = 0; var6 = 0; var7 = 0; var8 = 0; var9 = 0; var10 = 0;};
+   if (server.arg("reset") == "true") { var1 = 0; var2 = 0; var3 = 0; var4 = 0; IntervalMultiplier = 0; var6 = 0; var7 = 0; var8 = 0; var9 = 0; var10 = 0;};
 
 
   String content = F("\
@@ -2266,7 +2354,7 @@ String buf;
     if (k ==1) inserted = String(var2);
     if (k ==2) inserted = String(var3);
     if (k ==3) inserted = String(var4);
-    if (k ==4) inserted = String(var5);
+    if (k ==4) inserted = String(IntervalMultiplier);
     if (k ==5) inserted = String(var6);
     if (k ==6) inserted = String(var7);
     if (k ==7) inserted = String(var8);
@@ -2772,6 +2860,7 @@ void cache aaa(String b) {
 
 
 }
+/*
 
 void cache send_status () {
 
@@ -2789,4 +2878,6 @@ void cache send_status () {
 
 
 }
+*/
+
 

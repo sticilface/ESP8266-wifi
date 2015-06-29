@@ -375,7 +375,8 @@ void OTA_UPDATE() {
       return;
     }
    
-    mqttclient.disconnect();
+   // mqttclient.disconnect();
+
     listener.stop();
 
     delay(1000);
@@ -385,7 +386,14 @@ void OTA_UPDATE() {
     strip->ClearTo(RgbColor(255,0,0));
     strip->Show(); 
     delay(1000);
-    ESP.reset(); 
+
+    listener.begin(8266);
+
+    strip->ClearTo(RgbColor(0,255,0));
+    strip->Show(); 
+    delay(1000);
+
+    //ESP.reset(); 
     } 
   }
 

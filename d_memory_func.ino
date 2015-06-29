@@ -63,7 +63,7 @@ uint16_t address = START_address_settings + (32 * location);
 
     if (isnan(temp)) temp = 0;
 
-    LastOpState = (operatingState)temp;
+    if (temp != 0 ) {  LastOpState = (operatingState)temp; };  // Stops last opstate being over written by an OFF..
 // 2 --------------------------------   Timer ---------------------------------
     
      temp = EEPROM.read(address++);
@@ -71,13 +71,19 @@ uint16_t address = START_address_settings + (32 * location);
         if(isnan(temp)) temp = 0;
         if(isnan(tempb)) temp = 0;
         WS2812interval = temp*256+tempb;
+        if (isnan(WS2812interval) || WS2812interval == 0) WS2812interval = 2000;
+
 // 3 --------------------------------  Animation speed -------------------------
 
      temp = EEPROM.read(address++);
      tempb = EEPROM.read(address++);
+
         if(isnan(temp)) temp = 0;
         if(isnan(tempb)) temp = 0;
-        CurrentAnimationSpeed = temp*256+tempb;
+      CurrentAnimationSpeed = temp*256+tempb;
+        
+        if (isnan(CurrentAnimationSpeed) || CurrentAnimationSpeed == 0) CurrentAnimationSpeed = 2000;
+
 
 // 4--------------------------------  Brightness -------------------------
 
@@ -108,27 +114,29 @@ uint16_t address = START_address_settings + (32 * location);
      
 // 6--------------------------------  Vars 1 - 10   -------------------------
 
-      var1 = EEPROM.read(address++); 
-      var2 = EEPROM.read(address++); 
-      var3 = EEPROM.read(address++); 
-      var4 = EEPROM.read(address++); 
-      var5 = EEPROM.read(address++); 
-      var6 = EEPROM.read(address++); 
-      var7 = EEPROM.read(address++); 
-      var8 = EEPROM.read(address++); 
-      var9 = EEPROM.read(address++); 
-      var10 = EEPROM.read(address++); 
+                    var1 = EEPROM.read(address++); 
+                    var2 = EEPROM.read(address++); 
+                    var3 = EEPROM.read(address++); 
+                    var4 = EEPROM.read(address++); 
+      IntervalMultiplier = EEPROM.read(address++); // var5
+                    var6 = EEPROM.read(address++); 
+                    var7 = EEPROM.read(address++); 
+                    var8 = EEPROM.read(address++); 
+                    var9 = EEPROM.read(address++); 
+                   var10 = EEPROM.read(address++); 
 
    // Serial.print("Settings Loaded for : ");
     // Serial.println(location);
+if (IntervalMultiplier == 0) IntervalMultiplier = 1; 
 
 
 if (location != 0) {
 
-    send_mqtt_msg("loadpreset",String("0"));
+    //send_mqtt_msg("loadpreset", String("0")); // not sure about this!
+
     String msg  = String(location) + " Loaded";
     send_mqtt_msg("Status", msg); 
-    send_status();
+    send_current_settings();
 
 }
 
@@ -179,7 +187,7 @@ void Save_LED_Settings (uint8_t location) {
      EEPROM.write(address++, var2);
      EEPROM.write(address++, var3);
      EEPROM.write(address++, var4);
-     EEPROM.write(address++, var5);
+     EEPROM.write(address++, IntervalMultiplier);
      EEPROM.write(address++, var6);
      EEPROM.write(address++, var7);
      EEPROM.write(address++, var8);
@@ -191,7 +199,12 @@ void Save_LED_Settings (uint8_t location) {
      //Serial.println(location);
 
      String msg  = String(location) + " Saved";
-     if (location != 0)  send_mqtt_msg("Status", msg); 
+
+     if (location != 0)   { 
+      send_mqtt_msg("Status", msg); 
+      current_loaded_preset_changed = false; 
+      current_loaded_preset = location; 
+    }
 
 }
 

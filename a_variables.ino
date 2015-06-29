@@ -159,15 +159,19 @@ static const char *MODE_STRING[] = {
 unsigned long lasteffectupdate = 0; 
 uint16_t WS2812interval = 2000; 
 
+uint8_t current_loaded_preset = 0; 
+bool current_loaded_preset_changed = false; 
 
-uint8_t CurrentPreset = 0;
+//uint8_t CurrentPreset = 0;
+
+
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
 uint8_t CurrentBrightness = 255; 
 bool paused = false; 
 bool LED_Settings_Changed = false; 
 uint16_t CurrentAnimationSpeed = 2000; 
-
+uint8_t IntervalMultiplier = 1; 
 
 RgbColor NewColour = RgbColor(0,0,0);
 
@@ -192,7 +196,7 @@ static const char *VAR_STRING[] = {
 "Floor             ", // var 2
 "Var3              ", // var 3
 "Var4              ", // var 4
-"Var5              ", // var 5
+"IntervalMultiplier", // var 5
 "Effect Option     ", // var 6
 "Total_X           ", // var 7
 "Number of effects ", // var 8

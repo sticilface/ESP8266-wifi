@@ -41,6 +41,7 @@ if ((pub.topic()).indexOf("/colour/set") > 0) WS2812_Set_New_Colour(pub.payload_
 if ((pub.topic()).indexOf("/color/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
 if ((pub.topic()).indexOf("/loadpreset/set") > 0) WS2812_preset_string(pub.payload_string());
 if ((pub.topic()).indexOf("/savepreset/set") > 0) { Save_LED_Settings(pub.payload_string().toInt()); };
+if ((pub.topic()).indexOf("/toggle/set") > 0) WS2812_toggle_string(pub.payload_string());
 
 
 /*
