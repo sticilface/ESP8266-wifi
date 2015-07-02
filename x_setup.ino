@@ -35,7 +35,7 @@ void setup( void ) {
   Serial.begin(serialspeed); // 921600 460800 115200
   //Serial.begin(115200); // 921600 460800 115200
 
-  Serial.setDebugOutput(true);
+  //Serial.setDebugOutput(true);
   //Serial.setDebugOutput(false);
   delay(10);
   Serial.println();
@@ -180,8 +180,17 @@ if (wifimode == 1) {
   //Serial.println("Timers set up");
 
  //  OTA updater...
-  listener.begin(8266);
+ // listener.begin(8266);
   
+if(WiFi.waitForConnectResult() == WL_CONNECTED){
+    MDNS.begin(deviceid);
+    MDNS.addService("arduino", "tcp", aport);
+    MDNS.addService("http", "tcp", 80);
+    listener.begin(aport);
+
+  }
+
+
 
 #ifdef HSL_FLOAT
 

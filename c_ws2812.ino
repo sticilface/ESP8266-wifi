@@ -356,27 +356,21 @@ void cache WS2812_effect_string (String request) {
       for (uint8_t i = 0; i < numberofmodes; i++ ) {
 
         if (request == String(MODE_STRING[i])) {
-
-                // uint8_t chosen_mode = Value.toInt(); // turn it to number...
-        HoldingOpState = (operatingState)i; // assign selection to holdingopstate... 
-        Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
-        LastOpState = (operatingState)i;
-
-      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-
-        break; 
-
+          HoldingOpState = LastOpState = (operatingState)i; // assign selection to holdingopstate... 
+          Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
+          LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+          send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
+          break; 
         }
       } 
 
-   if (HoldingOpState == OFF) { 
+  if (HoldingOpState == OFF) { 
     send_mqtt_msg("mode","off");
   } else { 
     send_mqtt_msg("mode", "on");
   }
 
 
-send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
 
 
 
@@ -981,17 +975,17 @@ if (millis() - update_strip_time > 30) {
 if (opState != HoldingOpState) {
   static bool triggered = false; 
   if (!triggered) { 
-    Serial.print("timer started");
+  //  Serial.print("timer started");
     HoldingState_Failover = millis(); 
     triggered = true; 
   } 
-  Serial.print(".");
+ // Serial.print(".");
 
   if (millis() - HoldingState_Failover > 5000) {
     opState = HoldingOpState;
     triggered = false; 
     Current_Effect_State = PRE_EFFECT; 
-    Serial.println("failover activated");
+  //  Serial.println("failover activated");
   }
 
 }
@@ -1394,6 +1388,86 @@ void  cache Rainbowcycle() {
 
 void cache test4() {
 
+  uint8_t x,y, total_y;
+  uint8_t total_x = var7; 
+  uint8_t square_size = var10;
+  uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
+  uint8_t effect_option = var6;
+  uint8_t dimoffset ; 
+  if (square_size == 0) square_size = 3;  
+  if (numberofpoints == 0) numberofpoints = 1;
+  if (total_x == 0) total_x = 13; 
+
+  total_y = return_total_y(total_x); 
+
+switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+      Pre_effect();
+
+    case RUN_EFFECT:
+
+      if (millis() - lasteffectupdate > 2000) {      
+
+       uint8_t x_rand = random(0, total_x - square_size + 1) ; 
+       uint8_t y_rand = random(0, total_y - square_size + 1) ;
+
+      uint8_t sq_pixel = 3;
+
+      Serial.print("(");
+        Serial.print(x_rand);
+        Serial.print(",");
+        Serial.print(y_rand);
+        Serial.print(") ==> ");
+
+
+       for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
+
+          int pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
+          //Serial.print("."); 
+
+
+         // if (pixel >= 0) { 
+         //       if (animator->IsAnimating(pixel)) { coordinates_OK = false; Serial.println(" REJECT") ; break; }; 
+         // }
+         //   if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true; Serial.print(" ACCEPT") ;}; 
+
+         // }
+
+
+        Serial.print(pixel); 
+        Serial.print(",");
+
+
+
+}
+
+      lasteffectupdate = millis(); 
+
+Serial.println(")");
+}
+
+
+
+
+
+
+
+
+    break;
+
+
+    case POST_EFFECT:
+    Post_effect(); 
+    break;
+
+}
+
+}
+
+/*
+
+
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
 //Serial.println("TEST4");
@@ -1418,6 +1492,11 @@ wsPoint++;
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 }
+
+
+
+
+*/
 
 void  cache test() {
 switch(Current_Effect_State) {
@@ -1735,10 +1814,16 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       if (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) {      
 
+        static int numbercalled = 0;
+       // Serial.print("Effect update number: ");
+       // Serial.print(numbercalled++); 
+       // Serial.print(", ");
       //for (int i = 0; i < numberofpoints; i++) {
 
       RgbColor color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
-
+       
+        //Serial.print("Colour chosen: ");
+        //Serial.println(numbercalled++); 
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
       if (mode == 1) square_size = random(2,7);
 
@@ -1752,19 +1837,31 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
        x_rand = random(0, total_x - square_size + 1) ; 
        y_rand = random(0, total_y - square_size + 1) ;
 
+  //     Serial.print("Coordinates (");
+  //      Serial.print(x_rand);
+  //      Serial.print(",");
+  //      Serial.print(y_rand);
+  //      Serial.print(") ");
+
        for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
 
-          uint16_t pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
+          int pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
+          //Serial.print("."); 
 
-          if (animator->IsAnimating(pixel)) { coordinates_OK = false; break; }; 
-          if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true; }; 
+          if (pixel >= 0) { 
+                if (animator->IsAnimating(pixel)) { coordinates_OK = false ; break; }; 
+          }
+            if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true ;}; 
+
+          yield();
+
           }
           // if (count++ == 5) break; 
           //Serial.print("Count = "); 
           //Serial.println(count);
           //delay(1); 
        
-
+          yield();
 
       //for (int j =0; j < (square_size * square_size) ; j++) {
       // Serial.println();
@@ -1774,15 +1871,22 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       // Serial.println(y_rand);
 
     if (coordinates_OK) {
-      
+      Serial.print("Generating effect ("); 
+
       uint32_t time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
-            
 
-            uint16_t pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
-  
+            int pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
+            
+            if (pixel >= 0) {
+
+            if (sq_pixel > 0) Serial.print(",");
+            Serial.print(pixel); 
+
+           // if (sq_pixel < (square_size * square_size) - 1 ) Serial.print(","); 
+
             RgbColor originalColor = strip->GetPixelColor(pixel);
           
             // define the effect to apply, in this case linear blend
@@ -1798,13 +1902,19 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
             };
 
             animator->StartAnimation(pixel, time , animUpdate); // might change this to be a random variant...
+
+          } // end of if for is pixel valid... >=0
+
+          yield();
+
         }
 
 
+        Serial.println(")");
 
         //Serial.print("GRID " + String (square_size * square_size) + "... ");
 
-       // int pixel = return_shape_square(x_rand, y_rand, j, square_size, total_x ); 
+       //int pixel = return_shape_square(x_rand, y_rand, j, square_size, total_x ); 
 
         //if (pixel1 < pixelCount) strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel1 , dim(colour));          
 
@@ -2028,8 +2138,8 @@ void cache Adalight_Flash() {
 
 
 void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+ 
   uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
-
   static boolean Adalight_configured;
   static uint16_t effectbuf_position = 0;
   enum mode { MODE_INITIALISE = 0, MODE_HEADER, MODE_CHECKSUM, MODE_DATA, MODE_SHOW, MODE_FINISH};
@@ -2319,7 +2429,7 @@ String buf;
    if (server.arg("var7").length() != 0) var7 = server.arg("var7").toInt();
    if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
    if (server.arg("var9").length() != 0) var9 = server.arg("var9").toInt();
-   if (server.arg("var10").length() != 0) { var10 = server.arg("var10").toInt(); Serial.println("Var 10 updated"); }; 
+   if (server.arg("var10").length() != 0) { var10 = server.arg("var10").toInt(); } ; //  Serial.println("Var 10 updated"); }; 
   
    if (server.arg("preset").length() != 0) Save_LED_Settings(  server.arg("preset").toInt() );
   
@@ -2385,8 +2495,9 @@ String buf;
 
 
 
-uint16_t cache return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
-  uint16_t a = (pitch * y) + x; 
+int cache return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
+  int a = (pitch * y) + x; 
+  if ( a > strip->PixelCount() ) a = -1; 
   return a; 
 }
 
@@ -2400,15 +2511,17 @@ uint8_t cache return_total_y(uint8_t pitch) {
 }
 
 //  Returns a pixel number... starting in bottom left...
-uint16_t cache return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+int cache return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
 
-  uint16_t pixel; 
-  uint8_t pixel_x, pixel_y, row, row_left ;
+  int pixel; 
+  uint8_t pixel_x, pixel_y, row, row_left  ;
   row = desired_pixel / grid_size; 
   row_left = desired_pixel % grid_size;
   pixel_y = first_pixel_y + row;  
   pixel_x = first_pixel_x + row_left; 
   pixel = return_pixel(pixel_x, pixel_y, total_in_row);
+  if (row >= return_total_y(total_in_row)) pixel = -1; 
+  if (row_left >= total_in_row ) pixel = -1; 
   return pixel; 
 }
 

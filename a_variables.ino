@@ -19,6 +19,10 @@ char deviceid[BUFSIZE];// = "";
 String clientName = " ";
 String LocalIP = " ";
 
+const uint16_t aport = 8266;
+
+
+
 char bufchar[BUFSIZE];
 //String buf = " " ;
 //String httpbuf = " ";
@@ -202,4 +206,9 @@ static const char *VAR_STRING[] = {
 "Number of effects ", // var 8
 "Var9              ", // var 9
 "Size of effect    "};// var 10
+
+
+
+
+
 
