@@ -855,16 +855,17 @@ void cache initiateWS2812 ()
   SetRandomSeed();
   animator->Resume(); 
 
-
-
 }
 
 
 
 void cache ws2812 ()  // put switch cases here...
-
-
 {
+
+#ifdef LOOPDEBUG
+  if (temp_bug_track) Serial.print("11,");
+#endif
+
 static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
 static unsigned long HoldingState_Failover = 0; 
   //Serial.print("ws2812 called case = " + String(opState));
@@ -959,17 +960,20 @@ switch (opState)
       break;
       
    }
+#ifdef LOOPDEBUG
+  if (temp_bug_track) Serial.print("1,");
+#endif
 
 
 if (millis() - update_strip_time > 30) {
-
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
-
     strip->Show();
-
     update_strip_time = millis();
 
-} // end of switch case...
+} 
+#ifdef LOOPDEBUG
+  if (temp_bug_track) Serial.print("2,");
+#endif
 
 
 if (opState != HoldingOpState) {
@@ -981,6 +985,7 @@ if (opState != HoldingOpState) {
   } 
  // Serial.print(".");
 
+
   if (millis() - HoldingState_Failover > 5000) {
     opState = HoldingOpState;
     triggered = false; 
@@ -989,7 +994,13 @@ if (opState != HoldingOpState) {
   }
 
 }
+#ifdef LOOPDEBUG
+  if (temp_bug_track) Serial.print("3,");
+#endif
 
+#ifdef LOOPDEBUG
+  if (temp_bug_track) Serial.print("4,");
+#endif
 
 if(LED_Settings_Changed) {
   Save_LED_Settings(0);
@@ -1021,7 +1032,7 @@ if (paused) lasteffectupdate = millis();
 
 void cache HSI_Cycle() {
 
-
+/*
 static int j;
 
 if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
@@ -1047,7 +1058,7 @@ double s_double;
   Serial.print(col.G);
   Serial.print(" B:");
   Serial.print(col.B);  
-*/
+
 
 //int col = 200; 
 
@@ -1071,6 +1082,7 @@ j++;
 
 if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
+*/
 }
 
 
@@ -1705,12 +1717,6 @@ void cache fade_to(RgbColor Colour, uint16_t time ) {
 fade_to(Colour,time,RGB); 
 }
 
-//void cache testblendmethod(BlendMethod(test) ) {
-
-
-//}
-
-
 void cache fade_to(RgbColor NewColour, uint16_t time, BlendMethod method ) {
     
      for (uint16_t i = 0; i < pixelCount; i++)
@@ -1738,21 +1744,41 @@ void cache fade_to(RgbColor NewColour, uint16_t time, BlendMethod method ) {
    }
 }
 
-void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
+void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   uint8_t x,y, total_y;
   uint8_t total_x = var7; 
-  uint8_t square_size = var10;
+  uint8_t square_size =  var10;
   uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
   uint8_t effect_option = var6;
   uint8_t dimoffset ; 
+  int pixel;
+  uint32_t time; 
+
+  RgbColor color;
+
+#ifdef LOOPDEBUG
+  if (temp_bug_track) Serial.print("12,");
+#endif
+
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 1;
   if (total_x == 0) total_x = 13; 
 
   total_y = return_total_y(total_x); 
 
-
+      bool coordinates_OK = false;
+      uint8_t x_rand,y_rand;
+      //Serial.println("Generating coordinates.");
+       uint8_t count = 0; 
+      static uint32_t runningcount = 0; 
+      static int numbercalled = 0;
+      static bool temp_bug_track2 = false; 
+      static uint32_t espcyclecount = 0 ; 
+      espcyclecount = ESP.getCycleCount(); 
+#ifdef LOOPDEBUG
+  if (temp_bug_track) Serial.print("13,");
+#endif
 
   switch(Current_Effect_State) {
 
@@ -1761,22 +1787,7 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     effectPosition = 0; 
     
-    /*Serial.print("Pixels = ");
-    Serial.print(pixelCount);
-    Serial.print(" Total_x = ");
-    Serial.print(total_x);
-    Serial.print(" Total_y = ");
-    Serial.print(total_y);
-    Serial.print(" Square_size = ");
-    Serial.print(square_size); 
-    Serial.print(" Number of Points = "); 
-    Serial.println(numberofpoints);
-*/
-
-
     if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
-
-
 
     // dimoffset = constrain( dimoffset ,0 , 255); 
 
@@ -1805,86 +1816,105 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     break;
     case RUN_EFFECT:  
+#ifdef LOOPDEBUG
+        if (temp_bug_track) Serial.print("14,");
+#endif
 
-      
+
       if ( lasteffectupdate == 0 ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
         Current_Effect_State = PRE_EFFECT;
         break; 
       }
+#ifdef LOOPDEBUG
+        if (temp_bug_track) Serial.print("15,");
+        if (temp_bug_track) temp_bug_track = false;
+#endif
 
-      if (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) {      
+     // if  ( (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) && effectPosition < numberofpoints ) {      
 
-        static int numbercalled = 0;
-       // Serial.print("Effect update number: ");
-       // Serial.print(numbercalled++); 
-       // Serial.print(", ");
-      //for (int i = 0; i < numberofpoints; i++) {
+      if  ( effectPosition < numberofpoints ) {      
 
-      RgbColor color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
+#ifdef LOOPDEBUG
+      if (temp_bug_track2) Serial.print("16,");
+#endif
+
+
+       color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
        
         //Serial.print("Colour chosen: ");
         //Serial.println(numbercalled++); 
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
       if (mode == 1) square_size = random(2,7);
-
-      bool coordinates_OK = false;
-      uint8_t x_rand,y_rand;
-      //Serial.println("Generating coordinates.");
-       uint8_t count = 0; 
+#ifdef LOOPDEBUG
+     if (temp_bug_track2) Serial.print("17,");
+#endif
 
       
         // Serial.print(".");
        x_rand = random(0, total_x - square_size + 1) ; 
        y_rand = random(0, total_y - square_size + 1) ;
+       
+       coordinates_OK = false; // reset the coordinates OK...
 
-  //     Serial.print("Coordinates (");
-  //      Serial.print(x_rand);
-  //      Serial.print(",");
-  //      Serial.print(y_rand);
-  //      Serial.print(") ");
+  if (effect_option == 2) {
 
-       for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
+#ifdef LOOPDEBUG
+  if (temp_bug_track2) Serial.print("18,");
+#endif
 
-          int pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
+
+      for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
+
+          pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
           //Serial.print("."); 
 
           if (pixel >= 0) { 
-                if (animator->IsAnimating(pixel)) { coordinates_OK = false ; break; }; 
+                if (animator->IsAnimating(pixel)) { coordinates_OK = false ;  break; }; 
+                //uint8_t temp = random(0,1);
+                //if (temp > 0 ) { coordinates_OK = false ;  break; }; 
           }
-            if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true ;}; 
 
-          yield();
+            if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true ; }; 
 
           }
-          // if (count++ == 5) break; 
-          //Serial.print("Count = "); 
-          //Serial.println(count);
-          //delay(1); 
-       
-          yield();
+  } else { coordinates_OK = true; } 
 
-      //for (int j =0; j < (square_size * square_size) ; j++) {
-      // Serial.println();
-      // Serial.print("Found: x = ");
-      // Serial.print(x_rand);
-      // Serial.print(" y = ");
-      // Serial.println(y_rand);
+#ifdef LOOPDEBUG
+  if (temp_bug_track2) Serial.println("19)");
+    temp_bug_track2 = false; 
+#endif
+
 
     if (coordinates_OK) {
-      Serial.print("Generating effect ("); 
 
-      uint32_t time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
+      uint32_t runningcyclecount = ESP.getCycleCount() - espcyclecount; 
+      
+
+
+      //if (temp_lastunfinished < temp_unfinished) Serial.printf("*%u*",temp_unfinished);         
+      //temp_lastunfinished = temp_unfinished; // add one to bug count....
+
+#ifdef SQUAREDEBUG
+
+      Serial.printf( "%4u: act=%2u, unfin=%2u, Coord=%3u,%3u => ", runningcount++, effectPosition, temp_unfinished, x_rand, y_rand); 
+
+      temp_unfinished++;
+
+#endif
+       time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
+            if (sq_pixel == 0 ) effectPosition++; 
 
-            int pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
+            pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
             
             if (pixel >= 0) {
-
+#ifdef SQUAREDEBUG
+     
             if (sq_pixel > 0) Serial.print(",");
-            Serial.print(pixel); 
-
+            Serial.printf("%3u", pixel); 
+#endif
            // if (sq_pixel < (square_size * square_size) - 1 ) Serial.print(","); 
 
             RgbColor originalColor = strip->GetPixelColor(pixel);
@@ -1893,11 +1923,12 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
             AnimUpdateCallback animUpdate = [=](float progress)
             {
                 // progress will start at 0.0 and end at 1.0
-                RgbColor updatedColor;
                 float new_progress = progress * 2.0; 
                 if (new_progress >= 1) new_progress = (2.0 - new_progress); 
-                updatedColor = RgbColor::LinearBlend(originalColor, color, new_progress);
+                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, color, new_progress);
                 strip->SetPixelColor(pixel, updatedColor);
+
+                if (sq_pixel == 0 && progress == 1.0) effectPosition--; 
 
             };
 
@@ -1908,101 +1939,32 @@ void  cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           yield();
 
         }
+#ifdef SQUAREDEBUG
 
+        runningcyclecount = ESP.getCycleCount() - espcyclecount; 
 
-        Serial.println(")");
-
-        //Serial.print("GRID " + String (square_size * square_size) + "... ");
-
-       //int pixel = return_shape_square(x_rand, y_rand, j, square_size, total_x ); 
-
-        //if (pixel1 < pixelCount) strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel1 , dim(colour));          
-
-
+        Serial.printf(", EndCyc=%6u, Heap=%u (", runningcyclecount, ESP.getFreeHeap());
+#endif       
 
         lasteffectupdate = millis(); 
+#ifdef LOOPDEBUG
+        temp_bug_track = true; 
+#endif
+        temp_bug_track2 = true; 
+
+         temp_unfinished--;
 
           }
-    
         }
-
-
     break;
     case POST_EFFECT:
+#ifdef LOOPDEBUG
+    temp_bug_track = false; 
+#endif
     Post_effect(); 
     break;
   }
 
-
-
-
-
-
-/*
-  if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
-
-
-  uint8_t x,y, total_y;
-  uint8_t total_x = var7; 
-  uint8_t square_size = var10;
-  uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
-
-
-  if (square_size == 0) square_size = 3;  
-  if (numberofpoints == 0) numberofpoints = 5;
-  if (total_x == 0) total_x = 13; 
-
-  total_y = return_total_y(total_x); 
-
-
-
-    if ( (millis() > lasteffectupdate ) && (!strip->IsAnimating()) ) {
-
-      for(int i = 0; i < pixelCount; i++) // SET everything to black!  
-      {
-        strip->LinearFadePixelColor(CurrentAnimationSpeed, i, 0);
-      }
-
-
-      for (int i = 0; i < numberofpoints; i++) {
-
-      RgbColor colour = Wheel(random(255)); // RgbColor(random(255),random(255),random(255));
-
-      //if (square_size == 10) colour.Darken(random(0,50)); // OLD METHOD
-      if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
-      if (mode == 1) square_size = random(2,7);
-
-
-      uint8_t x_rand = random(0, total_x - square_size ) ; 
-      uint8_t y_rand = random(0, total_y - square_size ) ;
-
-
-      for (int j =0; j < (square_size * square_size) ; j++) {
-
-
-        //Serial.print("GRID " + String (square_size * square_size) + "... ");
-
-        int pixel1 = return_shape_square(x_rand, y_rand, j, square_size, total_x ); 
-
-        if (pixel1 < pixelCount) strip->LinearFadePixelColor(CurrentAnimationSpeed, pixel1 , dim(colour));
-      
-     }
-
-
-    }
-
-    //Serial.println("------------------");
-
-    lasteffectupdate = millis() + CurrentAnimationSpeed + (WS2812interval*10) ;  // add time so that next sequence starts AFTER animations have finished...
-    strip->StartAnimating(); // start animations
-
-    }
-
-
-//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-if (Current_Effect_State == POST_EFFECT) Post_effect();  
-
-*/
 } 
 // end of Squares2
 
@@ -2355,6 +2317,7 @@ void cache UDPfunc () {
 
 int packetSize; 
 
+/*
   switch(Current_Effect_State) {
 
     case PRE_EFFECT:
@@ -2390,7 +2353,9 @@ int packetSize;
       Udp.stop(); 
       Post_effect(); 
       break; 
-}
+
+      
+} */
 }
 
 int cache getPixelPower () {
@@ -2503,12 +2468,12 @@ int cache return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
 
 
 uint8_t cache return_total_y(uint8_t pitch) {
- uint8_t total_y = pixelCount / pitch; 
+ uint8_t y = pixelCount / pitch; 
  float remainder = pixelCount % pitch;
- if (remainder > 0) total_y++;
-  return total_y;
+ if (remainder > 0) { y++; } 
+  return y;
+};
 
-}
 
 //  Returns a pixel number... starting in bottom left...
 int cache return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {

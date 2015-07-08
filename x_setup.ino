@@ -26,14 +26,14 @@ void setup( void ) {
 
     //currentspeed = 2;
 /*
-  for (int i = 0; i < numberofbaudrates; i++) {
-    if(currentspeed == i) serialspeed = baudrates[i];
+  for (int i = 0; i //< numberofbaudrates; i++) {
+    if(currentspeed  i) serialspeed = baudrates[i];
   }
 */
   //serialspeed = 115200;
 
   Serial.begin(serialspeed); // 921600 460800 115200
-  //Serial.begin(115200); // 921600 460800 115200
+  //Serial.begin(2000000); // 921600 460800 115200
 
   //Serial.setDebugOutput(true);
   //Serial.setDebugOutput(false);
@@ -186,7 +186,11 @@ if(WiFi.waitForConnectResult() == WL_CONNECTED){
     MDNS.begin(deviceid);
     MDNS.addService("arduino", "tcp", aport);
     MDNS.addService("http", "tcp", 80);
-    listener.begin(aport);
+    //listener.begin(aport);
+
+    OTA.begin(aport);
+    TelnetServer.begin();
+    TelnetServer.setNoDelay(true);
 
   }
 

@@ -135,6 +135,9 @@ uint8_t temp,tempb;
 
   timer.setTimeout(10000, OnceOnlyTask);
 
+ //     HoldingOpState = SQUARES2; 
+ //   Current_Effect_State = POST_EFFECT;
+
 }
 
 // PixelCount_address + 0 = 248 =  Number of Pixels (double)
@@ -155,7 +158,7 @@ uint8_t temp,tempb;
 
 void OnceOnlyTask () {
 
-  //Serial.println("Once only task hit"); 
+  Serial.println("Once only task hit"); 
   String message = "effect:"; 
 
   for (uint8_t i = 0; i < numberofmodes; i++)  {
@@ -163,12 +166,17 @@ void OnceOnlyTask () {
     if (i < (numberofmodes - 1)) { message += ","; }; 
    }
 
-   send_mqtt_msg("effectlist",message); 
+    send_mqtt_msg("effectlist", message); 
+
+    delay(10);
+    send_current_settings(); 
+
+    //WS2812_mode_string("on"); 
+
+  //  HoldingOpState = SQUARES2; 
+  // Current_Effect_State = POST_EFFECT;
 
 
-   delay(10);
-
-  send_current_settings(); 
 
   
 }

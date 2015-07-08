@@ -9,7 +9,7 @@ WiFiClient wifiClient;
 
 PubSubClient mqttclient ; 
 
-WiFiUDP listener;
+
 
 
 // multicast DNS responder
@@ -29,4 +29,10 @@ SimpleTimer timer;
 
 
 
-WiFiUDP Udp;
+//WiFiUDP Udp;
+
+
+//WiFiUDP listener;
+WiFiServer TelnetServer(aport);
+WiFiClient Telnet;
+WiFiUDP OTA;

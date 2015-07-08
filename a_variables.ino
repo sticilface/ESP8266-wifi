@@ -2,6 +2,9 @@
 #define cache  ICACHE_FLASH_ATTR
 //#define WIFIOVERRIDE
 
+#define SQUAREDEBUG
+#define LOOPDEBUG
+
 // Wifi parameters
 const int BUFSIZE = 32; //was 16 
 const String version = "WS2812-OTA";
@@ -160,7 +163,7 @@ static const char *MODE_STRING[] = {
 #define numberofmodes 28 /////// DONT FORGET THIS....
 
 
-unsigned long lasteffectupdate = 0; 
+uint32_t lasteffectupdate = 0; 
 uint16_t WS2812interval = 2000; 
 
 uint8_t current_loaded_preset = 0; 
@@ -208,7 +211,74 @@ static const char *VAR_STRING[] = {
 "Size of effect    "};// var 10
 
 
+#ifdef LOOPDEBUG
+bool temp_bug_track = false ; 
+#endif
 
+uint32_t temp_unfinished = 0;
+uint32_t temp_lastunfinished = 0; 
 
+//////////////////////////// --  WEB PAGES -----
+/*
+ static const char* _ssdp_schema_template = 
+  "HTTP/1.1 200 OK\r\n"
+  "Content-Type: text/xml\r\n"
+  "Connection: close\r\n"
+  "Access-Control-Allow-Origin: *\r\n"
+  "\r\n"
+  "<?xml version=\"1.0\"?>"
+  "<root xmlns=\"urn:schemas-upnp-org:device-1-0\">"
+    "<specVersion>"
+      "<major>1</major>"
+      "<minor>0</minor>"
+    "</specVersion>"
+    "<URLBase>http://%u.%u.%u.%u:%u/</URLBase>" // WiFi.localIP(), _port
+    "<device>"
+      "<deviceType>urn:schemas-upnp-org:device:Basic:1</deviceType>"
+      "<friendlyName>%s</friendlyName>"
+      "<presentationURL>%s</presentationURL>"
+      "<serialNumber>%s</serialNumber>"
+      "<modelName>%s</modelName>"
+      "<modelNumber>%s</modelNumber>"
+      "<modelURL>%s</modelURL>"
+      "<manufacturer>%s</manufacturer>"
+      "<manufacturerURL>%s</manufacturerURL>"
+      "<UDN>uuid:%s</UDN>"
+    "</device>"
+  "</root>\r\n"
+  "\r\n"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353"
+"balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353balls12345535353";
+
+*/
 
 

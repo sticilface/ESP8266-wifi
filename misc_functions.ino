@@ -354,7 +354,7 @@ void OTA_UPDATE() {
 
 
 
-
+/*  OLD
   
   int cb = listener.parsePacket();
   
@@ -396,6 +396,73 @@ void OTA_UPDATE() {
     //ESP.reset(); 
     } 
   }
+*/
+
+
+  if (OTA.parsePacket()) {
+    IPAddress remote = OTA.remoteIP();
+    int cmd  = OTA.parseInt();
+    int port = OTA.parseInt();
+    int size   = OTA.parseInt();
+
+    Serial.print("Update Start: ip:");
+    Serial.print(remote);
+    Serial.printf(", port:%d, size:%d\n", port, size);
+    uint32_t startTime = millis();
+  
+    if(!Update.begin(size)){
+      Serial.println("Update Begin Error");
+      return;
+    }
+  
+    WiFiClient client;
+    if (client.connect(remote, port)) {
+    
+      Serial.setDebugOutput(true);
+      while(!Update.isFinished()) Update.write(client);
+      Serial.setDebugOutput(false);
+    
+      if(Update.end()){
+        client.println("OK");
+        Serial.printf("Update Success: %u\nRebooting...\n", millis() - startTime);
+        ESP.restart();
+      } else {
+        Update.printError(client);
+        Update.printError(Serial);
+      }
+    } else {
+      Serial.printf("Connect Failed: %u\n", millis() - startTime);
+    }
+  }
+
+  
+  //IDE Monitor (connected to Serial)
+  if (TelnetServer.hasClient()){
+    if (!Telnet || !Telnet.connected()){
+      if(Telnet) Telnet.stop();
+      Telnet = TelnetServer.available();
+    } else {
+      WiFiClient toKill = TelnetServer.available();
+      toKill.stop();
+    }
+  }
+
+  if (Telnet && Telnet.connected() && Telnet.available()){
+    while(Telnet.available())
+      Serial.write(Telnet.read());
+  }
+
+  if(Serial.available()){
+    size_t len = Serial.available();
+    uint8_t * sbuf = (uint8_t *)malloc(len);
+    Serial.readBytes(sbuf, len);
+    if (Telnet && Telnet.connected()){
+      Telnet.write((uint8_t *)sbuf, len);
+      yield();
+    }
+    free(sbuf);
+  }
+
 
 
 }
