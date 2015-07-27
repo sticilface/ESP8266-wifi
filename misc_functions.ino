@@ -400,6 +400,9 @@ void OTA_UPDATE() {
 
 
   if (OTA.parsePacket()) {
+
+    WS2812_mode_string("off"); // switch off the lights!  
+
     IPAddress remote = OTA.remoteIP();
     int cmd  = OTA.parseInt();
     int port = OTA.parseInt();
@@ -435,7 +438,7 @@ void OTA_UPDATE() {
     }
   }
 
-  
+  /*
   //IDE Monitor (connected to Serial)
   if (TelnetServer.hasClient()){
     if (!Telnet || !Telnet.connected()){
@@ -463,7 +466,7 @@ void OTA_UPDATE() {
     free(sbuf);
   }
 
-
+*/
 
 }
 

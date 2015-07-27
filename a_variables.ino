@@ -2,8 +2,11 @@
 #define cache  ICACHE_FLASH_ATTR
 //#define WIFIOVERRIDE
 
-#define SQUAREDEBUG
-#define LOOPDEBUG
+//#define SQUAREDEBUG
+//#define LOOPDEBUG
+
+
+
 
 // Wifi parameters
 const int BUFSIZE = 32; //was 16 

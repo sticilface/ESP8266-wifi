@@ -228,13 +228,13 @@ void cache WS2812_toggle_string(String Value) {
 
 
         if (opState == OFF)  {
-          Serial.println("OFF, so turned ON"); 
+          //Serial.println("OFF, so turned ON"); 
           HoldingOpState = LastOpState;
           Current_Effect_State = POST_EFFECT;
 
 
         } else {
-          Serial.print("ON..advancing: "); 
+          //Serial.print("ON..advancing: "); 
 
           current_loaded_preset++;  // advance to next saved.... 
           Serial.print(current_loaded_preset);
@@ -1767,14 +1767,18 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   total_y = return_total_y(total_x); 
 
-      bool coordinates_OK = false;
-      uint8_t x_rand,y_rand;
+             bool coordinates_OK = false;
+             uint8_t x_rand,y_rand;
       //Serial.println("Generating coordinates.");
-       uint8_t count = 0; 
+             uint8_t count = 0; 
       static uint32_t runningcount = 0; 
       static int numbercalled = 0;
       static bool temp_bug_track2 = false; 
       static uint32_t espcyclecount = 0 ; 
+      static uint32_t temp_timer = 0; 
+      static bool pause_and_reboot_effect = false; 
+             uint32_t now = millis(); 
+uint32_t fuckoff;
       espcyclecount = ESP.getCycleCount(); 
 #ifdef LOOPDEBUG
   if (temp_bug_track) Serial.print("13,");
@@ -1816,15 +1820,50 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     break;
     case RUN_EFFECT:  
+
 #ifdef LOOPDEBUG
-        if (temp_bug_track) Serial.print("14,");
+
+      if (temp_bug_track) Serial.print("14,");
 #endif
 
+
+      if (runningcount == 200 && !pause_and_reboot_effect) { 
+        pause_and_reboot_effect = true; 
+        temp_timer = millis(); 
+        Serial.printf("\nHeap before =%u", ESP.getFreeHeap()); 
+      } ; 
+      
+      //if (temp_bug_track) Serial.print("14.1,");
+      
+      //now = millis();
+
+      // fuckoff = now - temp_timer; 
+
+     // if (pause_and_reboot_effect) Serial.printf("\nDiff=%u",fuckoff); 
+
+
+      if (  pause_and_reboot_effect &&  millis() - temp_timer  > 20000) {
+
+        //Serial.print("\nRESUMING\n");
+        Serial.printf(", Heap after =%u \n", ESP.getFreeHeap()); 
+
+        pause_and_reboot_effect = false; 
+        runningcount = 0; 
+        Current_Effect_State = PRE_EFFECT;
+       // temp_bug_track = false; 
+       // temp_bug_track2 = false; 
+        break; 
+      } else if (pause_and_reboot_effect) { 
+       //     temp_bug_track = false; 
+       //     temp_bug_track2 = false; 
+        break; 
+      } 
 
       if ( lasteffectupdate == 0 ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
         Current_Effect_State = PRE_EFFECT;
         break; 
       }
+
 #ifdef LOOPDEBUG
         if (temp_bug_track) Serial.print("15,");
         if (temp_bug_track) temp_bug_track = false;
@@ -1893,10 +1932,10 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       //if (temp_lastunfinished < temp_unfinished) Serial.printf("*%u*",temp_unfinished);         
       //temp_lastunfinished = temp_unfinished; // add one to bug count....
-
+runningcount++; 
 #ifdef SQUAREDEBUG
 
-      Serial.printf( "%4u: act=%2u, unfin=%2u, Coord=%3u,%3u => ", runningcount++, effectPosition, temp_unfinished, x_rand, y_rand); 
+      Serial.printf( "%4u: act=%2u, unfin=%2u, Coord=%3u,%3u => ", runningcount, effectPosition, temp_unfinished, x_rand, y_rand); 
 
       temp_unfinished++;
 
