@@ -117,7 +117,7 @@ void  initiatemqqt ()
 
                 MainTopicString.toCharArray(topic,50);
 
-            mqttclient.subscribe(MQTT::Subscribe(mqttclient.next_packet_id())
+            mqttclient.subscribe(MQTT::Subscribe()
                    .add_topic(topic, 2) // this is the main topic deviceid/#
                    .add_topic(mqttesptopic, 2)
                    .add_topic(deviceid,2)  // this is the esp topic... 
@@ -181,7 +181,7 @@ void  send_mqtt_msg (String topic, String message, int type )
      //   }
 
   mqttclient.publish(MQTT::Publish((char*)topic.c_str(), (char*)message.c_str())
-                .set_qos(2, mqttclient.next_packet_id())
+                .set_qos(2)
                );
 
 

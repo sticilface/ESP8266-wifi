@@ -7,7 +7,7 @@ WiFiClient wifiClient;
 // int* testserver[4] = {192,168,1,24};
 
 
-PubSubClient mqttclient ; 
+PubSubClient mqttclient(wifiClient) ; 
 
 
 
