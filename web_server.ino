@@ -393,6 +393,7 @@ void handle_misc ()
   String content0 = F("\
   <!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name='viewport' content='initial-scale=1'><title> % ESP Melvide</title></head><body><h1> Misc Functions</h1>\
   <p> Version = % \
+  <p> Compile Time = % \
   <br> Heap Size = % \
   <br> Flash Size = % \
   <br> Flash Size by ID = % \
@@ -410,6 +411,7 @@ void handle_misc ()
 
   buf = insertvariable (content0, String(deviceid)); 
   buf = insertvariable ( buf, version);  
+  buf = insertvariable (buf, String(compile_date));
   buf = insertvariable ( buf, String(ESP.getFreeHeap()));
   buf = insertvariable ( buf, String(ESP.getFlashChipSize()));
   buf = insertvariable ( buf, String(ESP.getFlashChipSizeByChipId()));

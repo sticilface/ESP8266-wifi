@@ -11,6 +11,7 @@
 // Wifi parameters
 const int BUFSIZE = 32; //was 16 
 const String version = "WS2812-OTA";
+const char compile_date[] = __DATE__ " " __TIME__;
 
 
 char ssid[BUFSIZE] ;// = "fyffest";

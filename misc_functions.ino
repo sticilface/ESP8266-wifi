@@ -352,56 +352,10 @@ long cache EEPROMReadlong(long address)
 
 void OTA_UPDATE() {
 
-
-
-/*  OLD
-  
-  int cb = listener.parsePacket();
-  
-  if (cb) {
-    isOTAupdate = true; 
-    strip->ClearTo(RgbColor(0,255,0));
-    strip->Show(); 
-
-    IPAddress remote = listener.remoteIP();
-    int cmd  = listener.parseInt();
-    int port = listener.parseInt();
-    int sz   = listener.parseInt();
-    Serial.println("Got packet");
-    Serial.printf("%d %d %d\r\n", cmd, port, sz);
-    WiFiClient cl;
-    if (!cl.connect(remote, port)) {
-      Serial.println("failed to connect");
-      return;
-    }
-   
-   // mqttclient.disconnect();
-
-    listener.stop();
-
-    delay(1000);
-
-    if (!ESP.updateSketch(cl, sz)) {
-      Serial.println("Update failed");
-    strip->ClearTo(RgbColor(255,0,0));
-    strip->Show(); 
-    delay(1000);
-
-    listener.begin(8266);
-
-    strip->ClearTo(RgbColor(0,255,0));
-    strip->Show(); 
-    delay(1000);
-
-    //ESP.reset(); 
-    } 
-  }
-*/
-
-
   if (OTA.parsePacket()) {
 
-    WS2812_mode_string("off"); // switch off the lights!  
+        WS2812_mode_string("off"); // switch off the lights!  
+
 
     IPAddress remote = OTA.remoteIP();
     int cmd  = OTA.parseInt();
@@ -412,19 +366,24 @@ void OTA_UPDATE() {
     Serial.print(remote);
     Serial.printf(", port:%d, size:%d\n", port, size);
     uint32_t startTime = millis();
-  
+
+    WiFiUDP::stopAll();
+
     if(!Update.begin(size)){
       Serial.println("Update Begin Error");
       return;
     }
-  
+
     WiFiClient client;
     if (client.connect(remote, port)) {
-    
-      Serial.setDebugOutput(true);
-      while(!Update.isFinished()) Update.write(client);
+
+      uint32_t written;
+      while(!Update.isFinished()){
+        written = Update.write(client);
+        if(written > 0) client.print(written, DEC);
+      }
       Serial.setDebugOutput(false);
-    
+
       if(Update.end()){
         client.println("OK");
         Serial.printf("Update Success: %u\nRebooting...\n", millis() - startTime);
@@ -437,36 +396,6 @@ void OTA_UPDATE() {
       Serial.printf("Connect Failed: %u\n", millis() - startTime);
     }
   }
-
-  /*
-  //IDE Monitor (connected to Serial)
-  if (TelnetServer.hasClient()){
-    if (!Telnet || !Telnet.connected()){
-      if(Telnet) Telnet.stop();
-      Telnet = TelnetServer.available();
-    } else {
-      WiFiClient toKill = TelnetServer.available();
-      toKill.stop();
-    }
-  }
-
-  if (Telnet && Telnet.connected() && Telnet.available()){
-    while(Telnet.available())
-      Serial.write(Telnet.read());
-  }
-
-  if(Serial.available()){
-    size_t len = Serial.available();
-    uint8_t * sbuf = (uint8_t *)malloc(len);
-    Serial.readBytes(sbuf, len);
-    if (Telnet && Telnet.connected()){
-      Telnet.write((uint8_t *)sbuf, len);
-      yield();
-    }
-    free(sbuf);
-  }
-
-*/
 
 }
 
