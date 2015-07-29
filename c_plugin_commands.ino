@@ -131,7 +131,8 @@ uint8_t temp,tempb;
 
       initiateWS2812();
 
- 
+   WS2812_mode_string("on"); 
+
 
   timer.setTimeout(10000, OnceOnlyTask);
 
@@ -157,7 +158,7 @@ uint8_t temp,tempb;
 
 
 void OnceOnlyTask () {
-
+  
   Serial.println("Once only task hit"); 
   String message = "effect:"; 
 
@@ -169,9 +170,9 @@ void OnceOnlyTask () {
     send_mqtt_msg("effectlist", message); 
 
     delay(10);
+
     send_current_settings(); 
 
-    WS2812_mode_string("on"); 
 
   //  HoldingOpState = SQUARES2; 
   // Current_Effect_State = POST_EFFECT;

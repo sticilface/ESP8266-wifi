@@ -28,7 +28,7 @@ void callback(const MQTT::Publish& pub) {
                 if(mqttclient.publish(temp, LocalIP)) Serial.println("Sent"); 
       } 
       
-if (pub.payload_string() == "reboot") ESP.reset(); //system_restart(); // abort();
+if (pub.payload_string() == "reboot" || pub.payload_string() == "restart") ESP.reset(); //system_restart(); // abort();
 
 
 //  NEW METHODS.... 
@@ -158,6 +158,8 @@ void  initiatemqqt ()
 void  send_mqtt_msg (String topic, String message, int type )
 
 {
+  //static long lastmessage; 
+
   if (!MQTT_enabled) return;
 
   //char mqtttopicbuf[1000];
@@ -179,15 +181,15 @@ void  send_mqtt_msg (String topic, String message, int type )
      //   } else {
      //       Serial.println("MQTT msg Failed: " + topic + ", Message: " + message);
      //   }
-animator->Pause();
+//animator->Pause();
 
   mqttclient.publish(MQTT::Publish((char*)topic.c_str(), (char*)message.c_str())
                 .set_qos(2)
                );        
     }
-    delay(5);
+    //delay(2);
 
-animator->Resume();
+//animator->Resume();
     
 }
 
