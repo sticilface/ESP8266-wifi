@@ -171,7 +171,7 @@ void OnceOnlyTask () {
     delay(10);
     send_current_settings(); 
 
-    //WS2812_mode_string("on"); 
+    WS2812_mode_string("on"); 
 
   //  HoldingOpState = SQUARES2; 
   // Current_Effect_State = POST_EFFECT;

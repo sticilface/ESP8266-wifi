@@ -31,6 +31,7 @@
 
 void  cache handle_WS2812 () { // handles the web commands...
 
+animator->Pause();
 
 String buf, paused_string, selected; 
 
@@ -158,7 +159,7 @@ for (int k=0; k < numberofmodes; k++ ) {
   
   String content1 = F("\
   <form name=sliders action='/ws2812' method='POST'>\
-  <br>Animation: <input type='range' name='anispeed'min='0' max='10000' value='%' onchange='this.form.submit();' >\
+  <br>Animation: <input type='range' name='anispeed'min='1' max='10000' value='%' onchange='this.form.submit();' >\
   <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
   <br>Timer: <input type='range' name='timer'min='0' max='2000' value='%' onchange='this.form.submit();'>\
   </form>\
@@ -201,7 +202,7 @@ for (int k=0; k < numberofmodes; k++ ) {
 if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 //power = getPixelPower();
 
-
+animator->Resume();
 }
 
 void cache AnimationSpeed_command_string (String Value) {
@@ -848,10 +849,12 @@ void cache StripOFF() {
 void cache initiateWS2812 ()
 
 {
-  opState = OFF;
+  //opState = OFF;
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
   strip->Begin();
-  StripOFF();
+
+
+  //StripOFF();
   SetRandomSeed();
   animator->Resume(); 
 
@@ -1779,7 +1782,7 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       static bool pause_and_reboot_effect = false; 
              uint32_t now = millis(); 
 uint32_t fuckoff;
-      espcyclecount = ESP.getCycleCount(); 
+
 #ifdef LOOPDEBUG
   if (temp_bug_track) Serial.print("13,");
 #endif
@@ -1826,8 +1829,8 @@ uint32_t fuckoff;
       if (temp_bug_track) Serial.print("14,");
 #endif
 
-
-      if (runningcount == 200 && !pause_and_reboot_effect) { 
+/*
+      if (runningcount == 20000 && !pause_and_reboot_effect) { 
         pause_and_reboot_effect = true; 
         temp_timer = millis(); 
         Serial.printf("\nHeap before =%u", ESP.getFreeHeap()); 
@@ -1859,6 +1862,8 @@ uint32_t fuckoff;
         break; 
       } 
 
+
+*/
       if ( lasteffectupdate == 0 ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
         Current_Effect_State = PRE_EFFECT;
         break; 
@@ -1868,10 +1873,9 @@ uint32_t fuckoff;
         if (temp_bug_track) Serial.print("15,");
         if (temp_bug_track) temp_bug_track = false;
 #endif
-
      // if  ( (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) && effectPosition < numberofpoints ) {      
-
-      if  ( effectPosition < numberofpoints ) {      
+      if  ( effectPosition < numberofpoints ) {
+      espcyclecount = ESP.getCycleCount(); 
 
 #ifdef LOOPDEBUG
       if (temp_bug_track2) Serial.print("16,");
@@ -1889,9 +1893,20 @@ uint32_t fuckoff;
 #endif
 
       
-        // Serial.print(".");
-       x_rand = random(0, total_x - square_size + 1) ; 
-       y_rand = random(0, total_y - square_size + 1) ;
+     // checks to see if it is a linear string or not... if less then it is equal to 0...
+     if (total_x > square_size) { 
+       x_rand = random(0, total_x - square_size) ; 
+     } else {
+      x_rand = 0; 
+     };
+
+     if (total_y > square_size) {
+  
+       y_rand = random(0, total_y - square_size) ;
+       } else {
+        y_rand = 0; 
+       }
+
        
        coordinates_OK = false; // reset the coordinates OK...
 
@@ -1923,31 +1938,21 @@ uint32_t fuckoff;
     temp_bug_track2 = false; 
 #endif
 
-
     if (coordinates_OK) {
+    runningcount++; 
 
-      uint32_t runningcyclecount = ESP.getCycleCount() - espcyclecount; 
-      
-
-
-      //if (temp_lastunfinished < temp_unfinished) Serial.printf("*%u*",temp_unfinished);         
-      //temp_lastunfinished = temp_unfinished; // add one to bug count....
-runningcount++; 
 #ifdef SQUAREDEBUG
 
-      Serial.printf( "%4u: act=%2u, unfin=%2u, Coord=%3u,%3u => ", runningcount, effectPosition, temp_unfinished, x_rand, y_rand); 
+      Serial.printf( "%4u: act=%2u, Coord=%3u,%3u => ", runningcount, effectPosition, x_rand, y_rand); 
 
       temp_unfinished++;
-
 #endif
        time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
             if (sq_pixel == 0 ) effectPosition++; 
-
-            pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
-            
+            pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x );    
             if (pixel >= 0) {
 #ifdef SQUAREDEBUG
      
@@ -1972,17 +1977,14 @@ runningcount++;
             };
 
             animator->StartAnimation(pixel, time , animUpdate); // might change this to be a random variant...
-
           } // end of if for is pixel valid... >=0
-
           yield();
-
         }
 #ifdef SQUAREDEBUG
 
-        runningcyclecount = ESP.getCycleCount() - espcyclecount; 
+        uint32_t runningcyclecount = ESP.getCycleCount() - espcyclecount; 
 
-        Serial.printf(", EndCyc=%6u, Heap=%u (", runningcyclecount, ESP.getFreeHeap());
+        Serial.printf(", EndCyc=%8u, Heap=%5u (", runningcyclecount, ESP.getFreeHeap());
 #endif       
 
         lasteffectupdate = millis(); 
@@ -1990,11 +1992,9 @@ runningcount++;
         temp_bug_track = true; 
 #endif
         temp_bug_track2 = true; 
-
-         temp_unfinished--;
-
+        temp_unfinished--;
           }
-        }
+        } else {break; };
     break;
     case POST_EFFECT:
 #ifdef LOOPDEBUG
@@ -2178,7 +2178,7 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 
     case MODE_INITIALISE:
       Serial.println("Begining of Adalight");
-      Adalight_Flash(); 
+      if(millis() > 60000) Adalight_Flash(); 
       state = MODE_HEADER;
       Pre_effect();  
       //Current_Effect_State = RUN_EFFECT;
@@ -2278,7 +2278,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   
  bool commitchanges = false; 
 
-    Serial.println("Change Neopixels called"); 
+    //Serial.println("Change Neopixels called"); 
 
 
         uint8_t pixelPINstored = EEPROM.read(PixelPIN_address);    
@@ -2298,6 +2298,13 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
 
     if (count != pixelCountstored) {
+
+        if (strip != NULL) // this set the strip to off before changing pixel amount...
+          {
+          strip->ClearTo(RgbColor(0,0,0));
+          }
+
+
     Serial.println("Pixel count changed..."); 
 
       int a = pixelCount/256;

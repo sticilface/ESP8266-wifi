@@ -393,7 +393,7 @@ void handle_misc ()
   String content0 = F("\
   <!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name='viewport' content='initial-scale=1'><title> % ESP Melvide</title></head><body><h1> Misc Functions</h1>\
   <p> Version = % \
-  <p> Compile Time = % \
+  <br> Compile Time = % \
   <br> Heap Size = % \
   <br> Flash Size = % \
   <br> Flash Size by ID = % \

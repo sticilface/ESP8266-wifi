@@ -35,7 +35,7 @@ void setup( void ) {
   Serial.begin(serialspeed); // 921600 460800 115200
   //Serial.begin(2000000); // 921600 460800 115200
 
-  //Serial.setDebugOutput(true);
+  Serial.setDebugOutput(true);
   //Serial.setDebugOutput(false);
   delay(10);
   Serial.println();
@@ -49,6 +49,8 @@ void setup( void ) {
 
   Serial.println("Welcome to Andrew Melvin's ESP Software");
   Serial.println("OTA enabled");
+  Serial.print("Compile Time: ");
+  Serial.println(compile_date);
   Serial.print("Sketch size: ");
   Serial.println(ESP.getSketchSize());
   Serial.print("Free size: ");

@@ -179,17 +179,15 @@ void  send_mqtt_msg (String topic, String message, int type )
      //   } else {
      //       Serial.println("MQTT msg Failed: " + topic + ", Message: " + message);
      //   }
+animator->Pause();
 
   mqttclient.publish(MQTT::Publish((char*)topic.c_str(), (char*)message.c_str())
                 .set_qos(2)
-               );
-
-
-
-
-        
+               );        
     }
     delay(5);
+
+animator->Resume();
     
 }
 
