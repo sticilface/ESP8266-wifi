@@ -37,8 +37,12 @@ void setup( void ) {
 
   Serial.setDebugOutput(true);
   //Serial.setDebugOutput(false);
-  delay(10);
+  
+  //delay(10); //ivan said not needed anymore
+  
   Serial.println();
+
+
   //Serial.print("Wiped = ");
   //Serial.print(wiped);
   //Serial.print("   FIRST BIT = ");
@@ -82,7 +86,7 @@ void setup( void ) {
 
   scannetworks();
 
-  delay(2000);
+  //delay(2000);
 
   //wifimode = 1;
  //Serial.print("Current wifi mode is : ");

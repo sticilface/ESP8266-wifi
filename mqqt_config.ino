@@ -4,7 +4,7 @@
 
 //void callback(char* mqtttopic, byte* payload, unsigned int length) {
 
-void callback(const MQTT::Publish& pub) {
+void MQTTcallback (const MQTT::Publish& pub) {
 
   //Serial.print("MQTT Message Recieved: ");
   //Serial.print(pub.topic());
@@ -84,7 +84,7 @@ void  initiatemqqt ()
     {
 
         mqttclient.set_server(MQTTserver);
-        mqttclient.set_callback(callback);
+        mqttclient.set_callback(MQTTcallback);
 
         // generate topic...
 

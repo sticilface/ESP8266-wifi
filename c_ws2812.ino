@@ -2773,7 +2773,7 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
 
     case PRE_EFFECT:
     Pre_effect(); 
-    Serial.println("Top Bottom PRE...");
+    //Serial.println("Top Bottom PRE...");
     lasteffectupdate = 0; 
     break;
     case RUN_EFFECT: // 
@@ -2821,7 +2821,7 @@ if (Setting == TWOCOLOUR) {
     break;
     case POST_EFFECT:
     Post_effect(); 
-        Serial.println("Top Bottom POST...");
+        //Serial.println("Top Bottom POST...");
     break;
   }
 
