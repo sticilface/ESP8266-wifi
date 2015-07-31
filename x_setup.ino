@@ -162,7 +162,8 @@ if (wifimode == 1) {
 
   server.on("/misc", handle_misc);
 
-
+  //httpupdate();  // definately NOT working yet
+  
 
 
   // Start the server 
@@ -191,9 +192,7 @@ if (wifimode == 1) {
 if(WiFi.waitForConnectResult() == WL_CONNECTED){
     MDNS.begin(deviceid);
     MDNS.addService("arduino", "tcp", aport);
-    MDNS.addService("http", "tcp", 80);
-    //listener.begin(aport);
-
+    //MDNS.addService("http", "tcp", 80);
     OTA.begin(aport);
     TelnetServer.begin();
     TelnetServer.setNoDelay(true);
@@ -204,7 +203,7 @@ if(WiFi.waitForConnectResult() == WL_CONNECTED){
 
 #ifdef HSL_FLOAT
 
-Serial.println("HSL Floats ENABLED"); 
+Serial.println("HSL Floats ENABLED - to get rid of this..."); 
 
 #endif
 

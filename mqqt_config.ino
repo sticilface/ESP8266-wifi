@@ -42,6 +42,7 @@ if ((pub.topic()).indexOf("/color/set") > 0) WS2812_Set_New_Colour(pub.payload_s
 if ((pub.topic()).indexOf("/loadpreset/set") > 0) WS2812_preset_string(pub.payload_string());
 if ((pub.topic()).indexOf("/savepreset/set") > 0) { Save_LED_Settings(pub.payload_string().toInt()); };
 if ((pub.topic()).indexOf("/toggle/set") > 0) WS2812_toggle_string(pub.payload_string());
+if ((pub.topic()).indexOf("/autorestart/set") > 0) WS2812_autorestart_string(pub.payload_string());
 
 
 /*
@@ -80,7 +81,7 @@ if ((pub.payload_string()).indexOf('=') > 0)
 
 
 
-void  initiatemqqt ()
+void cache initiatemqqt ()
     {
 
         mqttclient.set_server(MQTTserver);
@@ -134,7 +135,6 @@ void  initiatemqqt ()
             } else
                 {
                 Serial.println("Failed");
-
                 }
   
         } else {
@@ -145,7 +145,7 @@ void  initiatemqqt ()
         }
      } 
   
-  void mqttbufcharclear ()
+  void cache mqttbufcharclear ()
   {
     for (int i = 0; i <200; i++)
     { 
@@ -193,7 +193,7 @@ void  send_mqtt_msg (String topic, String message, int type )
     
 }
 
-void ICACHE_FLASH_ATTR send_mqtt_msg (String topic, String message ) // overloading functon to allow default msg send...
+void  send_mqtt_msg (String topic, String message ) // overloading functon to allow default msg send...
 {
   
   send_mqtt_msg ( topic, message, 1); 
@@ -201,7 +201,7 @@ void ICACHE_FLASH_ATTR send_mqtt_msg (String topic, String message ) // overload
 }
 
 
-void  handle_mqtt() {
+void cache handle_mqtt() {
 
   String buf; 
   

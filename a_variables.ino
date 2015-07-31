@@ -25,8 +25,15 @@ char deviceid[BUFSIZE];// = "";
 String clientName = " ";
 String LocalIP = " ";
 
-const uint16_t aport = 8266;
+const uint16_t aport = 8266; // tvlights
+//const uint16_t aport = 8267; // lamp3
+//const uint16_t aport = 8268; // bathroom
+//const uint16_t aport = 8269; // NODE-MCU
 
+const unsigned int UDPlightPort = 8888; // 6454; //8888;      // local port to listen on
+
+
+const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
 
 
 char bufchar[BUFSIZE];
@@ -66,7 +73,9 @@ const uint16_t mqttAddress = 128;  // ends at 144 so begin new data at 208?  giv
 const uint16_t serialspeed_address = 132;  // next slot 240
 const uint16_t PixelPIN_address = 133;
 const uint16_t PixelCount_address = 134;  //( to 135)   double so requires 2..
-const uint16_t Pixel_LastOpState = 136;  //( to 135)   double so requires 2..
+const uint16_t Pixel_LastOpState = 136;  // NOT NEEDED ANY MORE BUT check... might use to signify loaded settings, so it goes back to that..
+const uint16_t AutoRestartEffectAddress = 137; 
+
 
 
 const uint16_t START_address_settings = 160;
@@ -188,7 +197,6 @@ RgbColor NewColour = RgbColor(0,0,0);
 String WebRGBcolour = "000000"; // This is for the WEBPAGE... takes the value when colour is changed...
 
 
-unsigned int localPort = 8888; // 6454; //8888;      // local port to listen on
 
 enum effectState { PRE_EFFECT = 0, RUN_EFFECT, POST_EFFECT};
 effectState Current_Effect_State = PRE_EFFECT; 

@@ -212,20 +212,49 @@ void cache AnimationSpeed_command_string (String Value) {
   CurrentAnimationSpeed = newvalue; 
   lasteffectupdate = 0; 
   current_loaded_preset_changed = true; 
-
   LED_Settings_Changed = true; 
 }
 
 
+void cache WS2812_autorestart_string(String Value) {
+  
+  Value.toLowerCase();
+
+  bool CurrentRestartValue = EEPROM.read(AutoRestartEffectAddress);
+  bool changed = false; 
+
+if ( (Value == "on" || Value == "yes") && CurrentRestartValue == false ) 
+    { 
+      EEPROM.write(AutoRestartEffectAddress, 1) ;
+      EEPROM.commit();
+      Serial.print("Auto Restart Set to True");
+      send_mqtt_msg("AutoRestart", "Auto restart set to true"); 
+      changed = true; 
+    }
+
+if ( (Value == "off" || Value == "no") && CurrentRestartValue == true ) 
+    { 
+      EEPROM.write(AutoRestartEffectAddress, 0) ;
+      EEPROM.commit();
+      Serial.print("Auto Restart Set to False");
+      send_mqtt_msg("AutoRestart", "Auto restart set to false"); 
+      changed = true; 
+    }
+ 
+if (changed == false) send_mqtt_msg("AutoRestart", "Auto restart unchanged"); 
+
+
+}
+
 
 void cache WS2812_toggle_string(String Value) {
-  Serial.print("toggle hit, original mode = "); 
-  Serial.println(current_loaded_preset); 
+  //Serial.print("toggle hit, original mode = "); 
+  //Serial.println(current_loaded_preset); 
 
       if (Value == "toggle") {
 
       lasteffectupdate = 0;
-  current_loaded_preset_changed = true; 
+       current_loaded_preset_changed = true; 
 
 
         if (opState == OFF)  {
@@ -238,8 +267,8 @@ void cache WS2812_toggle_string(String Value) {
           //Serial.print("ON..advancing: "); 
 
           current_loaded_preset++;  // advance to next saved.... 
-          Serial.print(current_loaded_preset);
-          Serial.print(",");
+         // Serial.print(current_loaded_preset);
+         // Serial.print(",");
 
           if (current_loaded_preset > 10) current_loaded_preset = 1;
 
@@ -249,11 +278,11 @@ void cache WS2812_toggle_string(String Value) {
               if (saved != 0) break; 
               current_loaded_preset++;        
               if (current_loaded_preset > 10) current_loaded_preset = 1;
-              Serial.print(current_loaded_preset);
-              Serial.print(",");
+           //   Serial.print(current_loaded_preset);
+           //   Serial.print(",");
           }
-          Serial.print("  scan end.... mode asked for = ");
-          Serial.print(current_loaded_preset);
+          //Serial.print("  scan end.... mode asked for = ");
+          //Serial.print(current_loaded_preset);
           WS2812_preset_string(String(current_loaded_preset));
 
 
@@ -303,11 +332,9 @@ void cache send_current_settings () {
     send_mqtt_msg("mode", "on");
   }
 
-    delay(100);
+    //delay(100);
     send_mqtt_msg("timer", String(WS2812interval));
     send_mqtt_msg("brightness", String(CurrentBrightness));
-
-
 }
 
 
@@ -494,10 +521,10 @@ void  cache WS2812timer_command_string (String Value)
 {
 
 lasteffectupdate = 0;
-
 WS2812interval = Value.toInt();
-
 send_mqtt_msg("timer", Value); 
+LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+
 }
 
 
@@ -1781,7 +1808,7 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       static uint32_t temp_timer = 0; 
       static bool pause_and_reboot_effect = false; 
              uint32_t now = millis(); 
-uint32_t fuckoff;
+//uint32_t fuckoff;
 
 #ifdef LOOPDEBUG
   if (temp_bug_track) Serial.print("13,");
@@ -2362,15 +2389,15 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 void cache UDPfunc () {
 
 int packetSize; 
+//static int packetno = 0; 
 
-/*
   switch(Current_Effect_State) {
 
     case PRE_EFFECT:
 
-      Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
-      Adalight_Flash();
-      Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
+      //Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
+      if(millis() > 60000) Adalight_Flash(); 
+      Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, UDPlightPort); 
       Pre_effect(); 
 
     break; 
@@ -2380,12 +2407,11 @@ int packetSize;
       packetSize = Udp.parsePacket();
 
         if  (Udp.available())  {
+          //Serial.println(packetno++);
              for (int i = 0; i < packetSize; i = i + 3) {
-
-                if (i > pixelCount * 3) break; 
-                                                         // direct buffer is GRB
-                    pixelsPOINT[i + 1] = Udp.read();
-                    pixelsPOINT[i] =     Udp.read();
+                if (i > pixelCount * 3) break;         // Stops reading if LED count is reached. 
+                    pixelsPOINT[i + 1] = Udp.read();   // direct buffer is GRB, 
+                    pixelsPOINT[i]     = Udp.read();
                     pixelsPOINT[i + 2] = Udp.read();
               }
               Udp.flush();
@@ -2395,13 +2421,13 @@ int packetSize;
       break;
 
     case POST_EFFECT: 
-
+      //packetno = 0; 
       Udp.stop(); 
       Post_effect(); 
       break; 
 
       
-} */
+} 
 }
 
 int cache getPixelPower () {

@@ -354,18 +354,56 @@ void OTA_UPDATE() {
 
   if (OTA.parsePacket()) {
 
-        WS2812_mode_string("off"); // switch off the lights!  
-
-
     IPAddress remote = OTA.remoteIP();
-    int cmd  = OTA.parseInt();
-    int port = OTA.parseInt();
-    int size   = OTA.parseInt();
+
+   //int packetSize; 
+   char packetBuffer[100];
+   //char cmd[20], port[20], size[20]; 
+
+   OTA.read(packetBuffer, 100); 
+   Serial.print("packetBuffer = ");
+   Serial.print(packetBuffer);
+
+//int spaceindex = String(packetBuffer).indexOf(" ") ;
+
+//Serial.printf(" Space index = %u \n", spaceindex); 
+
+String packetString = String(packetBuffer); 
+
+
+int cmd = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+
+packetString = packetString.substring(packetString.indexOf(' ')+1, packetString.length() );
+
+int port = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+
+packetString = packetString.substring(packetString.indexOf(' ')+1, packetString.length() );
+
+int size = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+
+//Serial.printf("CMD = %s, PORT = %s, SIZE = %s \n", cmd, port, size); 
+
+
+Serial.print("CMD = ");
+Serial.println(cmd);
+Serial.print("PORT = ");
+Serial.println(port);
+Serial.print("SIZE = ");
+Serial.println(size);
+
+
+if ( port > 0 && size > 0) {
+
+
+  Serial.println("VALID PACKET PROCEED");
+
+    WS2812_mode_string("off"); // switch off the lights!  
 
     Serial.print("Update Start: ip:");
     Serial.print(remote);
     Serial.printf(", port:%d, size:%d\n", port, size);
     uint32_t startTime = millis();
+
 
     WiFiUDP::stopAll();
 
@@ -394,8 +432,15 @@ void OTA_UPDATE() {
       }
     } else {
       Serial.printf("Connect Failed: %u\n", millis() - startTime);
+
     }
-  }
+} else { 
+  Serial.print("INVALID PACKET... CRASH PREVENTED...."); 
+  OTA.flush();
+}
+    
+  
+}
 
 }
 

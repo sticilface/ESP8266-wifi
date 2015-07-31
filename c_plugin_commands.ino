@@ -131,7 +131,16 @@ uint8_t temp,tempb;
 
       initiateWS2812();
 
-   WS2812_mode_string("on"); 
+
+bool CurrentRestartValue = EEPROM.read(AutoRestartEffectAddress);
+
+if ( CurrentRestartValue == true ) 
+    { 
+       WS2812_mode_string("on");
+    }
+
+
+
 
 
   timer.setTimeout(10000, SendMQTTsettings);
