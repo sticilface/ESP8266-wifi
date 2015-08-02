@@ -428,7 +428,7 @@ void  cache WS2812_mode_string (String Value)
   if (Value == "off" | Value == "OFF") { 
       if (opState != OFF) { 
           Current_Effect_State = POST_EFFECT; //  Set this to TERMINATE current effect.... 
-          HoldingOpState = OFF; 
+          HoldingOpState = OFF;           
       } 
   }
 
@@ -990,9 +990,7 @@ switch (opState)
       break;
       
    }
-#ifdef LOOPDEBUG
-  if (temp_bug_track) Serial.print("1,");
-#endif
+
 
 
 if (millis() - update_strip_time > 30) {
@@ -1012,9 +1010,7 @@ if (millis() - update_strip_time > 30) {
    //  }
   } 
 
-#ifdef LOOPDEBUG
-  if (temp_bug_track) Serial.print("2,");
-#endif
+
 
 
 if (opState != HoldingOpState) {
@@ -1035,17 +1031,10 @@ if (opState != HoldingOpState) {
   }
 
 }
-#ifdef LOOPDEBUG
-  if (temp_bug_track) Serial.print("3,");
-#endif
-
-#ifdef LOOPDEBUG
-  if (temp_bug_track) Serial.print("4,");
-#endif
 
 if(LED_Settings_Changed) {
   Save_LED_Settings(0);
-  LED_Settings_Changed = false; 
+  LED_Settings_Changed = false;   
 }
 
 
@@ -1825,7 +1814,7 @@ void cache fade_to(RgbColor NewColour, uint16_t time, BlendMethod method ) {
    }
 }
 
-void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
+void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   uint8_t x,y, total_y;
   uint8_t total_x = var7; 
@@ -1838,10 +1827,6 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   RgbColor color;
 
-#ifdef LOOPDEBUG
-  if (temp_bug_track) Serial.print("12,");
-#endif
-
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 1;
   if (total_x == 0) total_x = 13; 
@@ -1851,46 +1836,26 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
              bool coordinates_OK = false;
              uint8_t x_rand,y_rand;
       //Serial.println("Generating coordinates.");
-             uint8_t count = 0; 
-      static uint32_t runningcount = 0; 
-      static int numbercalled = 0;
-      static bool temp_bug_track2 = false; 
-      static uint32_t espcyclecount = 0 ; 
-      static uint32_t temp_timer = 0; 
-      static bool pause_and_reboot_effect = false; 
-             uint32_t now = millis(); 
-//uint32_t fuckoff;
+   //          uint8_t count = 0; 
+   //   static uint32_t runningcount = 0; 
+   //   static int numbercalled = 0;
+   //   static bool temp_bug_track2 = false; 
+   //   static uint32_t espcyclecount = 0 ; 
+   //   static uint32_t temp_timer = 0; 
+   //   static bool pause_and_reboot_effect = false; 
+   //          uint32_t now = millis(); 
 
-#ifdef LOOPDEBUG
-  if (temp_bug_track) Serial.print("13,");
-#endif
 
   switch(Current_Effect_State) {
 
-    case PRE_EFFECT:
+        case PRE_EFFECT:
 
-
-    effectPosition = 0; 
-    
-    if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
-
-    // dimoffset = constrain( dimoffset ,0 , 255); 
-
-    //Serial.print("dimoffset = ");
-    //Serial.println(dimoffset); 
-
-
-  //  if (effect_option == 0) top_bottom_fade( dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255) ), dim(Wheel(random(0,255)), constrain((CurrentBrightness - 100),0,255)  ), total_x, CurrentAnimationSpeed); 
-    
+        effectPosition = 0;   
+     if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
      if (effect_option == 0) { 
-
           dimoffset = CurrentBrightness / 5;
-          //Serial.print("Dimm Offset = ");
-          //Serial.println(dimoffset);
-
           RgbColor Top =     dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset );
-          RgbColor Bottom =  dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset ) ;
-         
+          RgbColor Bottom =  dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset ) ;        
           top_bottom_fade(  Top , Bottom , total_x, CurrentAnimationSpeed); 
     }
 
@@ -1898,132 +1863,51 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     lasteffectupdate = millis(); 
     Debugln("Squares 2 Running");
-
-
     break;
     case RUN_EFFECT:  
 
-#ifdef LOOPDEBUG
-
-      if (temp_bug_track) Serial.print("14,");
-#endif
-
-/*
-      if (runningcount == 20000 && !pause_and_reboot_effect) { 
-        pause_and_reboot_effect = true; 
-        temp_timer = millis(); 
-        Serial.printf("\nHeap before =%u", ESP.getFreeHeap()); 
-      } ; 
-      
-      //if (temp_bug_track) Serial.print("14.1,");
-      
-      //now = millis();
-
-      // fuckoff = now - temp_timer; 
-
-     // if (pause_and_reboot_effect) Serial.printf("\nDiff=%u",fuckoff); 
-
-
-      if (  pause_and_reboot_effect &&  millis() - temp_timer  > 20000) {
-
-        //Serial.print("\nRESUMING\n");
-        Serial.printf(", Heap after =%u \n", ESP.getFreeHeap()); 
-
-        pause_and_reboot_effect = false; 
-        runningcount = 0; 
-        Current_Effect_State = PRE_EFFECT;
-       // temp_bug_track = false; 
-       // temp_bug_track2 = false; 
-        break; 
-      } else if (pause_and_reboot_effect) { 
-       //     temp_bug_track = false; 
-       //     temp_bug_track2 = false; 
-        break; 
-      } 
-
-
-*/
       if ( lasteffectupdate == 0 ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
         Current_Effect_State = PRE_EFFECT;
         break; 
       }
 
-#ifdef LOOPDEBUG
-        if (temp_bug_track) Serial.print("15,");
-        if (temp_bug_track) temp_bug_track = false;
-#endif
+
      // if  ( (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) && effectPosition < numberofpoints ) {      
       if  ( effectPosition < numberofpoints ) {
-      espcyclecount = ESP.getCycleCount(); 
-
-#ifdef LOOPDEBUG
-      if (temp_bug_track2) Serial.print("16,");
-#endif
-
-
+//      espcyclecount = ESP.getCycleCount(); 
        color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
        
         //Serial.print("Colour chosen: ");
         //Serial.println(numbercalled++); 
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
       if (mode == 1) square_size = random(2,7);
-#ifdef LOOPDEBUG
-     if (temp_bug_track2) Serial.print("17,");
-#endif
-
       
-     // checks to see if it is a linear string or not... if less then it is equal to 0...
+     // checks to see if it is a linear string or not... if less then it is equal to 0 ...
      if (total_x > square_size) { 
-       x_rand = random(0, total_x - square_size) ; 
+           x_rand = random(0, total_x - square_size) ; 
      } else {
-      x_rand = 0; 
+           x_rand = 0; 
      };
 
      if (total_y > square_size) {
-  
-       y_rand = random(0, total_y - square_size) ;
+           y_rand = random(0, total_y - square_size) ;
        } else {
-        y_rand = 0; 
-       }
+           y_rand = 0; 
+     }
 
-       
-       coordinates_OK = false; // reset the coordinates OK...
-
-  if (effect_option == 2) {
-
-#ifdef LOOPDEBUG
-  if (temp_bug_track2) Serial.print("18,");
-#endif
-
+      coordinates_OK = false; // reset the coordinates OK...
 
       for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
 
           pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
-          //Serial.print("."); 
-
           if (pixel >= 0) { 
                 if (animator->IsAnimating(pixel)) { coordinates_OK = false ;  break; }; 
-                //uint8_t temp = random(0,1);
-                //if (temp > 0 ) { coordinates_OK = false ;  break; }; 
           }
 
             if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true ; }; 
-
           }
-  } else { coordinates_OK = true; } 
-
-#ifdef LOOPDEBUG
-  if (temp_bug_track2) Serial.println("19)");
-    temp_bug_track2 = false; 
-#endif
 
     if (coordinates_OK) {
-    runningcount++; 
-
-
-//      Debugf( "%4u: act=%2u, Coord=%3u,%3u => ", runningcount, effectPosition, x_rand, y_rand); 
-
-      temp_unfinished++;
 
       time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
@@ -2046,7 +1930,6 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
                 if (new_progress >= 1) new_progress = (2.0 - new_progress); 
                 RgbColor updatedColor = RgbColor::LinearBlend(originalColor, color, new_progress);
                 strip->SetPixelColor(pixel, updatedColor);
-
                 if (sq_pixel == 0 && progress == 1.0) effectPosition--; 
 
             };
@@ -2056,23 +1939,14 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           yield();
         }
 
-        uint32_t runningcyclecount = ESP.getCycleCount() - espcyclecount; 
+        lasteffectupdate = millis(); // NOT really needed.....
 
-//        Debugf(", EndCyc=%8u, Heap=%5u \n", runningcyclecount, ESP.getFreeHeap());
-
-        lasteffectupdate = millis(); 
-#ifdef LOOPDEBUG
-        temp_bug_track = true; 
-#endif
-        temp_bug_track2 = true; 
-        temp_unfinished--;
           }
         } else {break; };
     break;
+
     case POST_EFFECT:
-#ifdef LOOPDEBUG
-    temp_bug_track = false; 
-#endif
+
     Post_effect(); 
     Debugln("Square2 Ended");
     break;

@@ -5,7 +5,7 @@
 
 // Wifi parameters
 const int BUFSIZE = 32; //was 16 
-const String version = "WS2812-OTA";
+const String version =  "WS2812-OTA";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 
@@ -73,7 +73,7 @@ const uint16_t PixelPIN_address = 133;
 const uint16_t PixelCount_address = 134;  //( to 135)   double so requires 2..
 const uint16_t Pixel_LastOpState = 136;  // NOT NEEDED ANY MORE BUT check... might use to signify loaded settings, so it goes back to that..
 const uint16_t AutoRestartEffectAddress = 137; 
-
+const uint16_t ON_OFF_State_Address = 138; 
 
 
 const uint16_t START_address_settings = 160;

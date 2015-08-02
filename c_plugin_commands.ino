@@ -123,20 +123,26 @@ uint8_t temp,tempb;
 
 // SAVED SETTINGS..... 
 
-  Load_LED_Defaults(0); 
-
+Load_LED_Defaults(0); 
 
 // initiate PLUGIN
 
 
-      initiateWS2812();
-
+initiateWS2812();
 
 bool CurrentRestartValue = EEPROM.read(AutoRestartEffectAddress);
+bool Last = EEPROM.read(ON_OFF_State_Address); 
+
 
 if ( CurrentRestartValue == true ) 
     { 
-       WS2812_mode_string("on");
+       if (Last == true) { 
+          WS2812_mode_string("on");
+          Serial.println("MODE returned to ON");
+        } else {
+          WS2812_mode_string("off");
+          Serial.println("MODE returned to OFF");
+        }
     }
 
 

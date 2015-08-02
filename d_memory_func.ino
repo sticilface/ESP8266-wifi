@@ -118,7 +118,7 @@ uint16_t address = START_address_settings + (32 * location);
 
       WebRGBcolour = Rstring + Gstring + Bstring; 
 
-      if (R < 16) WebRGBcolour = "0" + WebRGBcolour; 
+      if (R < 16 && R > 0) WebRGBcolour = "0" + WebRGBcolour; 
 
 
       WebRGBcolour.toUpperCase();
@@ -161,8 +161,15 @@ if (location != 0) {
 
 
 void Save_LED_Settings (uint8_t location) {
+    
+    if(opState == OFF) { EEPROM.write(ON_OFF_State_Address,0); }
+    if(opState != OFF) { EEPROM.write(ON_OFF_State_Address,1); } 
+
 
   if ( location < 0 || location > 10) return; 
+
+
+
 
   uint16_t address = START_address_settings + (32 * location); 
 
