@@ -36,6 +36,7 @@ void setup( void ) {
   //Serial.begin(2000000); // 921600 460800 115200
 
   Serial.setDebugOutput(true);
+  Debugln("YOU HAVE #DEBUG_YES defined");
   //Serial.setDebugOutput(false);
   
   //delay(10); //ivan said not needed anymore
@@ -68,21 +69,19 @@ void setup( void ) {
   
   if (EEPROM.read(APbyte) == flagvalue) 
     {
-  WiFi.mode(WIFI_AP_STA);
-  wifimode = 2;
-  Serial.println("EMERGENCY ACCESS MODE ENABLED");
-  AP_STA_timer = millis();
-  //Serial.print("Start time: ");
-  //Serial.print(AP_STA_timer /1000);
-  //Serial.print(" Wifi Mode: ");
-  //Serial.println(wifimode);
+      WiFi.mode(WIFI_AP_STA);
+      wifimode = 2;
+      Serial.println("EMERGENCY ACCESS MODE ENABLED");
+      AP_STA_timer = millis();
 
-    } else
-    {
+    } else {
+
     WiFi.mode(WIFI_STA);
     Serial.println("NORMAL ACCESS MODE ENABLED");
     wifimode = 1;
     } 
+
+    
 
   scannetworks();
 
@@ -191,7 +190,7 @@ if (wifimode == 1) {
   
 if(WiFi.waitForConnectResult() == WL_CONNECTED){
     MDNS.begin(deviceid);
-    MDNS.addService("arduino", "tcp", aport);
+    //MDNS.addService("arduino", "tcp", aport);
     //MDNS.addService("http", "tcp", 80);
     OTA.begin(aport);
     TelnetServer.begin();

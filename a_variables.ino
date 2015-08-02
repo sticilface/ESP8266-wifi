@@ -1,8 +1,4 @@
-#define cache  ICACHE_FLASH_ATTR
-//#define WIFIOVERRIDE
 
-//#define SQUAREDEBUG
-//#define LOOPDEBUG
 
 
 

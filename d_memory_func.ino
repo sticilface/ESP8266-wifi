@@ -71,7 +71,9 @@ uint16_t address = START_address_settings + (32 * location);
         if(isnan(temp)) temp = 0;
         if(isnan(tempb)) temp = 0;
         WS2812interval = temp*256+tempb;
-        if (isnan(WS2812interval) || WS2812interval == 0) WS2812interval = 2000;
+        if (isnan(WS2812interval)) WS2812interval = 2000;
+
+        //Serial.printf("Retrieved EEPROM timer = %u \n", WS2812interval); 
 
 // 3 --------------------------------  Animation speed -------------------------
 
@@ -96,6 +98,8 @@ uint16_t address = START_address_settings + (32 * location);
       uint8_t G = EEPROM.read(address++);
       uint8_t B = EEPROM.read(address++);
 
+      Debugf("Colour debugging (EEPROM) R=%u, G=%u, B=%u \n", R, G, B);
+
 
       String Rstring, Gstring, Bstring;
 
@@ -105,12 +109,22 @@ uint16_t address = START_address_settings + (32 * location);
       if (G == 0) { Gstring = "00" ;} else  Gstring = String(G,HEX);       
       if (B == 0) { Bstring = "00" ;} else  Bstring = String(B,HEX); 
 
+      Debug("Colour debugging (String) R=") ; 
+      Debug(Rstring); 
+      Debug(" G=");
+      Debug(Gstring);
+      Debug(" B=");
+      Debugln(Bstring); 
 
       WebRGBcolour = Rstring + Gstring + Bstring; 
 
+      if (R < 10) WebRGBcolour = "0" + WebRGBcolour; 
+
       WebRGBcolour.toUpperCase();
 
- 
+      Debug("Final result = "); 
+      Debugln(WebRGBcolour); 
+
      
 // 6--------------------------------  Vars 1 - 10   -------------------------
 

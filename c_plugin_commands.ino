@@ -197,10 +197,6 @@ void SendMQTTsettings () {
 
 void loop_Plugin () {
 
-
-
-
-
       ws2812();
 
 

@@ -1583,7 +1583,44 @@ switch(Current_Effect_State) {
 
  void cache rainbow() {
 
-  if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
+switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+    Pre_effect();
+
+    break;
+    case RUN_EFFECT:  
+
+      if(var3 == 0) var3 = 256; // MAKE sure that there is a +ve end point for the colour wheel... else wsPoint = var3;
+
+      if (millis() > (lasteffectupdate) ){
+
+     static int wsPoint =0;
+
+     for(int i=0; i<pixelCount; i++) {
+        //RgbColor tempcolour = Wheel(i+wsPoint);
+        strip->SetPixelColor(i, dim(Wheel(i+wsPoint)));
+     }
+    
+      if (wsPoint==var3) wsPoint=var2; 
+       wsPoint++;
+       lasteffectupdate = millis() + WS2812interval ;
+    }
+ 
+    break;
+    case POST_EFFECT:
+    Post_effect(); 
+    break;
+
+}
+
+
+}
+
+/*
+
+if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 // Var 1 = timer interval
 // Var 2 = wsPoint Min
 // Var 3 = wsPoint Max
@@ -1623,6 +1660,9 @@ void cache clearpixels() {
 
 }
 */
+
+
+
 void cache spiral() {
 /*
 static uint16_t currentcolor = 0;
@@ -1846,6 +1886,7 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     Pre_effect();  // PRE effect SETS LAST EFFECT UPDATE TO ZERO... ? is this requires?
 
     lasteffectupdate = millis(); 
+    Debugln("Squares 2 Running");
 
 
     break;
@@ -1968,25 +2009,21 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     if (coordinates_OK) {
     runningcount++; 
 
-#ifdef SQUAREDEBUG
 
-      Serial.printf( "%4u: act=%2u, Coord=%3u,%3u => ", runningcount, effectPosition, x_rand, y_rand); 
+//      Debugf( "%4u: act=%2u, Coord=%3u,%3u => ", runningcount, effectPosition, x_rand, y_rand); 
 
       temp_unfinished++;
-#endif
-       time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
+
+      time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
     for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
             if (sq_pixel == 0 ) effectPosition++; 
             pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x );    
             if (pixel >= 0) {
-#ifdef SQUAREDEBUG
      
-            if (sq_pixel > 0) Serial.print(",");
-            Serial.printf("%3u", pixel); 
-#endif
-           // if (sq_pixel < (square_size * square_size) - 1 ) Serial.print(","); 
+//            if (sq_pixel > 0) Debug(",");
+//            Debugf("%3u", pixel); 
 
             RgbColor originalColor = strip->GetPixelColor(pixel);
           
@@ -2007,12 +2044,10 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           } // end of if for is pixel valid... >=0
           yield();
         }
-#ifdef SQUAREDEBUG
 
         uint32_t runningcyclecount = ESP.getCycleCount() - espcyclecount; 
 
-        Serial.printf(", EndCyc=%8u, Heap=%5u (", runningcyclecount, ESP.getFreeHeap());
-#endif       
+//        Debugf(", EndCyc=%8u, Heap=%5u \n", runningcyclecount, ESP.getFreeHeap());
 
         lasteffectupdate = millis(); 
 #ifdef LOOPDEBUG
@@ -2028,6 +2063,7 @@ void   Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     temp_bug_track = false; 
 #endif
     Post_effect(); 
+    Debugln("Square2 Ended");
     break;
   }
 
