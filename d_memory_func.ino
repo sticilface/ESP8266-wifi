@@ -118,7 +118,8 @@ uint16_t address = START_address_settings + (32 * location);
 
       WebRGBcolour = Rstring + Gstring + Bstring; 
 
-      if (R < 10) WebRGBcolour = "0" + WebRGBcolour; 
+      if (R < 16) WebRGBcolour = "0" + WebRGBcolour; 
+
 
       WebRGBcolour.toUpperCase();
 

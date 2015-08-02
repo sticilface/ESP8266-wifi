@@ -228,6 +228,20 @@ uint32_t temp_unfinished = 0;
 uint32_t temp_lastunfinished = 0; 
 
 //////////////////////////// --  WEB PAGES -----
+
+
+const char webpage_ws2812[] PROGMEM = "\
+<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
+%\
+<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
+<br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
+<form name=frmTest action='/ws2812' method='POST'>\
+Select Mode <select name='modedrop' onchange='this.form.submit();'>\
+";
+
+
+
+
 /*
  static const char* _ssdp_schema_template = 
   "HTTP/1.1 200 OK\r\n"

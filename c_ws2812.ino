@@ -995,12 +995,13 @@ switch (opState)
 #endif
 
 
-if (millis() - update_strip_time > 10) {
+if (millis() - update_strip_time > 30) {
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
    // static long timer_temp;
    // long time_temp = micros();
     delay(0);
     strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+   
    // time_temp =  micros() - time_temp ;
     update_strip_time = millis();
 
