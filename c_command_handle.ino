@@ -74,7 +74,8 @@ void cache deviceid_command (String value)
 void cache mqttserver_command (String value)
 {
 
-          IPAddress tempaddress;
+  IPAddress tempaddress;
+  
   for (int i = 0; i < 4; i++) {
    String token = value.substring(0,value.indexOf('.'));
    value = value.substring(value.indexOf('.') + 1 , value.length());
@@ -95,7 +96,7 @@ void cache mqttserver_command (String value)
 
     EEPROM.write (mqttAddressbyte,flagvalue);
     EEPROM.commit();
-
+    MQTT_enabled = true;
     mqttreload = true;
 
     }
