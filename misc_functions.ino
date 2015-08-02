@@ -399,6 +399,10 @@ if ( port > 0 && size > 0) {
 
     WS2812_mode_string("off"); // switch off the lights!  
 
+    //send_mqtt_msg("Status", "Device Updating");
+
+    //delay(2);
+
     Serial.print("Update Start: ip:");
     Serial.print(remote);
     Serial.printf(", port:%d, size:%d\n", port, size);

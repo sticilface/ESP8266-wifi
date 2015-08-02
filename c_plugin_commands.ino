@@ -114,7 +114,7 @@ uint8_t temp,tempb;
        // Serial.println(pixelCount); 
 
 
-      if (pixelCount > 300 || pixelCount == 0) pixelCount = 20;
+      if (pixelCount > 500 || pixelCount == 0) pixelCount = 20;
 
 
       } 

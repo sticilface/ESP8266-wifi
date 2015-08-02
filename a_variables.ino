@@ -28,14 +28,16 @@ const uint16_t aport = 8266; // tvlights
 
 const unsigned int UDPlightPort = 8888; // 6454; //8888;      // local port to listen on
 
-
-const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
-
+/*  NOT IN  USE... but should be... 
+*
+*   //const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+*
+*const char serverIndex[] PROGMEM = const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+*FPSTR(serverIndex) to use this...
+*/
 
 char bufchar[BUFSIZE];
-//String buf = " " ;
-//String httpbuf = " ";
-//String bytedump = " ";
+
 
 bool isOTAupdate = false; 
 char mqttcharbuf[200];
