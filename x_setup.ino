@@ -50,16 +50,16 @@ void setup( void ) {
   //Serial.write(EEPROM.read(0));
   //Serial.println();
 
-  if (wiped) Serial.println("FIRST BOOT EEPROM WIPED"); 
+  if (wiped) Debugln("FIRST BOOT EEPROM WIPED"); 
 
   Serial.println("Welcome to Andrew Melvin's ESP Software");
-  Serial.println("OTA enabled");
+  //Serial.println("OTA enabled");
   Serial.print("Compile Time: ");
   Serial.println(compile_date);
-  Serial.print("Sketch size: ");
-  Serial.println(ESP.getSketchSize());
-  Serial.print("Free size: ");
-  Serial.println(ESP.getFreeSketchSpace());
+  Debug("Sketch size: ");
+  Debugln(ESP.getSketchSize());
+  Debug("Free size: ");
+  Debugln(ESP.getFreeSketchSpace());
   
   
   
@@ -71,13 +71,13 @@ void setup( void ) {
     {
       WiFi.mode(WIFI_AP_STA);
       wifimode = 2;
-      Serial.println("EMERGENCY ACCESS MODE ENABLED");
+      Debugln("EMERGENCY ACCESS MODE ENABLED");
       AP_STA_timer = millis();
 
     } else {
 
     WiFi.mode(WIFI_STA);
-    Serial.println("NORMAL ACCESS MODE ENABLED");
+    Debugln("NORMAL ACCESS MODE ENABLED");
     wifimode = 1;
     } 
 

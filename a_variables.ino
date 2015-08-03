@@ -175,6 +175,7 @@ static const char *MODE_STRING[] = {
 
 uint32_t lasteffectupdate = 0; 
 uint16_t WS2812interval = 2000; 
+uint32_t power = 0; 
 
 uint8_t current_loaded_preset = 0; 
 bool current_loaded_preset_changed = false; 

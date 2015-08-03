@@ -36,7 +36,6 @@ animator->Pause();
 String buf, paused_string, selected; 
 
 
-static int power = 0; 
 
 bool updateLEDs = false;
 
@@ -892,12 +891,10 @@ void cache initiateWS2812 ()
 void cache ws2812 ()  // put switch cases here...
 {
 
-#ifdef LOOPDEBUG
-  if (temp_bug_track) Serial.print("11,");
-#endif
 
 static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
 static unsigned long HoldingState_Failover = 0; 
+static unsigned long timer_PixelPower = 0; 
   //Serial.print("ws2812 called case = " + String(opState));
   //wsPoint += 1;
 
@@ -995,21 +992,19 @@ switch (opState)
 
 if (millis() - update_strip_time > 30) {
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
-   // static long timer_temp;
-   // long time_temp = micros();
     delay(0);
     strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
-   
-   // time_temp =  micros() - time_temp ;
     update_strip_time = millis();
 
-   //  if (millis() - timer_temp > 10000) {
-   //    Serial.print("Time take to show (us): ");
-   //    Serial.println(time_temp);
-   //    timer_temp = millis();
-   //  }
+
   } 
 
+  
+  if (millis() - timer_PixelPower > 10000 && opState != OFF) {
+       power = getPixelPower();
+       Debugf("Power =%u \n",power); 
+       timer_PixelPower = millis();
+    }
 
 
 
@@ -2225,7 +2220,7 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   
  bool commitchanges = false; 
- Current_Effect_State = PRE_EFFECT; // THIS reboots the current effect...
+ Current_Effect_State = PRE_EFFECT; // THIS reboots the current effect, if one is running
 
         uint8_t pixelPINstored = EEPROM.read(PixelPIN_address);    
         uint8_t a = EEPROM.read(PixelCount_address);
@@ -2252,8 +2247,8 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     }
 
     if (commitchanges == true) {
-      EEPROM.commit();
-          Debugln("WS2812 Settings Updated."); 
+        EEPROM.commit();
+        Debugln("WS2812 Settings Updated."); 
         }
 
 
@@ -2326,6 +2321,7 @@ int packetSize;
 
 int cache getPixelPower () {
  int brightnesstally = 0;
+
  for (int i = 0;i < pixelCount; i++) {
   RgbColor colour = strip->GetPixelColor(i);
   int brightness = colour.CalculateBrightness();
@@ -2333,9 +2329,9 @@ int cache getPixelPower () {
   brightnesstally = brightnesstally + brightness;
 }
 
-int brightness = brightnesstally;
+ //brightnesstally = brightnesstally / pixelCount;
 
-return brightness;
+return brightnesstally;
 } 
 
 

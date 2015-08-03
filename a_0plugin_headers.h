@@ -16,7 +16,7 @@
  */
 
 
-//#define DEBUG_YES
+#define DEBUG_YES
 
 #ifdef DEBUG_YES
 #define Debug(x)    Serial.print(x)
