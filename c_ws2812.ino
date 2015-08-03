@@ -1,9 +1,9 @@
 // TODO.... 
-// 1.  fix MQTT instructions... currently does not work through opState... and extra effects don't work... must integrate MODEDROP....
-// 2.  consolidate text and order of effects
-// 3.  Auto enable MQTT if IP is entered on wifi config. 
-// 4.  put safety exit for HoldingState so it falls thorugh if NOT handled within timeframce..
-// 5.  nointurrup handles for UDP parce... maybe... 
+// 1.  Move pixelcount and Pin to config
+// 2.  Move save settings to Main Page
+// 3.  consolidate text and order of effects
+// 4.  MQTT - direct to pixel buffer (maybe have to re work the size of the buffer --->  look at update by mqtt...)
+// 5.  MQTT - send current saved state....
 // 6.  Maybe get changes in current dim level to Walk the pixel buffer... and NOT reset the animation effect state
 // 7. rework effects to use animations class in progress
 // 8.  
@@ -2225,66 +2225,35 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   
  bool commitchanges = false; 
-
-    //Serial.println("Change Neopixels called"); 
-
+ Current_Effect_State = PRE_EFFECT; // THIS reboots the current effect...
 
         uint8_t pixelPINstored = EEPROM.read(PixelPIN_address);    
-        //int pixelCountstored = EEPROM.read(PixelCount_address);
-
         uint8_t a = EEPROM.read(PixelCount_address);
         uint8_t b = EEPROM.read(PixelCount_address+1);
         if(isnan(a)) a = 0;
         if(isnan(b)) b = 0;
-        //Serial.print("Stored pixels = (");
-        //Serial.print(a);
-        //Serial.print(",");
-        //Serial.print(b);
-        //Serial.print(") = ");
         uint16_t pixelCountstored = a*256+b;
-        //Serial.println(pixelCountstored); 
-
 
     if (count != pixelCountstored) {
 
-        if (strip != NULL) // this set the strip to off before changing pixel amount...
-          {
-          strip->ClearTo(RgbColor(0,0,0));
-          }
-
-
-    Serial.println("Pixel count changed..."); 
-
-      int a = pixelCount/256;
-      int b = pixelCount % 256;        
-      
+        Debugln("Pixel count changed..."); 
+        int a = pixelCount/256;
+        int b = pixelCount % 256;        
         EEPROM.write(PixelCount_address,a);
         EEPROM.write(PixelCount_address+1,b);
-        
-        //Serial.print("New pixels = (");
-        //Serial.print(a);
-        //Serial.print(",");
-        //Serial.print(b);
-        //Serial.print(") = ");
-        //Serial.println(count); 
-
-
         commitchanges = true;
-
-    if (EEPROM.read(PixelCount_enablebyte) != flagvalue) EEPROM.write(PixelCount_enablebyte,flagvalue) ;
+        if (EEPROM.read(PixelCount_enablebyte) != flagvalue) EEPROM.write(PixelCount_enablebyte,flagvalue) ;
     }
 
     if (pin != pixelPINstored) {
         EEPROM.write(PixelPIN_address, (byte)pin);
-    if (EEPROM.read(PixelPIN_enablebyte) != flagvalue) EEPROM.write(PixelPIN_enablebyte,flagvalue) ;
-     
-     commitchanges = true;
-
+        if (EEPROM.read(PixelPIN_enablebyte) != flagvalue) EEPROM.write(PixelPIN_enablebyte,flagvalue) ; 
+        commitchanges = true;
     }
 
     if (commitchanges == true) {
       EEPROM.commit();
-          Serial.println("WS2812 Settings Updated."); 
+          Debugln("WS2812 Settings Updated."); 
         }
 
 
@@ -2294,15 +2263,19 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     delete animator;
   }
   if (strip != NULL)
-  {
-    delete strip;
+  {           
+  strip->ClearTo(RgbColor(0,0,0));    // this set the strip to off before changing pixel amount...    
+  strip->Show();  
+  delete strip;
   }
+
+
   strip = new NeoPixelBus(count, pin);
   animator = new NeoPixelAnimator(strip);
   pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
     
 
-  if (strip->PixelCount() < 10) var7 = 1;
+  if (strip->PixelCount() < 10) var7 = 1; // can't remember what this does...  sets x width i think... 
 
 
 }
