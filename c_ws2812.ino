@@ -61,7 +61,7 @@ bool updateLEDs = false;
     Serial.println("RGB picker command: " + server.arg("rgbpicker"));
   }
 
-   if (server.arg("presetsave").length() != 0) Save_LED_Settings(  server.arg("preset").toInt() );
+   if (server.arg("presetsave").length() != 0) Save_LED_Settings(  server.arg("presetsave").toInt() );
 
   //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
 
@@ -356,7 +356,7 @@ void cache WS2812_mode_number(String Value) {
 void  cache  WS2812_dim_string (String Value)
 {
       lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
-      current_loaded_preset_changed = true; 
+ //     current_loaded_preset_changed = true; 
 
       int a = Value.toInt();
       if (a > 255) a = 255;
@@ -1027,8 +1027,9 @@ if (opState != HoldingOpState) {
 }
 
 if(LED_Settings_Changed) {
-  Save_LED_Settings(0);                                                           // Save the new settings as default
-  if (current_loaded_preset_changed == true) send_mqtt_msg("Preset", "0");       // Update the MQTT preset selection to 0
+  Save_LED_Settings(0);         
+  current_loaded_preset_changed = true;                                                 // Save the new settings as default
+  send_mqtt_msg("Preset", "0");       // Update the MQTT preset selection to 0
   LED_Settings_Changed = false;                                                   // Reset settings changed. 
 }
 

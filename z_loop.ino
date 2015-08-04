@@ -8,25 +8,23 @@ if (!isOTAupdate) {
 
 
   mqttclient.loop();
-
-
-
   server.handleClient();
-
-
-
-
   timer.run();
-
-
-
   loop_Plugin();
+  
 //if (wifimode == 1) mdns.update();  
 
 if (EEPROM_commit_var == true) {
 
-EEPROM.commit();
-EEPROM_commit_var = false; 
+
+static unsigned long eepromcommit_timer = 0;
+if (eepromcommit_timer == 0 ) eepromcommit_timer = millis();
+
+		if (millis() - eepromcommit_timer > 100) {
+		EEPROM.commit();
+		eepromcommit_timer = 0;
+		EEPROM_commit_var = false;
+		} 
 
 }
 	
