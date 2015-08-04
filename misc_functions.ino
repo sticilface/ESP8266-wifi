@@ -32,7 +32,7 @@ bool cache firstboot() {
 if (EEPROM.read(0) != flagvalue) {
  EEPROM_wipe();
  EEPROM.write(0,flagvalue);
- EEPROM.commit();
+EEPROM_commit_var = true;
  return true; 
 } else { return false; }
 
@@ -171,7 +171,7 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
      if (EEPROM.read(APbyte) == flagvalue) 
      {
        EEPROM.write(APbyte,0);
-       EEPROM.commit();
+       EEPROM_commit_var = true;
        Serial.println("Removed");
      } else
      {
@@ -267,7 +267,7 @@ void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
                     EEPROM.write(writeaddressbyte, flagvalue);
                    } else Serial.println();
               
-               EEPROM.commit();
+               EEPROM_commit_var = true;
 }
 
 
@@ -390,6 +390,13 @@ Serial.print("PORT = ");
 Serial.println(port);
 Serial.print("SIZE = ");
 Serial.println(size);
+
+if (cmd == 99 && port == 0 && size == 0) ESP.restart(); 
+if (cmd == 100 && port == 0 && size == 0) { 
+  EEPROM_wipe(); 
+  delay(2);
+  ESP.restart();
+}
 
 
 if ( port > 0 && size > 0) {

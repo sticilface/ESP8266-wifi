@@ -214,16 +214,15 @@ void cache handle_mqtt() {
     if (server.arg("form_MQTT_enabled") == "YES") {
       MQTT_enabled = true;
       if (EEPROM.read(MQTTenabledbyte) != flagvalue) EEPROM.write(MQTTenabledbyte, flagvalue); // write mqtt enabled byte....
-      EEPROM.commit();
+      EEPROM_commit_var = true;
       Serial.println("MQQT ENABLED");
- 
       initiatemqqt();
     }
 
     if (server.arg("form_MQTT_enabled") == "NO") {
     MQTT_enabled = false;
     if (EEPROM.read(MQTTenabledbyte) != 0) EEPROM.write(MQTTenabledbyte, 0); // write mqtt enabled byte....
-    EEPROM.commit();
+    EEPROM_commit_var = true;
     mqttclient.disconnect();      
     Serial.println("MQQT DISABLED");
 

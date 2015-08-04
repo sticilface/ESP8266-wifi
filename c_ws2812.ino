@@ -6,7 +6,7 @@
 // 5.  MQTT - send current saved state.... and 0 when state has changed. 
 // 6.  Maybe get changes in current dim level to Walk the pixel buffer... and NOT reset the animation effect state
 // 7.  rework ALL effects to use animations class in progress
-// 8.  
+// 8.  BUG BUG --  saving causes animation speed to revert!
 // 9   
 
 // EEPROM ALLOCATIONS:
@@ -61,7 +61,7 @@ bool updateLEDs = false;
     Serial.println("RGB picker command: " + server.arg("rgbpicker"));
   }
 
-   if (server.arg("preset").length() != 0) Save_LED_Settings(  server.arg("preset").toInt() );
+   if (server.arg("presetsave").length() != 0) Save_LED_Settings(  server.arg("preset").toInt() );
 
   //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
 
@@ -163,12 +163,11 @@ for (int k=0; k < numberofmodes; k++ ) {
   <br>Animation: <input type='range' name='anispeed'min='1' max='10000' value='%' onchange='this.form.submit();' >\
   <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
   <br>Timer: <input type='range' name='timer'min='0' max='2000' value='%' onchange='this.form.submit();'>\
-  </form>\
-  <p>\
+  </form><br>\
     <form action='/ws2812' method='POST'>\
-    <p>Save Preset: <input type='text' id='preset' name='preset' value='%' >\
+    Current Preset: % \
+    <br>Save Preset: <input type='text' id='presetsave' name='presetsave' value='%' >\
     <br><input type='submit'  value='Save'/>\
-    <br> Current Preset: % \
     </form>\
     Power = %mA\
   ");
@@ -178,7 +177,6 @@ for (int k=0; k < numberofmodes; k++ ) {
   buf = insertvariable ( buf, String(WS2812interval)); 
  // buf = insertvariable ( buf, String(pixelCount)); 
  // buf = insertvariable ( buf, String(pixelPIN)); 
-  buf = insertvariable ( buf, String(current_loaded_preset) ); 
 
   String loaded_var; 
 
@@ -187,6 +185,7 @@ for (int k=0; k < numberofmodes; k++ ) {
 
 
   buf = insertvariable ( buf, loaded_var ); 
+  buf = insertvariable ( buf, String(current_loaded_preset) ); 
   buf = insertvariable ( buf, String(power) ); 
   buf += htmlendstring; 
  
@@ -205,7 +204,7 @@ animator->Resume();
 void cache AnimationSpeed_command_string (String Value) {
 
   uint16_t newvalue = Value.toInt();
-
+  Debugf("New Animation speed =%u \n",newvalue);
   CurrentAnimationSpeed = newvalue; 
   lasteffectupdate = 0; 
   current_loaded_preset_changed = true; 
@@ -223,7 +222,7 @@ void cache WS2812_autorestart_string(String Value) {
 if ( (Value == "on" || Value == "yes") && CurrentRestartValue == false ) 
     { 
       EEPROM.write(AutoRestartEffectAddress, 1) ;
-      EEPROM.commit();
+      EEPROM_commit_var = true; 
       Serial.print("Auto Restart Set to True");
       send_mqtt_msg("AutoRestart", "Auto restart set to true"); 
       changed = true; 
@@ -232,7 +231,7 @@ if ( (Value == "on" || Value == "yes") && CurrentRestartValue == false )
 if ( (Value == "off" || Value == "no") && CurrentRestartValue == true ) 
     { 
       EEPROM.write(AutoRestartEffectAddress, 0) ;
-      EEPROM.commit();
+      EEPROM_commit_var = true; 
       Serial.print("Auto Restart Set to False");
       send_mqtt_msg("AutoRestart", "Auto restart set to false"); 
       changed = true; 
@@ -315,6 +314,7 @@ void cache WS2812_preset_string(String Value) {
         HoldingOpState =  LastOpState;
         Current_Effect_State = POST_EFFECT; 
         send_mqtt_msg("Preset", Value); 
+
 
       
       //Serial.print("...Loaded"); 
@@ -2247,7 +2247,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     }
 
     if (commitchanges == true) {
-        EEPROM.commit();
+        EEPROM_commit_var = true;
         Debugln("WS2812 Settings Updated."); 
         }
 

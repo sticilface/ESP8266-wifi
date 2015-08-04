@@ -122,26 +122,29 @@ uint8_t temp,tempb;
       //Serial.print("/n Saved Colours are: ");
 
 // SAVED SETTINGS..... 
+Debugln("Loading last op state...");
 
-Load_LED_Defaults(0); 
-
+current_loaded_preset = EEPROM.read(LastOpState_Address);
+if(current_loaded_preset > 10) current_loaded_preset = 0;
+Load_LED_Defaults(current_loaded_preset); 
+Debugln("Loaded");
 // initiate PLUGIN
 
 
 initiateWS2812();
 
-bool CurrentRestartValue = EEPROM.read(AutoRestartEffectAddress);
+bool AutoRestartValue = EEPROM.read(AutoRestartEffectAddress);
 bool Last = EEPROM.read(ON_OFF_State_Address); 
 
 
-if ( CurrentRestartValue == true ) 
+if ( AutoRestartValue == true ) 
     { 
        if (Last == true) { 
           WS2812_mode_string("on");
-          Serial.println("MODE returned to ON");
+          Debugln("MODE returned to ON");
         } else {
           WS2812_mode_string("off");
-          Serial.println("MODE returned to OFF");
+          Debugln("MODE returned to OFF");
         }
     }
 

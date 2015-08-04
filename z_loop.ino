@@ -1,41 +1,34 @@
 void loop( void ) {
   // put your main code here, to run repeatedly:
 
-#ifdef LOOPDEBUG
-	if (temp_bug_track) Serial.print("6,");
-#endif
-	static uint32_t loop_time = 0, loop_count = 0, loop_timeout = 0, loop_cycle = 0 ; 
+
+//	static uint32_t loop_time = 0, loop_count = 0, loop_timeout = 0, loop_cycle = 0 ; 
 
 if (!isOTAupdate) {
 
-#ifdef LOOPDEBUG
-	if (temp_bug_track) Serial.print("7,");
-#endif
 
   mqttclient.loop();
 
-#ifdef LOOPDEBUG
-	if (temp_bug_track) Serial.print("8,");
-#endif
+
 
   server.handleClient();
 
-#ifdef LOOPDEBUG
-	 if (temp_bug_track) Serial.print("9,");
-#endif
+
 
 
   timer.run();
 
-#ifdef LOOPDEBUG
-  if (temp_bug_track) Serial.print("10,");
-#endif
+
 
   loop_Plugin();
 //if (wifimode == 1) mdns.update();  
-#ifdef LOOPDEBUG
-	if (temp_bug_track) Serial.print("5,");
-#endif
+
+if (EEPROM_commit_var == true) {
+
+EEPROM.commit();
+EEPROM_commit_var = false; 
+
+}
 	
 };
 

@@ -16,7 +16,7 @@ void setup( void ) {
   if (currentspeed == 0 || currentspeed > numberofbaudrates + 1)  {
     currentspeed = 2; 
     EEPROM.write(SERIALspeedbyte, currentspeed);
-    EEPROM.commit();
+    EEPROM_commit_var = true;
   }; 
 
 

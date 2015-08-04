@@ -71,7 +71,7 @@ const uint16_t mqttAddress = 128;  // ends at 144 so begin new data at 208?  giv
 const uint16_t serialspeed_address = 132;  // next slot 240
 const uint16_t PixelPIN_address = 133;
 const uint16_t PixelCount_address = 134;  //( to 135)   double so requires 2..
-const uint16_t Pixel_LastOpState = 136;  // NOT NEEDED ANY MORE BUT check... might use to signify loaded settings, so it goes back to that..
+const uint16_t LastOpState_Address = 136;  // NOT NEEDED ANY MORE BUT check... might use to signify loaded settings, so it goes back to that..
 const uint16_t AutoRestartEffectAddress = 137; 
 const uint16_t ON_OFF_State_Address = 138; 
 
@@ -179,6 +179,7 @@ uint32_t power = 0;
 
 uint8_t current_loaded_preset = 0; 
 bool current_loaded_preset_changed = false; 
+bool EEPROM_commit_var = false; 
 
 //uint8_t CurrentPreset = 0;
 

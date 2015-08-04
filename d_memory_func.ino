@@ -43,7 +43,7 @@ void LoadParams()
 void EEPROM_wipe() {
 
 for (int i = 0; i < 512; i++) EEPROM.write(i,0);
-EEPROM.commit();
+EEPROM_commit_var = true;
 Serial.print("EEPROM WIPED");
 delay(100);
 }
@@ -52,6 +52,9 @@ delay(100);
 void Load_LED_Defaults (uint8_t location) {
 uint8_t temp,tempb; 
 // START_address_settings
+
+if ( location < 0 || location > 10) location = 0; 
+
 
 uint16_t address = START_address_settings + (32 * location); 
 
@@ -84,7 +87,7 @@ uint16_t address = START_address_settings + (32 * location);
         if(isnan(tempb)) temp = 0;
       CurrentAnimationSpeed = temp*256+tempb;
         
-        if (isnan(CurrentAnimationSpeed) || CurrentAnimationSpeed == 0) CurrentAnimationSpeed = 2000;
+    //    if (isnan(CurrentAnimationSpeed) || CurrentAnimationSpeed == 0) CurrentAnimationSpeed = 2000;
 
 
 // 4--------------------------------  Brightness -------------------------
@@ -152,8 +155,13 @@ if (location != 0) {
   //  String msg  = String(location) + " Loaded";
   //  send_mqtt_msg("Status", msg); 
     send_current_settings();
-
+    // This line ensures that upon reboot if a preset was loaded, that is NOT 0, it gets reloaded
+    // if it is a loaded on that has been changed.  not needed.... 
+    EEPROM.write(LastOpState_Address, location);
+    EEPROM_commit_var = true; 
 }
+
+
 
 
 }
@@ -191,6 +199,12 @@ void Save_LED_Settings (uint8_t location) {
 
      EEPROM.write(address++, CurrentAnimationSpeed / 256 );
      EEPROM.write(address++, CurrentAnimationSpeed % 256 );
+     //EEPROM.commit();
+     //uint8_t testb = EEPROM.read(address-1); 
+     //Debugf("Animation speed saved =%u \n",CurrentAnimationSpeed);
+     //int reread = (testa * 256) + testb;
+     //Debugf("Animation speed read back =%u \n",reread);
+
 
 // 4--------------------------------  Brightness -------------------------
 
@@ -216,7 +230,9 @@ void Save_LED_Settings (uint8_t location) {
      EEPROM.write(address++, var9);
      EEPROM.write(address++, var10);
 
-     EEPROM.commit();
+     if (location == 0 )  EEPROM.write(LastOpState_Address, 0); // if were no longer on preset.. but defualt back to 0
+
+     EEPROM_commit_var = true;
      //Serial.print("Settings Saved for : ");
      //Serial.println(location);
 

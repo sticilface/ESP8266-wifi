@@ -95,7 +95,7 @@ void cache mqttserver_command (String value)
    }
 
     EEPROM.write (mqttAddressbyte,flagvalue);
-    EEPROM.commit();
+    EEPROM_commit_var = true;
     MQTT_enabled = true;
     mqttreload = true;
 
@@ -118,7 +118,7 @@ void cache debug_command (String value)    {
     Serial.println("DEBUG IS TIMER");
     DEBUG = 1;
     if(EEPROM.read(DEBUGenabledbyte) != 1) EEPROM.write(DEBUGenabledbyte, 1);
-    EEPROM.commit();
+    EEPROM_commit_var = true;
     //flipper.attach(5, flip);
     send_mqtt_msg ("Status", "Debug set to timer");
 
@@ -131,7 +131,7 @@ void cache debug_command (String value)    {
     DEBUG = 0;
     Serial.println("DEBUG IS DISBALED");
     if(EEPROM.read(DEBUGenabledbyte) != 0) EEPROM.write(DEBUGenabledbyte, 0);
-    EEPROM.commit();
+    EEPROM_commit_var = true;
     //flipper.detach();
     //  digitalWrite(13, LOW);  
     send_mqtt_msg ("Status", "Debug disabled");

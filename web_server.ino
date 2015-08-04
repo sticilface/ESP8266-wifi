@@ -457,7 +457,7 @@ void handle_misc ()
 
   if (updateEEPROMflag) { 
   EEPROM.write(SERIALspeedbyte, currentspeed);
-  EEPROM.commit();
+  EEPROM_commit_var = true;
   updateEEPROMflag = false;
           }; 
   //Serial.println("Page finished.");
