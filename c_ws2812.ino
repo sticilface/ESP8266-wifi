@@ -313,8 +313,9 @@ void cache WS2812_preset_string(String Value) {
         //Serial.print()
         HoldingOpState =  LastOpState;
         Current_Effect_State = POST_EFFECT; 
-        send_mqtt_msg("Preset", Value); 
 
+        //send_mqtt_msg("Preset", Value); 
+        send_current_settings(); 
 
       
       //Serial.print("...Loaded"); 
@@ -395,11 +396,6 @@ void cache WS2812_effect_string (String request) {
   } else { 
     send_mqtt_msg("mode", "on");
   }
-
-
-
-
-
 }
 
 void  cache WS2812_mode_string (String Value)
