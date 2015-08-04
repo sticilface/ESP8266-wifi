@@ -125,8 +125,11 @@ uint8_t temp,tempb;
 Debugln("Loading last op state...");
 
 current_loaded_preset = EEPROM.read(LastOpState_Address);
+
 if(current_loaded_preset > 10) current_loaded_preset = 0;
+
 Load_LED_Defaults(current_loaded_preset); 
+
 Debugln("Loaded");
 // initiate PLUGIN
 

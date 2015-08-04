@@ -148,7 +148,7 @@ if (wifimode == 1) {
   ///// ----- Set up MQTT ------ //////
   if (MQTT_enabled) initiatemqqt (); 
 
-
+Debugln("1");
 
   ///// ---- WEB SERVER ------/////
   
@@ -159,14 +159,13 @@ if (wifimode == 1) {
   server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);
   server.on("/mqtt", handle_mqtt);
-  server.on("/io", handle_io);
-  server.on("/test", handle_test);
+  //server.on("/io", handle_io);
+  //server.on("/test", handle_test);
 
   server.on("/misc", handle_misc);
 
   //httpupdate();  // definately NOT working yet
   
-
 
   // Start the server 
 
@@ -180,12 +179,10 @@ if (wifimode == 1) {
   server.begin();
 
   //Serial.println("HTTP server started");
-
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
 
   //  timer.setInterval(Uptimer_timeout, uptime);
-
   //Serial.println("Timers set up");
 
  //  OTA updater...
@@ -200,7 +197,6 @@ if(WiFi.waitForConnectResult() == WL_CONNECTED){
     TelnetServer.setNoDelay(true);
 
   }
-
 
 
 #ifdef HSL_FLOAT

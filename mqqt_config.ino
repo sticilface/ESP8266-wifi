@@ -94,9 +94,6 @@ void cache initiatemqqt ()
         topicString.toCharArray(topic,50);
         String MainTopicString = String(deviceid) + "/+/+";
 
-
-
-
       Serial.print("Initiating MQTT Connection: ");
 
       if (EEPROM.read(mqttAddressbyte) == flagvalue) 
@@ -115,7 +112,6 @@ void cache initiatemqqt ()
               ) ) {
 
                 Serial.println("Success");
-
                 MainTopicString.toCharArray(topic,50);
 
             mqttclient.subscribe(MQTT::Subscribe()
@@ -123,13 +119,14 @@ void cache initiatemqqt ()
                    .add_topic(mqttesptopic, 2)
                    .add_topic(deviceid,2)  // this is the esp topic... 
                    );
-
+                //delay(5);
                 send_mqtt_msg( String(deviceid), LocalIP,2); // the 2 signifies that it publishes under the esp/ topic and not device
                 //delay(5);
-                send_mqtt_msg( "IP", LocalIP);                
+                send_mqtt_msg( "IP", LocalIP);   
                 //delay(5);
                 send_mqtt_msg( "Version", version);                
                 //delay(5);
+
                 send_mqtt_msg( "Status", "Device Ready");
               
             } else
@@ -143,9 +140,9 @@ void cache initiatemqqt ()
         } else {
                 Serial.println("No MQTT Server is Defined");
         }
-     } 
+} 
   
-  void cache mqttbufcharclear ()
+void cache mqttbufcharclear ()
   {
     for (int i = 0; i <200; i++)
     { 
