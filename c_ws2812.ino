@@ -6,7 +6,7 @@
 // 5.  MQTT - send current saved state.... and 0 when state has changed. 
 // 6.  Maybe get changes in current dim level to Walk the pixel buffer... and NOT reset the animation effect state
 // 7.  rework ALL effects to use animations class in progress
-// 8.  BUG BUG --  saving causes animation speed to revert!
+// 8.  SORT OUT THE HSL FLOATS STUFF
 // 9   
 
 // EEPROM ALLOCATIONS:
@@ -162,7 +162,7 @@ for (int k=0; k < numberofmodes; k++ ) {
   <form name=sliders action='/ws2812' method='POST'>\
   <br>Animation: <input type='range' name='anispeed'min='1' max='10000' value='%' onchange='this.form.submit();' >\
   <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
-  <br>Timer: <input type='range' name='timer'min='0' max='2000' value='%' onchange='this.form.submit();'>\
+  <br>Timer: <input type='range' name='timer'min='1' max='2000' value='%' onchange='this.form.submit();'>\
   </form><br>\
     <form action='/ws2812' method='POST'>\
     Current Preset: % \
@@ -407,6 +407,7 @@ void  cache WS2812_mode_string (String Value)
 {
 
   lasteffectupdate = 0 ; // RESET EFFECT COUNTER
+  if(Value == "refresh" ) return; 
 
   //Random_func_timeout = 0; //RESET additionall timeout... 
   if (paused) paused = false; // this sets it back to play, if paused when a mode change occurs...

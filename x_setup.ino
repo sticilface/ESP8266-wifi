@@ -35,10 +35,13 @@ void setup( void ) {
   Serial.begin(serialspeed); // 921600 460800 115200
   //Serial.begin(2000000); // 921600 460800 115200
 
+#ifdef DEBUG_YES
   Serial.setDebugOutput(true);
   Debugln("YOU HAVE #DEBUG_YES defined");
-  //Serial.setDebugOutput(false);
-  
+#else
+  Serial.setDebugOutput(false);
+#endif
+ 
   //delay(10); //ivan said not needed anymore
   
   Serial.println();

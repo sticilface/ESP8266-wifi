@@ -74,7 +74,8 @@ uint16_t address = START_address_settings + (32 * location);
         if(isnan(temp)) temp = 0;
         if(isnan(tempb)) temp = 0;
         WS2812interval = temp*256+tempb;
-        if (isnan(WS2812interval)) WS2812interval = 2000;
+        if (WS2812interval == 0 ) WS2812interval = 1; // Keep it to a minimum of 1
+        //if (isnan(WS2812interval)) WS2812interval = 2000;
 
         //Serial.printf("Retrieved EEPROM timer = %u \n", WS2812interval); 
 
@@ -86,7 +87,7 @@ uint16_t address = START_address_settings + (32 * location);
         if(isnan(temp)) temp = 0;
         if(isnan(tempb)) temp = 0;
       CurrentAnimationSpeed = temp*256+tempb;
-        
+        if (CurrentAnimationSpeed ==0 ) CurrentAnimationSpeed = 1; // keep to a minimum of 1
     //    if (isnan(CurrentAnimationSpeed) || CurrentAnimationSpeed == 0) CurrentAnimationSpeed = 2000;
 
 
