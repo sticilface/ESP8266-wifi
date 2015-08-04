@@ -3,9 +3,9 @@
 // 2.  Move save settings to Main Page
 // 3.  consolidate text and order of effects
 // 4.  MQTT - direct to pixel buffer (maybe have to re work the size of the buffer --->  look at update by mqtt...)
-// 5.  MQTT - send current saved state....
+// 5.  MQTT - send current saved state.... and 0 when state has changed. 
 // 6.  Maybe get changes in current dim level to Walk the pixel buffer... and NOT reset the animation effect state
-// 7. rework effects to use animations class in progress
+// 7.  rework ALL effects to use animations class in progress
 // 8.  
 // 9   
 
@@ -61,17 +61,19 @@ bool updateLEDs = false;
     Serial.println("RGB picker command: " + server.arg("rgbpicker"));
   }
 
+   if (server.arg("preset").length() != 0) Save_LED_Settings(  server.arg("preset").toInt() );
+
   //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
 
-  if (server.arg("leds").length() != 0) {
-    pixelCount = server.arg("leds").toInt();
-    updateLEDs = true;
-  }
+//  if (server.arg("leds").length() != 0) {
+//    pixelCount = server.arg("leds").toInt();
+//    updateLEDs = true;
+//  }
 
-   if (server.arg("ledpin").length() != 0) {
-    pixelPIN = server.arg("ledpin").toInt();
-    updateLEDs = true;
-  }
+//   if (server.arg("ledpin").length() != 0) {
+//    pixelPIN = server.arg("ledpin").toInt();
+//    updateLEDs = true;
+//  }
 
   if ((server.arg("modedrop").length() != 0)) 
     {
@@ -92,7 +94,7 @@ String content3 = F("\
 <!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
 %\
 <br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
-<br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
+<br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
 <form name=frmTest action='/ws2812' method='POST'>\
 Select Mode <select name='modedrop' onchange='this.form.submit();'>\
 ");
@@ -163,22 +165,20 @@ for (int k=0; k < numberofmodes; k++ ) {
   <br>Timer: <input type='range' name='timer'min='0' max='2000' value='%' onchange='this.form.submit();'>\
   </form>\
   <p>\
-  <form action='/ws2812' method='POST'>\
-  <p>LEDs: <input type='text' id='leds' name='leds' value='%' >\
-  <br>PIN: <input type='text' id='ledpin' name='ledpin' value='%' >\
-  <br>  <input type='submit' value='Submit'/>\
-  </form>\
-  Power = %mA\
-  <br> Adalight order: GRB\
-  <br> Current Mode: % \
+    <form action='/ws2812' method='POST'>\
+    <p>Save Preset: <input type='text' id='preset' name='preset' value='%' >\
+    <br><input type='submit'  value='Save'/>\
+    <br> Current Preset: % \
+    </form>\
+    Power = %mA\
   ");
   
   buf = insertvariable ( content1, String(CurrentAnimationSpeed)); 
   buf = insertvariable ( buf, String(CurrentBrightness)); 
   buf = insertvariable ( buf, String(WS2812interval)); 
-  buf = insertvariable ( buf, String(pixelCount)); 
-  buf = insertvariable ( buf, String(pixelPIN)); 
-  buf = insertvariable ( buf, String(power) ); 
+ // buf = insertvariable ( buf, String(pixelCount)); 
+ // buf = insertvariable ( buf, String(pixelPIN)); 
+  buf = insertvariable ( buf, String(current_loaded_preset) ); 
 
   String loaded_var; 
 
@@ -187,8 +187,7 @@ for (int k=0; k < numberofmodes; k++ ) {
 
 
   buf = insertvariable ( buf, loaded_var ); 
-
-
+  buf = insertvariable ( buf, String(power) ); 
   buf += htmlendstring; 
  
   //server.send(200, "text/html", buf);
@@ -197,8 +196,7 @@ for (int k=0; k < numberofmodes; k++ ) {
     server.sendContent(buf);
 
 
-
-if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
+//if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 //power = getPixelPower();
 
 animator->Resume();
@@ -316,7 +314,7 @@ void cache WS2812_preset_string(String Value) {
         //Serial.print()
         HoldingOpState =  LastOpState;
         Current_Effect_State = POST_EFFECT; 
-            send_mqtt_msg("Preset", Value); 
+        send_mqtt_msg("Preset", Value); 
 
       
       //Serial.print("...Loaded"); 
@@ -334,6 +332,7 @@ void cache send_current_settings () {
     //delay(100);
     send_mqtt_msg("timer", String(WS2812interval));
     send_mqtt_msg("brightness", String(CurrentBrightness));
+    send_mqtt_msg("Preset", String(current_loaded_preset)); 
 }
 
 
@@ -1028,8 +1027,9 @@ if (opState != HoldingOpState) {
 }
 
 if(LED_Settings_Changed) {
-  Save_LED_Settings(0);
-  LED_Settings_Changed = false;   
+  Save_LED_Settings(0);                                                           // Save the new settings as default
+  if (current_loaded_preset_changed == true) send_mqtt_msg("Preset", "0");       // Update the MQTT preset selection to 0
+  LED_Settings_Changed = false;                                                   // Reset settings changed. 
 }
 
 
@@ -2341,6 +2341,7 @@ return brightnesstally;
 void cache handle_lights_config() {
 
 String buf; 
+bool updateLEDs = false; 
 
    if (server.args() != 0) { 
       lasteffectupdate = 0; 
@@ -2362,6 +2363,16 @@ String buf;
   
    // String a = ESP.getFlashChipSizeByChipId(); 
    if (server.arg("reset") == "true") { var1 = 0; var2 = 0; var3 = 0; var4 = 0; IntervalMultiplier = 0; var6 = 0; var7 = 0; var8 = 0; var9 = 0; var10 = 0;};
+
+  if (server.arg("leds").length() != 0) {
+    pixelCount = server.arg("leds").toInt();
+    updateLEDs = true;
+  }
+
+   if (server.arg("ledpin").length() != 0) {
+    pixelPIN = server.arg("ledpin").toInt();
+    updateLEDs = true;
+  }
 
 
   String content = F("\
@@ -2405,14 +2416,26 @@ String buf;
   buf += F("<input type='submit' value='Submit'>\
           </form></p>\
           <form action='/lightsconfig' method='POST'>\
-          <p>Save Preset: <input type='text' id='leds' name='preset' value='' >\
+          <p>Save Preset: <input type='text' id='leds' name='preset' value='%' >\
           <br><input type='submit'  value='Save'/>\
-          </form>");
+          </form>\
+          <form action='/lightsconfig' method='POST'>\
+          <p>LEDs: <input type='text' id='leds' name='leds' value='%' >\
+          <br>PIN: <input type='text' id='ledpin' name='ledpin' value='%' >\
+          <br>  <input type='submit' value='Submit'/>\
+          </form>\
+          ");
 
   buf += htmlendstring; 
+  buf = insertvariable ( buf, String(current_loaded_preset)); 
+  buf = insertvariable ( buf, String(pixelCount)); 
+  buf = insertvariable ( buf, String(pixelPIN)); 
 
 
   server.sendContent(buf);
+
+
+if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
   //server.send(200, "text/html", buf);
 

@@ -149,8 +149,8 @@ if (location != 0) {
 
     //send_mqtt_msg("loadpreset", String("0")); // not sure about this!
 
-    String msg  = String(location) + " Loaded";
-    send_mqtt_msg("Status", msg); 
+  //  String msg  = String(location) + " Loaded";
+  //  send_mqtt_msg("Status", msg); 
     send_current_settings();
 
 }
