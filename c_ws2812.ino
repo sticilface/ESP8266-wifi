@@ -325,7 +325,7 @@ void cache send_current_settings () {
     send_mqtt_msg("brightness", String(CurrentBrightness));
     send_mqtt_msg("Preset", String(current_loaded_preset)); 
     send_mqtt_msg("animationspeed", String(CurrentAnimationSpeed));
-    send_mqtt_msg("effect", MODE_STRING[opState] );
+    send_mqtt_msg("effect", MODE_STRING[HoldingOpState] ); // has to be the effect of the future.. not the current one :)
 
 }
 
@@ -335,11 +335,11 @@ void cache WS2812_mode_number(String Value) {
 
       lasteffectupdate = 0;
       uint8_t chosen_mode = Value.toInt();
-      Serial.println("MODE DROP recieved: " + Value);
+      Debugln("MODE DROP recieved: " + Value);
       opState = (operatingState)chosen_mode;
 
       if (chosen_mode != 0)  { 
-        LastOpState = (operatingState)chosen_mode;
+      LastOpState = (operatingState)chosen_mode;
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
       }
 }
@@ -364,7 +364,7 @@ void  cache  WS2812_dim_string (String Value)
 
       // if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
-      Serial.println("Brightness set to: " + String(CurrentBrightness));
+      Debugln("Brightness set to: " + String(CurrentBrightness));
 
       send_mqtt_msg("brightness", String(CurrentBrightness));
 
@@ -379,16 +379,19 @@ void cache WS2812_effect_string (String request) {
           HoldingOpState = LastOpState = (operatingState)i; // assign selection to holdingopstate... 
           Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
           LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-          send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
+          //send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
           break; 
         }
       } 
 
-  if (HoldingOpState == OFF) { 
-    send_mqtt_msg("mode","off");
-  } else { 
-    send_mqtt_msg("mode", "on");
-  }
+ // if (HoldingOpState == OFF) { 
+ //   send_mqtt_msg("mode","off");
+ // } else { 
+ //   send_mqtt_msg("mode", "on");
+ // }
+
+      send_current_settings(); 
+
 }
 
 void  cache WS2812_mode_string (String Value)
@@ -407,7 +410,6 @@ void  cache WS2812_mode_string (String Value)
       HoldingOpState = (operatingState)chosen_mode; // assign selection to holdingopstate... 
       Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
       LastOpState = (operatingState)chosen_mode;
-
   } else {
 
 
@@ -420,7 +422,10 @@ void  cache WS2812_mode_string (String Value)
       } 
   }
 
-  if (Value == "on" | Value == "ON") { HoldingOpState = LastOpState; Current_Effect_State = POST_EFFECT; } ; 
+  if (Value == "on" | Value == "ON") { 
+      HoldingOpState = LastOpState; 
+      Current_Effect_State = POST_EFFECT; 
+  } ; 
 
   if (Value == "refresh" ) { 
     lasteffectupdate = 0;  
@@ -430,7 +435,15 @@ void  cache WS2812_mode_string (String Value)
   if (Value == "play") paused = false; 
 
 }
-/*
+
+    if(HoldingOpState == OFF) { 
+      EEPROM.write(ON_OFF_State_Address,0); 
+      Debugln("ON_OFF_State_Address (write) = 0");
+    } else {
+      EEPROM.write(ON_OFF_State_Address,1); 
+      Debugln("ON_OFF_State_Address (write) = 1");
+    } 
+
 
    if (HoldingOpState == OFF) { 
     send_mqtt_msg("mode","off");
@@ -439,10 +452,10 @@ void  cache WS2812_mode_string (String Value)
   }
 
       
-      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+    LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
 
-    send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
-*/
+    //send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
+
     //if (millis() > 11000) 
     send_current_settings(); 
 }
@@ -996,13 +1009,13 @@ if (millis() - update_strip_time > 30) {
 
   } 
 
-  
-  if (millis() - timer_PixelPower > 10000 && opState != OFF) {
-       power = getPixelPower();
-       Debugf("Power =%u \n",power); 
-       timer_PixelPower = millis();
-    }
-
+/*  
+ * if (millis() - timer_PixelPower > 10000 && opState != OFF) {
+ *      power = getPixelPower();
+ *      Debugf("Power =%u \n",power); 
+ *      timer_PixelPower = millis();
+ *   }
+ */
 
 
 if (opState != HoldingOpState) {
@@ -1810,8 +1823,8 @@ void cache fade_to(RgbColor NewColour, uint16_t time, BlendMethod method ) {
 
 void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
-  uint8_t x,y, total_y;
-  uint8_t total_x = var7; 
+  uint16_t x,y, total_y;
+  uint16_t total_x = var7; 
   uint8_t square_size =  var10;
   uint8_t numberofpoints = var8; // default 5, if it = 10, then its random......
   uint8_t effect_option = var6;
@@ -1828,7 +1841,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   total_y = return_total_y(total_x); 
 
              bool coordinates_OK = false;
-             uint8_t x_rand,y_rand;
+             uint16_t x_rand,y_rand;
       //Serial.println("Generating coordinates.");
    //          uint8_t count = 0; 
    //   static uint32_t runningcount = 0; 
@@ -1842,7 +1855,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   switch(Current_Effect_State) {
 
-        case PRE_EFFECT:
+  case PRE_EFFECT:
 
         effectPosition = 0;   
      if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
@@ -1858,7 +1871,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     lasteffectupdate = millis(); 
     Debugln("Squares 2 Running");
     break;
-    case RUN_EFFECT:  
+  case RUN_EFFECT:  
 
       if ( lasteffectupdate == 0 ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
         Current_Effect_State = PRE_EFFECT;
@@ -1891,7 +1904,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       coordinates_OK = false; // reset the coordinates OK...
 
-      for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
+      for (uint16_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
 
           pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
           if (pixel >= 0) { 
@@ -1905,7 +1918,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       time = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
-    for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
+    for (uint16_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
             if (sq_pixel == 0 ) effectPosition++; 
             pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x );    
@@ -2452,8 +2465,8 @@ int cache return_pixel(uint8_t x, uint8_t y, uint8_t pitch) {
 }
 
 
-uint8_t cache return_total_y(uint8_t pitch) {
- uint8_t y = pixelCount / pitch; 
+uint16_t cache return_total_y(uint8_t pitch) {
+ uint16_t y = pixelCount / pitch; 
  float remainder = pixelCount % pitch;
  if (remainder > 0) { y++; } 
   return y;
@@ -2461,7 +2474,7 @@ uint8_t cache return_total_y(uint8_t pitch) {
 
 
 //  Returns a pixel number... starting in bottom left...
-int cache return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint8_t desired_pixel, uint8_t grid_size, uint8_t total_in_row) {
+int cache return_shape_square(uint8_t first_pixel_x, uint8_t first_pixel_y , uint16_t desired_pixel, uint8_t grid_size, uint16_t total_in_row) {
 
   int pixel; 
   uint8_t pixel_x, pixel_y, row, row_left  ;

@@ -168,13 +168,7 @@ if (location != 0) {
 
 void Save_LED_Settings (uint8_t location) {
     
-    if(HoldingOpState == OFF) { 
-      EEPROM.write(ON_OFF_State_Address,0); 
-      Debugln("ON_OFF_State_Address (write) = 0");
-    } else {
-      EEPROM.write(ON_OFF_State_Address,1); 
-      Debugln("ON_OFF_State_Address (write) = 1");
-    } 
+
 
 
   if ( location < 0 || location > 10) return; 
