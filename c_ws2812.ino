@@ -248,15 +248,11 @@ void cache WS2812_toggle_string(String Value) {
           //Serial.println("OFF, so turned ON"); 
           HoldingOpState = LastOpState;
           Current_Effect_State = POST_EFFECT;
-
-
         } else {
           //Serial.print("ON..advancing: "); 
-
           current_loaded_preset++;  // advance to next saved.... 
          // Serial.print(current_loaded_preset);
          // Serial.print(",");
-
           if (current_loaded_preset > 10) current_loaded_preset = 1;
 
           for (uint8_t i = 0; i < 10; i++ ) { // go through 10 saved ONLY.....
@@ -306,7 +302,7 @@ void cache WS2812_preset_string(String Value) {
         Current_Effect_State = POST_EFFECT; 
 
         //send_mqtt_msg("Preset", Value); 
-        send_current_settings(); 
+         send_current_settings();  // this prevents settings being sent IMMEDIATELY after boot...
 
         //  LED_Settings_Changed = true;   // DONT do this here... as it sets preset to 0.. which u don't want to do.... 
 
@@ -317,7 +313,7 @@ void cache WS2812_preset_string(String Value) {
 
 void cache send_current_settings () {
 
-   if (opState == OFF) { 
+   if (HoldingOpState == OFF) { 
     send_mqtt_msg("mode","off");
   //  send_mqtt_msg("effect","off");
   } else { 
@@ -434,6 +430,7 @@ void  cache WS2812_mode_string (String Value)
   if (Value == "play") paused = false; 
 
 }
+/*
 
    if (HoldingOpState == OFF) { 
     send_mqtt_msg("mode","off");
@@ -445,7 +442,9 @@ void  cache WS2812_mode_string (String Value)
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
 
     send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
-
+*/
+    //if (millis() > 11000) 
+    send_current_settings(); 
 }
 
 

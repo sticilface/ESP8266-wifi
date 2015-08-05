@@ -144,10 +144,14 @@ Debugf("Last ON/OFF = %u \n", Last);
 if ( AutoRestartValue == true ) 
     { 
        if (Last == true) { 
-          WS2812_mode_string("on");
+          //WS2812_mode_string("on");
+          HoldingOpState = LastOpState; 
+          Current_Effect_State = POST_EFFECT;
           Debugln("MODE returned to ON");
         } else {
-          WS2812_mode_string("off");
+          //WS2812_mode_string("off");
+          Current_Effect_State = POST_EFFECT; //  Set this to TERMINATE current effect.... 
+          HoldingOpState = OFF; 
           Debugln("MODE returned to OFF");
         }
     }
