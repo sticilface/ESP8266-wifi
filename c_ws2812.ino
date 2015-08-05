@@ -30,13 +30,8 @@
 
 
 void  cache handle_WS2812 () { // handles the web commands...
-
 animator->Pause();
-
 String buf, paused_string, selected; 
-
-
-
 bool updateLEDs = false;
 
  // Serial.print("Current Preset = ");
@@ -77,9 +72,7 @@ bool updateLEDs = false;
 
   if ((server.arg("modedrop").length() != 0)) 
     {
-
       WS2812_mode_string(server.arg("modedrop"));
-
       }
 
       //----  having this under here works better as the page gets updated before the request data is fired back!
@@ -100,22 +93,20 @@ Select Mode <select name='modedrop' onchange='this.form.submit();'>\
 ");
 
   buf = insertvariable ( content3, String(deviceid));
-
   buf = insertvariable ( buf, String(deviceid));
   
   if (WiFi.status() == WL_CONNECTED) 
     { buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
     } else { buf = insertvariable ( buf, " "); } ;
 
-    buf = insertvariable ( buf, paused_string);
+  buf = insertvariable ( buf, paused_string);
 
 
 //  if (wifimode == 1) { buf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
     server.send(200, "text/html", "");
     WiFiClient client = server.client();
-
-   server.sendContent(buf);
+    server.sendContent(buf);
 
  buf = " ";
 
@@ -249,7 +240,7 @@ void cache WS2812_toggle_string(String Value) {
 
       if (Value == "toggle") {
 
-      lasteffectupdate = 0;
+       lasteffectupdate = 0;
        current_loaded_preset_changed = true; 
 
 
@@ -317,7 +308,10 @@ void cache WS2812_preset_string(String Value) {
         //send_mqtt_msg("Preset", Value); 
         send_current_settings(); 
 
-      
+        //  LED_Settings_Changed = true;   // DONT do this here... as it sets preset to 0.. which u don't want to do.... 
+
+        Save_LED_Settings(0);         // this will save the ON state to EEPROM... and the last state.... 
+
       //Serial.print("...Loaded"); 
 }
 
@@ -325,7 +319,7 @@ void cache send_current_settings () {
 
    if (opState == OFF) { 
     send_mqtt_msg("mode","off");
-    send_mqtt_msg("effect","off");
+  //  send_mqtt_msg("effect","off");
   } else { 
     send_mqtt_msg("mode", "on");
   }
@@ -334,6 +328,9 @@ void cache send_current_settings () {
     send_mqtt_msg("timer", String(WS2812interval));
     send_mqtt_msg("brightness", String(CurrentBrightness));
     send_mqtt_msg("Preset", String(current_loaded_preset)); 
+    send_mqtt_msg("animationspeed", String(CurrentAnimationSpeed));
+    send_mqtt_msg("effect", MODE_STRING[opState] );
+
 }
 
 
@@ -769,10 +766,15 @@ Current_Effect_State = RUN_EFFECT;
 lasteffectupdate = 0; 
 Random_func_timeout = 0; //RESET additionall timeout... 
 
-
 }
 
 void cache Post_effect() {
+
+if ( animator->IsAnimating() ) {
+    for (uint16_t i = 0; i < strip->PixelCount();i++ ) {
+      animator->StopAnimation(i);
+    }
+}
 
 Current_Effect_State = PRE_EFFECT; 
 opState = HoldingOpState; 
@@ -2059,6 +2061,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 void cache Adalight_Flash() {
 
     for(uint16_t i=0; i<pixelCount; i++) {
+        //animator->StopAnimation(i);
         strip->SetPixelColor(i, RgbColor(255,0,0));
           }
     strip->Show(); 

@@ -361,8 +361,8 @@ void OTA_UPDATE() {
    //char cmd[20], port[20], size[20]; 
 
    OTA.read(packetBuffer, 100); 
-   Serial.print("packetBuffer = ");
-   Serial.print(packetBuffer);
+   //Serial.print("packetBuffer = ");
+   //Serial.print(packetBuffer);
 
 //int spaceindex = String(packetBuffer).indexOf(" ") ;
 
@@ -383,16 +383,18 @@ int size = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
 
 //Serial.printf("CMD = %s, PORT = %s, SIZE = %s \n", cmd, port, size); 
 
+Debugf("CMD = %u, PORT = %u, SIZE = %u \n", cmd, port, size); 
 
-Serial.print("CMD = ");
-Serial.println(cmd);
-Serial.print("PORT = ");
-Serial.println(port);
-Serial.print("SIZE = ");
-Serial.println(size);
+//Serial.print("CMD = ");
+//Serial.println(cmd);
+//Serial.print("PORT = ");
+//Serial.println(port);
+//Serial.print("SIZE = ");
+//Serial.println(size);
 
 if (cmd == 99 && port == 0 && size == 0) ESP.restart(); 
-if (cmd == 100 && port == 0 && size == 0) { 
+
+if (cmd == 100 && port == 1 && size == 1) { 
   EEPROM_wipe(); 
   delay(2);
   ESP.restart();
@@ -402,7 +404,7 @@ if (cmd == 100 && port == 0 && size == 0) {
 if ( port > 0 && size > 0) {
 
 
-  Serial.println("VALID PACKET PROCEED");
+  Debugln("VALID PACKET PROCEED");
 
     WS2812_mode_string("off"); // switch off the lights!  
 
@@ -412,7 +414,8 @@ if ( port > 0 && size > 0) {
 
     Serial.print("Update Start: ip:");
     Serial.print(remote);
-    Serial.printf(", port:%d, size:%d\n", port, size);
+    Debugf(", port:%d, size:%d", port, size);
+    Serial.println(); 
     uint32_t startTime = millis();
 
 
@@ -420,6 +423,7 @@ if ( port > 0 && size > 0) {
 
     if(!Update.begin(size)){
       Serial.println("Update Begin Error");
+      OTA.begin(aport); // resume listenting.. 
       return;
     }
 
@@ -443,7 +447,7 @@ if ( port > 0 && size > 0) {
       }
     } else {
       Serial.printf("Connect Failed: %u\n", millis() - startTime);
-
+      OTA.begin(aport); // resume listening
     }
 } else { 
   Serial.print("INVALID PACKET... CRASH PREVENTED...."); 

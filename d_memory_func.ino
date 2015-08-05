@@ -23,10 +23,6 @@ void LoadParams()
   	MQTT_enabled = false;
   }
 
-
-
-
-
   if (EEPROM.read(DEBUGenabledbyte) != 0) {
   		if (EEPROM.read(DEBUGenabledbyte) == 1) {
   			debug_command("timer");
@@ -86,7 +82,7 @@ uint16_t address = START_address_settings + (32 * location);
 
         if(isnan(temp)) temp = 0;
         if(isnan(tempb)) temp = 0;
-      CurrentAnimationSpeed = temp*256+tempb;
+        CurrentAnimationSpeed = temp*256+tempb;
         if (CurrentAnimationSpeed ==0 ) CurrentAnimationSpeed = 1; // keep to a minimum of 1
     //    if (isnan(CurrentAnimationSpeed) || CurrentAnimationSpeed == 0) CurrentAnimationSpeed = 2000;
 
@@ -155,10 +151,11 @@ if (location != 0) {
 
   //  String msg  = String(location) + " Loaded";
   //  send_mqtt_msg("Status", msg); 
-    send_current_settings();
+  //  send_current_settings();
     // This line ensures that upon reboot if a preset was loaded, that is NOT 0, it gets reloaded
     // if it is a loaded on that has been changed.  not needed.... 
     EEPROM.write(LastOpState_Address, location);
+    
     EEPROM_commit_var = true; 
 }
 
@@ -171,8 +168,13 @@ if (location != 0) {
 
 void Save_LED_Settings (uint8_t location) {
     
-    if(opState == OFF) { EEPROM.write(ON_OFF_State_Address,0); }
-    if(opState != OFF) { EEPROM.write(ON_OFF_State_Address,1); } 
+    if(HoldingOpState == OFF) { 
+      EEPROM.write(ON_OFF_State_Address,0); 
+      Debugln("ON_OFF_State_Address (write) = 0");
+    } else {
+      EEPROM.write(ON_OFF_State_Address,1); 
+      Debugln("ON_OFF_State_Address (write) = 1");
+    } 
 
 
   if ( location < 0 || location > 10) return; 
@@ -231,16 +233,16 @@ void Save_LED_Settings (uint8_t location) {
      EEPROM.write(address++, var9);
      EEPROM.write(address++, var10);
 
-     if (location == 0 )  EEPROM.write(LastOpState_Address, 0); // if were no longer on preset.. but defualt back to 0
+     if (location == 0 ) EEPROM.write(LastOpState_Address, 0); // if were no longer on preset.. but defualt back to 0
 
      EEPROM_commit_var = true;
      //Serial.print("Settings Saved for : ");
      //Serial.println(location);
 
-     String msg  = String(location) + " Saved";
+   //  String msg  = String(location) + " Saved";
 
      if (location != 0)   { 
-      send_mqtt_msg("Status", msg); 
+     // send_mqtt_msg("Status", msg); 
       current_loaded_preset_changed = false; 
       current_loaded_preset = location; 
     }

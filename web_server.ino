@@ -385,6 +385,7 @@ void handle_misc ()
   int sec = millis() / 1000;
   int min = sec / 60;
   int hr = min / 60;
+  int Vcc = analogRead(A0); 
     
   char Up_time[20]; 
   snprintf ( Up_time, 20, "%02d:%02d:%02d", hr, min % 60, sec % 60 );
@@ -403,6 +404,7 @@ void handle_misc ()
   <br> Free Space = % \
   <br> Millis = % \
   <br> Up Time = % \
+  <br> VCC = % \
   <p><form action='/misc' method='POST'>\
   <p> Select Speed <select name='serial' onchange='this.form.submit();'>\
   ");
@@ -421,6 +423,7 @@ void handle_misc ()
   buf = insertvariable ( buf, String(ESP.getFreeSketchSpace()));
   buf = insertvariable ( buf, String(millis()));
   buf = insertvariable  (buf, String(Up_time));
+  buf = insertvariable  (buf, String(ESP.getVcc()));
   
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send(200, "text/html", "");

@@ -3,7 +3,6 @@ void cache ssid_command (String value)
 {
           //String buf;
           value = value.substring(0,BUFSIZE-1);
-
           value.toCharArray(bufchar, BUFSIZE);
 
           if (strcmp(ssid, bufchar) != 0)
@@ -12,7 +11,7 @@ void cache ssid_command (String value)
               networkrestart = true;   //****** MUST UNCOMMENT.......
               wifimode = 2; // Set this to sort out the mode, backup.. 
               if (EEPROM.read(APbyte) != flagvalue) EEPROM.write(APbyte, flagvalue); // Set up Emergency ACCESSS BYTE....
-              send_mqtt_msg("status","SSID-> " + value);
+              //send_mqtt_msg("status","SSID-> " + value);
               for (int i = 0; i < BUFSIZE; ++i) {
                  ssid[i] = bufchar[i];
               }
@@ -38,7 +37,7 @@ void cache password_command (String value)
               networkrestart = true;   //****** MUST UNCOMMENT.......
               wifimode = 2;
               if (EEPROM.read(APbyte) != flagvalue) EEPROM.write(APbyte, flagvalue);
-              send_mqtt_msg("password","SSID-> " + value);
+              //send_mqtt_msg("password","SSID-> " + value);
 
               for (int i = 0; i < BUFSIZE; ++i) {
                  password[i] = bufchar[i];
@@ -87,7 +86,7 @@ void cache mqttserver_command (String value)
    if (MQTTserver != tempaddress) {
    Serial.print("MQTTserver IPAddress: ");
    MQTTserver = tempaddress;
-   send_mqtt_msg("Status","MQTTServer-> " + MQTTserver);
+   //send_mqtt_msg("Status","MQTTServer-> " + MQTTserver);
    Serial.println(tempaddress);
 
    for (int i=0; i<4; i++) {  // SAVE NEW TO EEPROM
