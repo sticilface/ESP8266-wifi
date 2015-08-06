@@ -39,11 +39,11 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   case PRE_EFFECT:
 
-        effectPosition = 0;   
+    effectPosition = 0;   
 
      //if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
      if (effect_option == 1 ) {
-      animator->FadeTo(2000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
+      animator->FadeTo(1000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
      }
 
      
@@ -54,16 +54,18 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           top_bottom_fade(  Top , Bottom , total_x, CurrentAnimationSpeed); 
     }
 
-    Pre_effect();  // PRE effect SETS LAST EFFECT UPDATE TO ZERO... ? is this requires?
-
     lasteffectupdate = millis(); 
     Debugln("Squares 2 Running");
     
-    temp_lower_boundary = CurrentAnimationSpeed * IntervalMultiplier * 10 ;
-    temp_upper_boundary = CurrentAnimationSpeed * IntervalMultiplier * 1000 ;
+    temp_lower_boundary = CurrentAnimationSpeed * IntervalMultiplier * 1 ;
+    temp_upper_boundary = CurrentAnimationSpeed * IntervalMultiplier * 10 ;
+    
+    if (temp_upper_boundary > 65000) temp_upper_boundary = 65000; 
 
     Debugf("Min time = %u \n", temp_lower_boundary);
     Debugf("Max time = %u \n", temp_upper_boundary);
+
+    Pre_effect();  // PRE effect SETS LAST EFFECT UPDATE TO ZERO... ? is this requires?
 
     break;
   case RUN_EFFECT:  
