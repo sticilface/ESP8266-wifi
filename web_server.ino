@@ -131,23 +131,23 @@ Wifi Config Page
 void ICACHE_FLASH_ATTR handle_wifi() {
 String buf; 
  
- if (server.arg("ssid").length() != 0) ssid_command(server.arg("ssid"));
- if (server.arg("password").length() != 0) password_command(server.arg("password"));
- if (server.arg("deviceid").length() != 0) deviceid_command(server.arg("deviceid"));
- if (server.arg("mqttserver").length() != 0) mqttserver_command(server.arg("mqttserver")); 
- if (server.arg("scan").length() != 0) scannetworks();
- if (server.arg("reboot").length() != 0) ESP.reset(); // abort();
+ if (server.hasArg("ssid")) ssid_command(server.arg("ssid"));
+ if (server.hasArg("password")) password_command(server.arg("password"));
+ if (server.hasArg("deviceid")) deviceid_command(server.arg("deviceid"));
+ if (server.hasArg("mqttserver")) mqttserver_command(server.arg("mqttserver")); 
+ if (server.hasArg("scan")) scannetworks();
+ if (server.hasArg("reboot")) ESP.reset(); // abort();
 
   
   
   
-  int mqttconnected = mqttclient.connected();
+  //bool mqttconnected = mqttclient.connected();
   
 
   buf = F("<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head><meta name='viewport' content='initial-scale=1'><title>Wifi Configuration</title></head><body><h1>Wifi Config</h1>");
   buf += "<p>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
   buf += "<br>Current SSID is: " + String(ssid);
-  buf += "<br>Current MQTT Server is: " + mqttserver_string + "..." + ((mqttconnected)?"Connected":"Disconnected");
+  buf += "<br>Current MQTT Server is: " + mqttserver_string + "..." + ((mqttclient.connected())?"Connected":"Disconnected");
   buf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
   buf += F("<br><form action='/wifi' method='POST'>");
   buf += F("New Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");
@@ -195,7 +195,6 @@ String buf;
 
      
     if (networkrestart) restartNetworking(); 
-
     if (mqttreload) mqttreloadfunc();
 
                
@@ -357,7 +356,7 @@ void handle_misc ()
   if (server.arg("eeprom") == "wipe") { EEPROM_wipe(); } ; 
 
           // UPDATE SERIAL SPEED...  requires reboot to work...
-  if (server.arg("serial").length() != 0) {
+  if (server.hasArg("serial")) {
             Serial.println("NEW SERIAL RECIEVED..");
             Serial.end();
             delay(10); 
@@ -447,9 +446,7 @@ void handle_misc ()
   <p><a href='/bytedump'> EEPROM DUMP </a>\
   <br><a href='/misc?eeprom=bytedump'> EEPROM DUMP BYTES </a>\
   <br><a href='/misc?eeprom=wipe'> EEPROM FORMAT </a>"); 
-  
-
-  
+    
   server.sendContent(content1);
 
   //buf = htmlendstring; 

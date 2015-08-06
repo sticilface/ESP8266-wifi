@@ -105,20 +105,40 @@ uint16_t address = START_address_settings + (32 * location);
 
       NewColour = RgbColor(R,G,B);
 
-      if (R == 0) { Rstring = "00" ;} else  Rstring = String(R,HEX); 
-      if (G == 0) { Gstring = "00" ;} else  Gstring = String(G,HEX);       
-      if (B == 0) { Bstring = "00" ;} else  Bstring = String(B,HEX); 
+      if (R == 0) { Rstring = "00" ;
+        } else if  ( R < 16 && R > 0 ) {
+           Rstring = "0" + String(R,HEX); 
+        } else {
+           Rstring = String(R,HEX); 
+        } 
+
+      if (G == 0) { Gstring = "00" ;
+        } else if  ( G < 16 && G > 0 ) {
+           Gstring = "0" + String(G,HEX); 
+        } else {
+           Gstring = String(G,HEX); 
+        } 
+
+      if (B == 0) { Bstring = "00" ;
+        } else if  ( B < 16 && B > 0 ) {
+           Bstring = "0" + String(B,HEX); 
+        } else {
+           Bstring = String(B,HEX); 
+        } 
+
+  //    if (G == 0) { Gstring = "00" ;} else  Gstring = String(G,HEX);       
+  //    if (B == 0) { Bstring = "00" ;} else  Bstring = String(B,HEX); 
 
       Debug("Colour debugging (String) R=") ; 
       Debug(Rstring); 
-      Debug(" G=");
+      Debug(", G=");
       Debug(Gstring);
-      Debug(" B=");
+      Debug(", B=");
       Debugln(Bstring); 
 
       WebRGBcolour = Rstring + Gstring + Bstring; 
 
-      if (R < 16 && R > 0) WebRGBcolour = "0" + WebRGBcolour; 
+  //    if (R < 16 && R > 0) WebRGBcolour = "0" + WebRGBcolour; 
 
 
       WebRGBcolour.toUpperCase();

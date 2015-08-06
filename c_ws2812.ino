@@ -7,7 +7,7 @@
 // 6.  Maybe get changes in current dim level to Walk the pixel buffer... and NOT reset the animation effect state
 // 7.  rework ALL effects to use animations class in progress
 // 8.  SORT OUT THE HSL FLOATS STUFF
-// 9   
+// 9   COLOR still not working.... 0's lost. 
 
 // EEPROM ALLOCATIONS:
 
@@ -36,27 +36,25 @@ bool updateLEDs = false;
 
  // Serial.print("Current Preset = ");
  // Serial.println(CurrentPreset);
-
- if (server.arg("mode").length() != 0) WS2812_mode_string(server.arg("mode"));
- if (server.arg("preset").length() != 0) WS2812_preset_string(server.arg("preset"));
+ if (server.args() > 0) {
+ if (server.hasArg("mode")) WS2812_mode_string(server.arg("mode"));
+ if (server.hasArg("preset")) WS2812_preset_string(server.arg("preset"));
  if ((server.arg("dim") != String(CurrentBrightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812interval)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
  if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  AnimationSpeed_command_string(server.arg("anispeed"));
- if (server.arg("paused").length() != 0) {
+ if (server.hasArg("paused")) {
       paused = (server.arg("paused")).toInt();
       if (paused) animator->Pause(); 
       if (!paused) animator->Resume(); 
     }
 
- if (server.arg("rgbpicker").length() != 0)  { 
+ if (server.hasArg("rgbpicker"))  { 
     //WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
-
     WS2812_Set_New_Colour(server.arg("rgbpicker"));
-
-    Serial.println("RGB picker command: " + server.arg("rgbpicker"));
+    Debugln("RGB picker command: " + server.arg("rgbpicker"));
   }
 
-   if (server.arg("presetsave").length() != 0) Save_LED_Settings(  server.arg("presetsave").toInt() );
+   if (server.hasArg("presetsave")) Save_LED_Settings(  server.arg("presetsave").toInt() );
 
   //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
 
@@ -70,11 +68,11 @@ bool updateLEDs = false;
 //    updateLEDs = true;
 //  }
 
-  if ((server.arg("modedrop").length() != 0)) 
+  if (server.hasArg("modedrop")) 
     {
       WS2812_mode_string(server.arg("modedrop"));
       }
-
+  } // END of Args for web page..
       //----  having this under here works better as the page gets updated before the request data is fired back!
 
       if (paused) { 
@@ -155,12 +153,12 @@ for (int k=0; k < numberofmodes; k++ ) {
   <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
   <br>Timer: <input type='range' name='timer'min='1' max='2000' value='%' onchange='this.form.submit();'>\
   </form><br>\
-    <form action='/ws2812' method='POST'>\
+    <form action='/ws2812' method='POST' style='display:inline;'>\
     Current Preset: % \
     <br>Save Preset: <input type='text' id='presetsave' name='presetsave' value='%' >\
-    <br><input type='submit'  value='Save'/>\
+    <input type='submit'  value='Save'/>\
     </form>\
-    Power = %mA\
+    <br>Power = %mA\
   ");
   
   buf = insertvariable ( content1, String(CurrentAnimationSpeed)); 
@@ -410,6 +408,8 @@ void  cache WS2812_mode_string (String Value)
       HoldingOpState = (operatingState)chosen_mode; // assign selection to holdingopstate... 
       Current_Effect_State = POST_EFFECT; // This is required to trigger the holding op state to opstate...
       LastOpState = (operatingState)chosen_mode;
+      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+
   } else {
 
 
@@ -452,7 +452,6 @@ void  cache WS2812_mode_string (String Value)
   }
 
       
-    LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
 
     //send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
 
@@ -995,7 +994,6 @@ switch (opState)
     case NEWANIMATIONS:
       test_newanimations();
       break;
-      
    }
 
 
@@ -1005,30 +1003,26 @@ if (millis() - update_strip_time > 30) {
     delay(0);
     strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
     update_strip_time = millis();
-
-
   } 
 
-/*  
- * if (millis() - timer_PixelPower > 10000 && opState != OFF) {
- *      power = getPixelPower();
- *      Debugf("Power =%u \n",power); 
- *      timer_PixelPower = millis();
- *   }
- */
+  
+  if (millis() - timer_PixelPower > 10000 && opState != OFF) {
+       power = getPixelPower();
+       //Debugf("Power =%u \n",power); 
+       timer_PixelPower = millis();
+    }
+ 
 
 
 if (opState != HoldingOpState) {
   static bool triggered = false; 
   if (!triggered) { 
-  //  Serial.print("timer started");
     HoldingState_Failover = millis(); 
     triggered = true; 
   } 
- // Serial.print(".");
 
 
-  if (millis() - HoldingState_Failover > 5000) {
+if (millis() - HoldingState_Failover > 5000) {
     opState = HoldingOpState;
     triggered = false; 
     Current_Effect_State = PRE_EFFECT; 
@@ -2356,33 +2350,34 @@ void cache handle_lights_config() {
 String buf; 
 bool updateLEDs = false; 
 
-   if (server.args() != 0) { 
+   if (server.args() > 1 || ( server.hasArg("preset") == false  && server.args() == 1) ) { 
       lasteffectupdate = 0; 
       Random_func_timeout = 0; 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+      Debugln("Reset functions true"); 
       }; 
-   if (server.arg("var1").length() != 0) var1 = server.arg("var1").toInt();
-   if (server.arg("var2").length() != 0) var2 = server.arg("var2").toInt(); // colour point min
-   if (server.arg("var3").length() != 0) var3 = server.arg("var3").toInt(); // colour point max
-   if (server.arg("var4").length() != 0) var4 = server.arg("var4").toInt();
-   if (server.arg("var5").length() != 0) IntervalMultiplier = server.arg("var5").toInt();
-   if (server.arg("var6").length() != 0) var6 = server.arg("var6").toInt();
-   if (server.arg("var7").length() != 0) var7 = server.arg("var7").toInt();
-   if (server.arg("var8").length() != 0) var8 = server.arg("var8").toInt();
-   if (server.arg("var9").length() != 0) var9 = server.arg("var9").toInt();
-   if (server.arg("var10").length() != 0) { var10 = server.arg("var10").toInt(); } ; //  Serial.println("Var 10 updated"); }; 
+   if (server.hasArg("var1")) var1 = server.arg("var1").toInt();
+   if (server.hasArg("var2")) var2 = server.arg("var2").toInt(); // colour point min
+   if (server.hasArg("var3")) var3 = server.arg("var3").toInt(); // colour point max
+   if (server.hasArg("var4")) var4 = server.arg("var4").toInt();
+   if (server.hasArg("var5")) IntervalMultiplier = server.arg("var5").toInt();
+   if (server.hasArg("var6")) var6 = server.arg("var6").toInt();
+   if (server.hasArg("var7")) var7 = server.arg("var7").toInt();
+   if (server.hasArg("var8")) var8 = server.arg("var8").toInt();
+   if (server.hasArg("var9")) var9 = server.arg("var9").toInt();
+   if (server.hasArg("var10")) { var10 = server.arg("var10").toInt(); } ; //  Serial.println("Var 10 updated"); }; 
   
-   if (server.arg("preset").length() != 0) Save_LED_Settings(  server.arg("preset").toInt() );
+   if (server.hasArg("preset")) Save_LED_Settings(server.arg("preset").toInt() );
   
    // String a = ESP.getFlashChipSizeByChipId(); 
    if (server.arg("reset") == "true") { var1 = 0; var2 = 0; var3 = 0; var4 = 0; IntervalMultiplier = 0; var6 = 0; var7 = 0; var8 = 0; var9 = 0; var10 = 0;};
 
-  if (server.arg("leds").length() != 0) {
+  if (server.hasArg("leds")) {
     pixelCount = server.arg("leds").toInt();
     updateLEDs = true;
   }
 
-   if (server.arg("ledpin").length() != 0) {
+   if (server.hasArg("ledpin")) {
     pixelPIN = server.arg("ledpin").toInt();
     updateLEDs = true;
   }
@@ -2630,24 +2625,24 @@ void cache Set_Colour_ToptoBottom() {
 
 
 // Overloaded func for topbottom fade...
-void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x) {
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x) {
 
   top_bottom_fade(Top,Bottom, count_x, CurrentAnimationSpeed, HSL);
 }
 
-void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x,uint16_t time) {
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x,uint16_t time) {
 
   top_bottom_fade(Top,Bottom, count_x, time, HSL);
 }
 
 
 
-void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint8_t count_x, uint16_t time, BlendMethod Method) {
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x, uint16_t time, BlendMethod Method) {
 
-uint8_t x,y;
+uint16_t x,y;
 float colour_steps; 
 // float colour_stepsF; 
-uint8_t total_y = return_total_y(count_x); // get total number of rows
+uint16_t total_y = return_total_y(count_x); // get total number of rows
 RgbColor colourRGB;
 HslColor colourHSL; 
 //if (Current_Effect_State == PRE_EFFECT) Pre_effect();  

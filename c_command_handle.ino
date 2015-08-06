@@ -96,6 +96,8 @@ void cache mqttserver_command (String value)
     EEPROM.write (mqttAddressbyte,flagvalue);
     EEPROM_commit_var = true;
     MQTT_enabled = true;
+    EEPROM.write(MQTTenabledbyte, flagvalue); // write mqtt enabled byte....
+    EEPROM_commit_var = true;
     mqttreload = true;
 
     }

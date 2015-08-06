@@ -202,10 +202,10 @@ void cache handle_mqtt() {
 
   String buf; 
   
- if (server.arg("mqttserver").length() != 0) mqttserver_command(server.arg("mqttserver")); 
- if (server.arg("reboot").length() != 0) ESP.reset(); // abort();
+ if (server.hasArg("mqttserver")) mqttserver_command(server.arg("mqttserver")); 
+ if (server.hasArg("reboot")) ESP.reset(); // abort();
 
-  if (server.arg("form_MQTT_enabled").length() != 0) 
+  if (server.hasArg("form_MQTT_enabled")) 
   {
 
     if (server.arg("form_MQTT_enabled") == "YES") {
