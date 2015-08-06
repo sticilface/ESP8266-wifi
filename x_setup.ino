@@ -159,7 +159,7 @@ Debugln("1");
   server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);
   server.on("/mqtt", handle_mqtt);
-  //server.on("/io", handle_io);
+  server.on("/ota", OTAreset);
   //server.on("/test", handle_test);
 
   server.on("/misc", handle_misc);

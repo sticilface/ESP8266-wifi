@@ -7,8 +7,11 @@ void loop( void ) {
 if (!isOTAupdate) {
 
  	mqttclient.loop();
+ 	yield();
   	server.handleClient();
+  	yield();
   	timer.run();
+  	yield();
   	loop_Plugin();
 
 //if (wifimode == 1) mdns.update();  

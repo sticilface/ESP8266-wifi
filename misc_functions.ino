@@ -444,6 +444,7 @@ if ( port > 0 && size > 0) {
       } else {
         Update.printError(client);
         Update.printError(Serial);
+        OTA.begin(aport); // resume listening
       }
     } else {
       Serial.printf("Connect Failed: %u\n", millis() - startTime);
@@ -459,16 +460,25 @@ if ( port > 0 && size > 0) {
 
 }
 
+void cache OTAreset() {
+    
+    WiFiUDP::stopAll();
+    delay(5);
+    OTA.begin(aport); // resume listenting.. 
+    Debugln("OTA UDP restarted"); 
+    server.send(200, "text", "DONE");
+
+
+}
+
 
 String cache insertvariable(String Source , String insert) {
 
 int position = Source.indexOf("%");
 String one, two; 
-
 one = Source.substring(0,Source.indexOf('%') );
 two = Source.substring(Source.indexOf('%') +1 , Source.length());
 
 return (one + insert + two); 
-
 }
 
