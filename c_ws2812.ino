@@ -31,7 +31,7 @@
 
 void  cache handle_WS2812 () { // handles the web commands...
 animator->Pause();
-String buf, paused_string, selected; 
+String paused_string, selected; 
 bool updateLEDs = false;
 
  // Serial.print("Current Preset = ");
@@ -471,13 +471,17 @@ void cache WS2812_Set_New_Colour (String instruction) {
 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
 
+      float HUE = (HslColor(NewColour)).H;
+      float SAT = (HslColor(NewColour)).S;
+      float LIG = (HslColor(NewColour)).L;
 
-      //Serial.print("NEW RGB COLOUR..");
-      //Serial.print(NewColour.R,HEX); 
-      //Serial.print(" "); 
-      //Serial.print(NewColour.G,HEX); 
-      //Serial.print(" ");       
-      //Serial.println(NewColour.B,HEX); 
+            //Debugf("HSL choice : H = %u, S = %u, L = %u ")
+      Debug("NEW HSL COLOUR : Hue = ");
+      Debug(HUE); 
+      Debug(", Sat = "); 
+      Debug(SAT); 
+      Debug(", Lig = ");       
+      Debugln(LIG); 
   
       send_mqtt_msg("colour", WebRGBcolour); 
 /*
@@ -1010,6 +1014,10 @@ if (millis() - update_strip_time > 30) {
        power = getPixelPower();
        //Debugf("Power =%u \n",power); 
        timer_PixelPower = millis();
+
+    //   File f = SPIFFS.open("/power.htm", "a");
+    //   f.println(power);
+    //   f.close();
     }
  
 
@@ -1323,8 +1331,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 void cache SetRandomSeed()
 {
-  uint32_t seed;
-  
+ /* uint32_t seed;
   // random works best with a seed that can use 31 bits
   // analogRead on a unconnected pin tends toward less than four bits
   seed = analogRead(0);
@@ -1338,6 +1345,7 @@ void cache SetRandomSeed()
   
   // Serial.println(seed);
   randomSeed(seed);
+*/
 }
 
 
@@ -2207,7 +2215,6 @@ return brightnesstally;
 
 void cache handle_lights_config() {
 
-String buf; 
 bool updateLEDs = false; 
 
    if (server.args() > 1 || ( server.hasArg("preset") == false  && server.args() == 1) ) { 
@@ -2609,7 +2616,10 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
 
 if (Setting == TWOCOLOUR) {
        colour_top    = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
-       colour_bottom = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
+//       colour_bottom = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
+
+       colour_bottom = Return_Complementary(colour_top);
+
 } else if (Setting == SINGLECOLOUR) {
        colour_top    = Manipulate_Hue(NewColour, Ceiling); 
        colour_bottom = Manipulate_Hue(NewColour, Floor);
@@ -2715,6 +2725,24 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 */
 } // end of actual function.....
+
+
+
+RgbColor cache Return_Complementary(RgbColor Value) {
+    HslColor original = HslColor(Value);
+    //Debug("Original Hue = ");
+    //Debug(original.H);
+    original.H += 0.5; 
+    //Debug(" ==> ");
+    if (original.H > 1.0) original.H -= 1.0;
+
+    //Debug("New Hue = ");
+    //Debugln(original.H);
+    return RgbColor(original);
+}
+
+
+
 
 
 void test_newanimations() {

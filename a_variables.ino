@@ -7,7 +7,7 @@
 const int BUFSIZE = 32; //was 16 
 const String version =  "WS2812-OTA";
 const char compile_date[] = __DATE__ " " __TIME__;
-
+String buf; // use for HTTP 
 
 char ssid[BUFSIZE] ;// = "fyffest";
 char password[BUFSIZE] ;//  = "wellcometrust";

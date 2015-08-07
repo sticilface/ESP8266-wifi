@@ -22,4 +22,6 @@
 #include "enumerates.h"
 #include "a_0plugin_headers.h"
 
+#include <FS.h>
+
 ADC_MODE(ADC_VCC);

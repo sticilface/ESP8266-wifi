@@ -163,7 +163,9 @@ Debugln("1");
   //server.on("/test", handle_test);
 
   server.on("/misc", handle_misc);
-
+  server.on("/power", handle_power); 
+  buf.reserve(1024);
+  
   //httpupdate();  // definately NOT working yet
   
 
@@ -204,6 +206,9 @@ if(WiFi.waitForConnectResult() == WL_CONNECTED){
 Serial.println("HSL Floats ENABLED - to get rid of this..."); 
 
 #endif
+
+ 
+SPIFFS.begin();
 
 
   

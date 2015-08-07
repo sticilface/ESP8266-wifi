@@ -54,7 +54,6 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           top_bottom_fade(  Top , Bottom , total_x, CurrentAnimationSpeed); 
     }
 
-    lasteffectupdate = millis(); 
     Debugln("Squares 2 Running");
     
     temp_lower_boundary = CurrentAnimationSpeed * IntervalMultiplier * 1 ;
@@ -66,6 +65,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     Debugf("Max time = %u \n", temp_upper_boundary);
 
     Pre_effect();  // PRE effect SETS LAST EFFECT UPDATE TO ZERO... ? is this requires?
+    lasteffectupdate = millis();  // this has to go here otherwise the pre_effect routine restarts it...
 
     break;
   case RUN_EFFECT:  
@@ -79,6 +79,9 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
      // if  ( (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) && effectPosition < numberofpoints ) {      
       if  ( effectPosition < numberofpoints ) {
 //      espcyclecount = ESP.getCycleCount(); 
+
+       //if (effect_option == 1 ) {
+ 
        color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
        
         //Serial.print("Colour chosen: ");

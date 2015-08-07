@@ -199,8 +199,6 @@ void  send_mqtt_msg (String topic, String message ) // overloading functon to al
 
 
 void cache handle_mqtt() {
-
-  String buf; 
   
  if (server.hasArg("mqttserver")) mqttserver_command(server.arg("mqttserver")); 
  if (server.hasArg("reboot")) ESP.reset(); // abort();

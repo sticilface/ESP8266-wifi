@@ -6,6 +6,25 @@
 Byte DUMP EEPROM to HTML.... Main Page 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
+void cache handle_power() {
+
+
+       File f = SPIFFS.open("/power.htm", "r");
+       Debugf("FileSize = %u \n", f.size());
+
+       server.send (200, "text", f.readString());
+
+
+       f.close();
+
+
+  // server.send(200, "text/html", "");
+
+
+
+}
+
+
 void ICACHE_FLASH_ATTR handle_bytedump() {
   String bytedump; 
   // your 32s are : 31,63,95,127,159,191,223,255,287,319,351,383,415,447,479,511
@@ -129,7 +148,6 @@ Wifi Config Page
 
 
 void ICACHE_FLASH_ATTR handle_wifi() {
-String buf; 
  
  if (server.hasArg("ssid")) ssid_command(server.arg("ssid"));
  if (server.hasArg("password")) password_command(server.arg("password"));
@@ -344,7 +362,6 @@ String buf;
 void handle_misc ()
 
 {
-  String buf; 
    //Serial.println();
   //Serial.print("Page hit...(");
   //Serial.print(ESP.getFreeHeap());
