@@ -11,7 +11,10 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint32_t timeforsequence; 
   bool     coordinates_OK = false;
   uint16_t x_rand,y_rand;
-  RgbColor color;
+  static uint32_t counter; 
+  static uint16_t position = 0; 
+   RgbColor color;
+   static uint8_t static_colour; 
 // these are defaults... 
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 1;
@@ -42,7 +45,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     effectPosition = 0;   
 
      //if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
-     if (effect_option == 1 ) {
+     if (effect_option > 0) {
       animator->FadeTo(1000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
      }
 
@@ -81,9 +84,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 //      espcyclecount = ESP.getCycleCount(); 
 
        //if (effect_option == 1 ) {
- 
-       color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
-       
+
         //Serial.print("Colour chosen: ");
         //Serial.println(numbercalled++); 
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
@@ -115,6 +116,21 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           }
 
     if (coordinates_OK) {
+          counter++; 
+          float range = 255.0 / float(var1);
+          if (effect_option == 3 ) {
+            if (counter % numberofpoints == 0) static_colour = random(255); 
+            if (position > numberofpoints) position = 0; 
+            color = Return_Analogous(Wheel(static_colour), position++, numberofpoints , range) ;
+            color = dim(color);
+            } else if (effect_option == 4) { 
+            if (var1 == 0) var1 = 10; 
+            color = Return_Analogous(NewColour, random(numberofpoints), numberofpoints , range) ;
+            color = dim(color);               
+            } else { 
+            color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
+            }
+       
 
       uint32_t lower_boundary = CurrentAnimationSpeed * IntervalMultiplier * 1 ;
       uint32_t upper_boundary = CurrentAnimationSpeed * IntervalMultiplier * 100 ;

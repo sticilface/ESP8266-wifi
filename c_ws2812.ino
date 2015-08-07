@@ -2730,16 +2730,27 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 RgbColor cache Return_Complementary(RgbColor Value) {
     HslColor original = HslColor(Value);
-    //Debug("Original Hue = ");
-    //Debug(original.H);
     original.H += 0.5; 
-    //Debug(" ==> ");
     if (original.H > 1.0) original.H -= 1.0;
-
-    //Debug("New Hue = ");
-    //Debugln(original.H);
     return RgbColor(original);
 }
+
+
+RgbColor cache Return_Analogous(RgbColor Value, uint8_t position, uint8_t total, float spread) {
+    HslColor original = HslColor(Value);
+    float HUE = original.H;
+    float HUE_lower = HUE - (spread / 2.0);
+    //float HUE_upper = HUE + (spread / 2.0);
+    float steps = spread / float(total); 
+    HUE = (HUE_lower) + float(position) * steps ; 
+    if (HUE < 0) HUE += 1;
+    if (HUE > 1) HUE -= 1;
+    //Serial.print("")
+    original.H = HUE; 
+    return RgbColor(original);
+}
+
+
 
 
 

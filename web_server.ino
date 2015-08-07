@@ -9,16 +9,11 @@ Byte DUMP EEPROM to HTML.... Main Page
 void cache handle_power() {
 
 
-       File f = SPIFFS.open("/power.htm", "r");
-       Debugf("FileSize = %u \n", f.size());
-
-       server.send (200, "text", f.readString());
-
-
-       f.close();
-
-
-  // server.send(200, "text/html", "");
+   //    File f = SPIFFS.open("/power.htm", "r");
+   //    Debugf("FileSize = %u \n", f.size());
+   //    server.send (200, "text", f.readString());
+   //    f.close();
+   //server.send(200, "text/html", "");
 
 
 

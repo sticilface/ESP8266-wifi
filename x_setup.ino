@@ -5,6 +5,8 @@ void setup( void ) {
   //WiFi.disconnect();
 
   EEPROM.begin(512);
+  
+  SPIFFS.begin();
 
 
  bool wiped = firstboot(); 
@@ -164,6 +166,10 @@ Debugln("1");
 
   server.on("/misc", handle_misc);
   server.on("/power", handle_power); 
+
+  server.serveStatic("/", SPIFFS, "/");
+
+
   buf.reserve(1024);
   
   //httpupdate();  // definately NOT working yet
@@ -208,7 +214,6 @@ Serial.println("HSL Floats ENABLED - to get rid of this...");
 #endif
 
  
-SPIFFS.begin();
 
 
   
