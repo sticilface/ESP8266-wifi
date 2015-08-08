@@ -302,21 +302,14 @@ Serial.print(") ");
   Serial.print(" - ");
   Serial.print(lasteffectupdate);
   Serial.print(" > ");
-  Serial.print(WS2812interval);
-
+  Serial.print(WS2812_Settings.Timer);
   Serial.print(") ("); 
-  if  ( (millis() - lasteffectupdate > WS2812interval) || (lasteffectupdate == 0 ) )  {
+  if  ( (millis() - lasteffectupdate > WS2812_Settings.Timer) || (lasteffectupdate == 0 ) )  {
     Serial.print("Update available");
   } else {
     Serial.print("waiting");
   } ;
   Serial.println(")");
-
-
-
-
-
-
 }
 
 //This function will write a 4 byte (32bit) long to the eeprom at

@@ -45,220 +45,220 @@ delay(100);
 }
 
 
-void Load_LED_Defaults_old (uint8_t location) {
-uint8_t temp,tempb; 
-// START_address_settings
+// void Load_LED_Defaults_old (uint8_t location) {
+// uint8_t temp,tempb; 
+// // START_address_settings
 
-if ( location < 0 || location > 10) location = 0; 
-
-
-uint16_t address = START_address_settings + (32 * location); 
+// if ( location < 0 || location > 10) location = 0; 
 
 
-  // START_address_settings = 160; 
+// uint16_t address = START_address_settings + (32 * location); 
 
-// 1 --------------------------------   LAST OP STATE ------------------------
-     temp = EEPROM.read(address++);
 
-    if (isnan(temp)) temp = 0;
+//   // START_address_settings = 160; 
 
-    if (temp != 0 ) {  LastOpState = (operatingState)temp; };  // Stops last opstate being over written by an OFF..
-// 2 --------------------------------   Timer ---------------------------------
+// // 1 --------------------------------   LAST OP STATE ------------------------
+//      temp = EEPROM.read(address++);
+
+//     if (isnan(temp)) temp = 0;
+
+//     if (temp != 0 ) {  LastOpState = (operatingState)temp; };  // Stops last opstate being over written by an OFF..
+// // 2 --------------------------------   Timer ---------------------------------
     
-     temp = EEPROM.read(address++);
-     tempb = EEPROM.read(address++);
-        if(isnan(temp)) temp = 0;
-        if(isnan(tempb)) temp = 0;
-        WS2812interval = temp*256+tempb;
-        if (WS2812interval == 0 ) WS2812interval = 1; // Keep it to a minimum of 1
-        //if (isnan(WS2812interval)) WS2812interval = 2000;
+//      temp = EEPROM.read(address++);
+//      tempb = EEPROM.read(address++);
+//         if(isnan(temp)) temp = 0;
+//         if(isnan(tempb)) temp = 0;
+//         WS2812interval = temp*256+tempb;
+//         if (WS2812interval == 0 ) WS2812interval = 1; // Keep it to a minimum of 1
+//         //if (isnan(WS2812interval)) WS2812interval = 2000;
 
-        //Serial.printf("Retrieved EEPROM timer = %u \n", WS2812interval); 
+//         //Serial.printf("Retrieved EEPROM timer = %u \n", WS2812interval); 
 
-// 3 --------------------------------  Animation speed -------------------------
+// // 3 --------------------------------  Animation speed -------------------------
 
-     temp = EEPROM.read(address++);
-     tempb = EEPROM.read(address++);
+//      temp = EEPROM.read(address++);
+//      tempb = EEPROM.read(address++);
 
-        if(isnan(temp)) temp = 0;
-        if(isnan(tempb)) temp = 0;
-        CurrentAnimationSpeed = temp*256+tempb;
-        if (CurrentAnimationSpeed ==0 ) CurrentAnimationSpeed = 1; // keep to a minimum of 1
-    //    if (isnan(CurrentAnimationSpeed) || CurrentAnimationSpeed == 0) CurrentAnimationSpeed = 2000;
-
-
-// 4--------------------------------  Brightness -------------------------
-
-        CurrentBrightness = EEPROM.read(address++);
-        if (isnan(CurrentBrightness) || CurrentBrightness == 0) CurrentBrightness = 255;
-
-// 5--------------------------------  R G B  -------------------------
-
-      uint8_t R = EEPROM.read(address++);
-      uint8_t G = EEPROM.read(address++);
-      uint8_t B = EEPROM.read(address++);
-
-      Debugf("Colour debugging (EEPROM) R=%u, G=%u, B=%u \n", R, G, B);
+//         if(isnan(temp)) temp = 0;
+//         if(isnan(tempb)) temp = 0;
+//         CurrentAnimationSpeed = temp*256+tempb;
+//         if (CurrentAnimationSpeed ==0 ) CurrentAnimationSpeed = 1; // keep to a minimum of 1
+//     //    if (isnan(CurrentAnimationSpeed) || CurrentAnimationSpeed == 0) CurrentAnimationSpeed = 2000;
 
 
-      String Rstring, Gstring, Bstring;
+// // 4--------------------------------  Brightness -------------------------
 
-      NewColour = RgbColor(R,G,B);
+//         CurrentBrightness = EEPROM.read(address++);
+//         if (isnan(CurrentBrightness) || CurrentBrightness == 0) CurrentBrightness = 255;
 
-      if (R == 0) { Rstring = "00" ;
-        } else if  ( R < 16 && R > 0 ) {
-           Rstring = "0" + String(R,HEX); 
-        } else {
-           Rstring = String(R,HEX); 
-        } 
+// // 5--------------------------------  R G B  -------------------------
 
-      if (G == 0) { Gstring = "00" ;
-        } else if  ( G < 16 && G > 0 ) {
-           Gstring = "0" + String(G,HEX); 
-        } else {
-           Gstring = String(G,HEX); 
-        } 
+//       uint8_t R = EEPROM.read(address++);
+//       uint8_t G = EEPROM.read(address++);
+//       uint8_t B = EEPROM.read(address++);
 
-      if (B == 0) { Bstring = "00" ;
-        } else if  ( B < 16 && B > 0 ) {
-           Bstring = "0" + String(B,HEX); 
-        } else {
-           Bstring = String(B,HEX); 
-        } 
-
-  //    if (G == 0) { Gstring = "00" ;} else  Gstring = String(G,HEX);       
-  //    if (B == 0) { Bstring = "00" ;} else  Bstring = String(B,HEX); 
-
-      Debug("Colour debugging (String) R=") ; 
-      Debug(Rstring); 
-      Debug(", G=");
-      Debug(Gstring);
-      Debug(", B=");
-      Debugln(Bstring); 
-
-      WebRGBcolour = Rstring + Gstring + Bstring; 
-
-  //    if (R < 16 && R > 0) WebRGBcolour = "0" + WebRGBcolour; 
+//       Debugf("Colour debugging (EEPROM) R=%u, G=%u, B=%u \n", R, G, B);
 
 
-      WebRGBcolour.toUpperCase();
+//       String Rstring, Gstring, Bstring;
 
-      Debug("Final result = "); 
-      Debugln(WebRGBcolour); 
+//       NewColour = RgbColor(R,G,B);
+
+//       if (R == 0) { Rstring = "00" ;
+//         } else if  ( R < 16 && R > 0 ) {
+//            Rstring = "0" + String(R,HEX); 
+//         } else {
+//            Rstring = String(R,HEX); 
+//         } 
+
+//       if (G == 0) { Gstring = "00" ;
+//         } else if  ( G < 16 && G > 0 ) {
+//            Gstring = "0" + String(G,HEX); 
+//         } else {
+//            Gstring = String(G,HEX); 
+//         } 
+
+//       if (B == 0) { Bstring = "00" ;
+//         } else if  ( B < 16 && B > 0 ) {
+//            Bstring = "0" + String(B,HEX); 
+//         } else {
+//            Bstring = String(B,HEX); 
+//         } 
+
+//   //    if (G == 0) { Gstring = "00" ;} else  Gstring = String(G,HEX);       
+//   //    if (B == 0) { Bstring = "00" ;} else  Bstring = String(B,HEX); 
+
+//       Debug("Colour debugging (String) R=") ; 
+//       Debug(Rstring); 
+//       Debug(", G=");
+//       Debug(Gstring);
+//       Debug(", B=");
+//       Debugln(Bstring); 
+
+//       WebRGBcolour = Rstring + Gstring + Bstring; 
+
+//   //    if (R < 16 && R > 0) WebRGBcolour = "0" + WebRGBcolour; 
+
+
+//       WebRGBcolour.toUpperCase();
+
+//       Debug("Final result = "); 
+//       Debugln(WebRGBcolour); 
 
      
-// 6--------------------------------  Vars 1 - 10   -------------------------
+// // 6--------------------------------  Vars 1 - 10   -------------------------
 
-                    var1 = EEPROM.read(address++); 
-                    var2 = EEPROM.read(address++); 
-                    var3 = EEPROM.read(address++); 
-                    var4 = EEPROM.read(address++); 
-      IntervalMultiplier = EEPROM.read(address++); // var5
-                    var6 = EEPROM.read(address++); 
-                    var7 = EEPROM.read(address++); 
-                    var8 = EEPROM.read(address++); 
-                    var9 = EEPROM.read(address++); 
-                   var10 = EEPROM.read(address++); 
+//                     var1 = EEPROM.read(address++); 
+//                     var2 = EEPROM.read(address++); 
+//                     var3 = EEPROM.read(address++); 
+//                     var4 = EEPROM.read(address++); 
+//       IntervalMultiplier = EEPROM.read(address++); // var5
+//                     var6 = EEPROM.read(address++); 
+//                     var7 = EEPROM.read(address++); 
+//                     var8 = EEPROM.read(address++); 
+//                     var9 = EEPROM.read(address++); 
+//                    var10 = EEPROM.read(address++); 
 
-   // Serial.print("Settings Loaded for : ");
-    // Serial.println(location);
-if (IntervalMultiplier == 0) IntervalMultiplier = 1; 
+//    // Serial.print("Settings Loaded for : ");
+//     // Serial.println(location);
+// if (IntervalMultiplier == 0) IntervalMultiplier = 1; 
 
 
-if (location != 0) {
+// if (location != 0) {
 
-    //send_mqtt_msg("loadpreset", String("0")); // not sure about this!
+//     //send_mqtt_msg("loadpreset", String("0")); // not sure about this!
 
-  //  String msg  = String(location) + " Loaded";
-  //  send_mqtt_msg("Status", msg); 
-  //  send_current_settings();
-    // This line ensures that upon reboot if a preset was loaded, that is NOT 0, it gets reloaded
-    // if it is a loaded on that has been changed.  not needed.... 
-    EEPROM.write(LastOpState_Address, location);
+//   //  String msg  = String(location) + " Loaded";
+//   //  send_mqtt_msg("Status", msg); 
+//   //  send_current_settings();
+//     // This line ensures that upon reboot if a preset was loaded, that is NOT 0, it gets reloaded
+//     // if it is a loaded on that has been changed.  not needed.... 
+//     EEPROM.write(LastOpState_Address, location);
     
-    EEPROM_commit_var = true; 
-}
+//     EEPROM_commit_var = true; 
+// }
 
 
 
 
-}
+// }
 
 
 
-void Save_LED_Settings_old (uint8_t location) {
+// void Save_LED_Settings_old (uint8_t location) {
     
-  if ( location < 0 || location > 10) return; 
+//   if ( location < 0 || location > 10) return; 
 
 
 
 
-  uint16_t address = START_address_settings + (32 * location); 
+//   uint16_t address = START_address_settings + (32 * location); 
 
-//Serial.print("Saving LED data, address = ");
-//Serial.println(address);
+// //Serial.print("Saving LED data, address = ");
+// //Serial.println(address);
 
-  // START_address_settings = 160; 
+//   // START_address_settings = 160; 
 
-// 1 --------------------------------   LAST OP STATE ------------------------
-     EEPROM.write(address++, LastOpState);
+// // 1 --------------------------------   LAST OP STATE ------------------------
+//      EEPROM.write(address++, LastOpState);
 
-// 2 --------------------------------   Timer ---------------------------------
+// // 2 --------------------------------   Timer ---------------------------------
     
-     EEPROM.write(address++, WS2812interval / 256 );
-     EEPROM.write(address++, WS2812interval % 256 );
+//      EEPROM.write(address++, WS2812interval / 256 );
+//      EEPROM.write(address++, WS2812interval % 256 );
 
 
-// 3 --------------------------------  Animation speed -------------------------
+// // 3 --------------------------------  Animation speed -------------------------
 
-     EEPROM.write(address++, CurrentAnimationSpeed / 256 );
-     EEPROM.write(address++, CurrentAnimationSpeed % 256 );
-     //EEPROM.commit();
-     //uint8_t testb = EEPROM.read(address-1); 
-     //Debugf("Animation speed saved =%u \n",CurrentAnimationSpeed);
-     //int reread = (testa * 256) + testb;
-     //Debugf("Animation speed read back =%u \n",reread);
-
-
-// 4--------------------------------  Brightness -------------------------
+//      EEPROM.write(address++, CurrentAnimationSpeed / 256 );
+//      EEPROM.write(address++, CurrentAnimationSpeed % 256 );
+//      //EEPROM.commit();
+//      //uint8_t testb = EEPROM.read(address-1); 
+//      //Debugf("Animation speed saved =%u \n",CurrentAnimationSpeed);
+//      //int reread = (testa * 256) + testb;
+//      //Debugf("Animation speed read back =%u \n",reread);
 
 
-    EEPROM.write(address++, CurrentBrightness );
+// // 4--------------------------------  Brightness -------------------------
 
-// 5--------------------------------  R G B  -------------------------
 
-      EEPROM.write(address++, NewColour.R);
-      EEPROM.write(address++, NewColour.G);
-      EEPROM.write(address++, NewColour.B);
+//     EEPROM.write(address++, CurrentBrightness );
+
+// // 5--------------------------------  R G B  -------------------------
+
+//       EEPROM.write(address++, NewColour.R);
+//       EEPROM.write(address++, NewColour.G);
+//       EEPROM.write(address++, NewColour.B);
      
-// 6--------------------------------  Vars 1 - 10   -------------------------
+// // 6--------------------------------  Vars 1 - 10   -------------------------
 
-     EEPROM.write(address++, var1);
-     EEPROM.write(address++, var2);
-     EEPROM.write(address++, var3);
-     EEPROM.write(address++, var4);
-     EEPROM.write(address++, IntervalMultiplier);
-     EEPROM.write(address++, var6);
-     EEPROM.write(address++, var7);
-     EEPROM.write(address++, var8);
-     EEPROM.write(address++, var9);
-     EEPROM.write(address++, var10);
+//      EEPROM.write(address++, var1);
+//      EEPROM.write(address++, var2);
+//      EEPROM.write(address++, var3);
+//      EEPROM.write(address++, var4);
+//      EEPROM.write(address++, IntervalMultiplier);
+//      EEPROM.write(address++, var6);
+//      EEPROM.write(address++, var7);
+//      EEPROM.write(address++, var8);
+//      EEPROM.write(address++, var9);
+//      EEPROM.write(address++, var10);
 
-     if (location == 0 ) EEPROM.write(LastOpState_Address, 0); // if were no longer on preset.. but defualt back to 0
+//      if (location == 0 ) EEPROM.write(LastOpState_Address, 0); // if were no longer on preset.. but defualt back to 0
 
-     EEPROM_commit_var = true;
-     //Serial.print("Settings Saved for : ");
-     //Serial.println(location);
+//      EEPROM_commit_var = true;
+//      //Serial.print("Settings Saved for : ");
+//      //Serial.println(location);
 
-   //  String msg  = String(location) + " Saved";
+//    //  String msg  = String(location) + " Saved";
 
-     if (location != 0)   { 
-     // send_mqtt_msg("Status", msg); 
-      current_loaded_preset_changed = false; 
-      current_loaded_preset = location; 
-    }
+//      if (location != 0)   { 
+//      // send_mqtt_msg("Status", msg); 
+//       current_loaded_preset_changed = false; 
+//       current_loaded_preset = location; 
+//     }
 
-}
+// }
 
 
 
@@ -291,12 +291,14 @@ void cache eeprom_read_string(uint16_t address, char* buffer, uint16_t length) {
 
 void cache Save_LED_Settings (uint8_t location) {
 
-WS2812_Settings.LastOpState = LastOpState ; 
-WS2812_Settings.Timer = WS2812interval;
-WS2812_Settings.Animationspeed = CurrentAnimationSpeed; 
-WS2812_Settings.Brightness = CurrentBrightness;
-WS2812_Settings.Color = NewColour; 
-WS2812_Settings.var1 = var1; 
+//WS2812_Settings.LastOpState = LastOpState ; 
+//WS2812_Settings.Timer = WS2812interval;
+WS2812_Settings.Animationspeed = CurrentAnimationSpeed;  // trying to get rid of this !  
+//WS2812_Settings.Brightness = CurrentBrightness;
+//WS2812_Settings.Color = NewColour; 
+
+
+/*WS2812_Settings.var1 = var1; 
 WS2812_Settings.var2 = var2;
 WS2812_Settings.var3 = var3;
 WS2812_Settings.var4 = var4;
@@ -305,7 +307,7 @@ WS2812_Settings.var6 = var6;
 WS2812_Settings.var7 = var7;
 WS2812_Settings.var8 = var8;
 WS2812_Settings.var9 = var9;
-WS2812_Settings.var10 = var10; 
+WS2812_Settings.var10 = var10; */
   
   if ( location < 0 || location > 10) return;  // check valid storage range. 
   uint16_t address = START_address_settings + (32 * location); 
@@ -342,14 +344,17 @@ EEPROM_readAnything(address, WS2812_Settings);
 
   //LastOpState = WS2812_Settings.LastOpState; 
 
-  if (WS2812_Settings.LastOpState != 0 ) {  LastOpState = (operatingState)WS2812_Settings.LastOpState; };  // Stops last opstate being over written by an OFF..
+//  if (WS2812_Settings.LastOpState != 0 ) {  LastOpState = (operatingState)WS2812_Settings.LastOpState; };  // Stops last opstate being over written by an OFF..
+  if (WS2812_Settings.SavedOpState != OFF ) { LastOpState = WS2812_Settings.SavedOpState; };  // Stops last opstate being over written by an OFF..
 
 
-  WS2812interval = WS2812_Settings.Timer;
+  //WS2812interval = WS2812_Settings.Timer;
   CurrentAnimationSpeed = WS2812_Settings.Animationspeed; 
-  CurrentBrightness = WS2812_Settings.Brightness;
-  NewColour = WS2812_Settings.Color; 
-  var1 = WS2812_Settings.var1; 
+  //CurrentBrightness = WS2812_Settings.Brightness;
+  //NewColour = WS2812_Settings.Color; 
+
+
+/*  var1 = WS2812_Settings.var1; 
   var2 = WS2812_Settings.var2;
   var3 = WS2812_Settings.var3;
   var4 = WS2812_Settings.var4;
@@ -358,12 +363,12 @@ EEPROM_readAnything(address, WS2812_Settings);
   var7 = WS2812_Settings.var7;
   var8 = WS2812_Settings.var8;
   var9 = WS2812_Settings.var9;
-  var10 = WS2812_Settings.var10; 
+  var10 = WS2812_Settings.var10; */
 
 
 
-Serial.println("Settings loaded -------------------------"); 
-Serial.println(WS2812_Settings.LastOpState);
+Serial.println("Settings loaded ------------"); 
+Serial.println(WS2812_Settings.SavedOpState);
 Serial.println(WS2812_Settings.Timer);
 Serial.println(WS2812_Settings.Animationspeed);
 Serial.println(WS2812_Settings.Brightness);

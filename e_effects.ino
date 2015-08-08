@@ -1,11 +1,23 @@
+// static const char *VAR_STRING[] = {
+// "Palette           ", // var 1
+// "Palette Range     ", // var 2
+// "Number Of Colours ", // var 3
+// "Var4              ", // var 4
+// "IntervalMultiplier", // var 5
+// "Effect Option     ", // var 6
+// "Total_X           ", // var 7
+// "Number of effects ", // var 8
+// "Var9              ", // var 9
+// "Size of effect    "};// var 10
+
 
 void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   uint16_t x,y, total_y;
-  uint16_t total_x = var7; 
-  uint8_t  square_size =  var10;
-  uint8_t  numberofpoints = var8; // default 5, if it = 10, then its random......
-  uint8_t  effect_option = var6;
+  uint16_t total_x = WS2812_Settings.var7; 
+  uint8_t  square_size =  WS2812_Settings.var10;
+  uint8_t  numberofpoints = WS2812_Settings.var8; // default 5, if it = 10, then its random......
+  uint8_t  effect_option = WS2812_Settings.var6;
   uint8_t  dimoffset ; 
   int      pixel; // has to carry negative value now. 
   uint32_t timeforsequence; 
@@ -51,7 +63,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
      
      if (effect_option == 0) { 
-          dimoffset = CurrentBrightness / 5;
+          dimoffset = WS2812_Settings.Brightness / 5;
           RgbColor Top =     dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset );
           RgbColor Bottom =  dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset ) ;        
           top_bottom_fade(  Top , Bottom , total_x, CurrentAnimationSpeed); 
@@ -117,15 +129,15 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     if (coordinates_OK) {
           counter++; 
-          if (var1 == 0) var1 = 10; 
-          float range = 10.0 / float(var1);
+          if (WS2812_Settings.var1 == 0) WS2812_Settings.var1 = 10; 
+          float range = 10.0 / float(WS2812_Settings.var1);
           if (effect_option == 3 ) {
             if (counter % numberofpoints == 0) { static_colour = random(255); position = 0 ;} ; 
             //if (position > numberofpoints) position = 0; 
             color = Return_Analogous(Wheel(static_colour), position++, numberofpoints , range) ;
             color = dim(color);
             } else if (effect_option == 4) { 
-            color = Return_Analogous(NewColour, random(numberofpoints), numberofpoints , range) ;
+            color = Return_Analogous(WS2812_Settings.Color, random(numberofpoints), numberofpoints , range) ;
             color = dim(color);               
             } else { 
             color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));

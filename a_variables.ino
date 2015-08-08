@@ -174,7 +174,7 @@ static const char *MODE_STRING[] = {
 
 
 uint32_t lasteffectupdate = 0; 
-uint16_t WS2812interval = 2000; 
+//uint16_t WS2812interval = 2000; 
 uint32_t power = 0; 
 
 uint8_t current_loaded_preset = 0; 
@@ -186,13 +186,13 @@ bool EEPROM_commit_var = false;
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
-uint8_t CurrentBrightness = 255; 
+//uint8_t CurrentBrightness = 255; 
 bool paused = false; 
 bool LED_Settings_Changed = false; 
 uint16_t CurrentAnimationSpeed = 2000; 
 uint8_t IntervalMultiplier = 1; 
 
-RgbColor NewColour = RgbColor(0,0,0);
+//RgbColor NewColour = RgbColor(0,0,0);
 
 String WebRGBcolour = "000000"; // This is for the WEBPAGE... takes the value when colour is changed...
 
@@ -205,14 +205,14 @@ unsigned long Random_func_timeout = 0;
 
 uint16_t effectPosition = 0;
 
-uint16_t 
-var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
-var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
+//uint16_t 
+//var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
+//var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
 
 static const char *VAR_STRING[] = {
-"Ceiling           ", // var 1
-"Floor             ", // var 2
-"Var3              ", // var 3
+"Palette           ", // var 1
+"Palette Range     ", // var 2
+"Number Of Colours ", // var 3
 "Var4              ", // var 4
 "IntervalMultiplier", // var 5
 "Effect Option     ", // var 6
@@ -222,12 +222,12 @@ static const char *VAR_STRING[] = {
 "Size of effect    "};// var 10
 
 
-#ifdef LOOPDEBUG
-bool temp_bug_track = false ; 
-#endif
+//#ifdef LOOPDEBUG
+//bool temp_bug_track = false ; 
+//#endif
 
-uint32_t temp_unfinished = 0;
-uint32_t temp_lastunfinished = 0; 
+//uint32_t temp_unfinished = 0;
+//uint32_t temp_lastunfinished = 0; 
 
 //////////////////////////// --  WEB PAGES -----
 
@@ -252,7 +252,7 @@ struct config_t
 
 
 struct WS2812Settings_t {
-   uint8_t LastOpState;
+   operatingState SavedOpState;
    uint16_t Timer;
    uint16_t Animationspeed; 
    uint8_t Brightness;
