@@ -117,14 +117,14 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     if (coordinates_OK) {
           counter++; 
-          float range = 255.0 / float(var1);
+          if (var1 == 0) var1 = 10; 
+          float range = 10.0 / float(var1);
           if (effect_option == 3 ) {
-            if (counter % numberofpoints == 0) static_colour = random(255); 
-            if (position > numberofpoints) position = 0; 
+            if (counter % numberofpoints == 0) { static_colour = random(255); position = 0 ;} ; 
+            //if (position > numberofpoints) position = 0; 
             color = Return_Analogous(Wheel(static_colour), position++, numberofpoints , range) ;
             color = dim(color);
             } else if (effect_option == 4) { 
-            if (var1 == 0) var1 = 10; 
             color = Return_Analogous(NewColour, random(numberofpoints), numberofpoints , range) ;
             color = dim(color);               
             } else { 
@@ -137,7 +137,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       upper_boundary = constrain(upper_boundary, lower_boundary ,65000); // can get rid of this when animation scaling 
       timeforsequence = random(lower_boundary,upper_boundary);
-      Debugf("Time = %u \n",timeforsequence);
+     // Debugf("Time = %u \n",timeforsequence);
       //timeforsequence = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
     for (uint16_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)

@@ -144,12 +144,12 @@ Wifi Config Page
 
 void ICACHE_FLASH_ATTR handle_wifi() {
  
- if (server.hasArg("ssid")) ssid_command(server.arg("ssid"));
- if (server.hasArg("password")) password_command(server.arg("password"));
- if (server.hasArg("deviceid")) deviceid_command(server.arg("deviceid"));
- if (server.hasArg("mqttserver")) mqttserver_command(server.arg("mqttserver")); 
- if (server.hasArg("scan")) scannetworks();
- if (server.hasArg("reboot")) ESP.reset(); // abort();
+ if (server.arg("ssid").length() !=0 ) ssid_command(server.arg("ssid"));
+ if (server.arg("password").length() !=0 ) password_command(server.arg("password"));
+ if (server.arg("deviceid").length() !=0 ) deviceid_command(server.arg("deviceid"));
+ if (server.arg("mqttserver").length() !=0 ) mqttserver_command(server.arg("mqttserver")); 
+ if (server.arg("scan").length() !=0 ) scannetworks();
+ if (server.arg("reboot").length() !=0 ) ESP.reset(); // abort();
 
   
   

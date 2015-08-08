@@ -454,7 +454,7 @@ void  cache WS2812_mode_string (String Value)
       
 
     //send_mqtt_msg("effect", MODE_STRING[HoldingOpState]); 
-
+    EEPROM_commit_var = true;
     //if (millis() > 11000) 
     send_current_settings(); 
 }
@@ -2742,11 +2742,18 @@ RgbColor cache Return_Analogous(RgbColor Value, uint8_t position, uint8_t total,
     float HUE_lower = HUE - (spread / 2.0);
     //float HUE_upper = HUE + (spread / 2.0);
     float steps = spread / float(total); 
-    HUE = (HUE_lower) + float(position) * steps ; 
+    HUE = HUE_lower + ( float(position) * float(steps) ); 
     if (HUE < 0) HUE += 1;
     if (HUE > 1) HUE -= 1;
     //Serial.print("")
     original.H = HUE; 
+  
+  //  Serial.print(position);
+  //  Serial.print(": ");
+  //  Serial.print(HUE_lower,5);
+  //  Serial.print(" --> ");
+  //  Serial.println(HUE,5);
+  
     return RgbColor(original);
 }
 
