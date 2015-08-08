@@ -416,6 +416,7 @@ void handle_misc ()
   <br> Millis = % \
   <br> Up Time = % \
   <br> VCC = % \
+  <br> RSSI = % \
   <p><form action='/misc' method='POST'>\
   <p> Select Speed <select name='serial' onchange='this.form.submit();'>\
   ");
@@ -435,6 +436,7 @@ void handle_misc ()
   buf = insertvariable ( buf, String(millis()));
   buf = insertvariable  (buf, String(Up_time));
   buf = insertvariable  (buf, String(ESP.getVcc()));
+  buf = insertvariable (buf, String(WiFi.RSSI()));
   
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send(200, "text/html", "");
@@ -477,3 +479,6 @@ void handle_misc ()
   //Serial.print(")");
 
 }  
+
+
+

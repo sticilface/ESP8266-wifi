@@ -45,7 +45,7 @@ delay(100);
 }
 
 
-void Load_LED_Defaults (uint8_t location) {
+void Load_LED_Defaults_old (uint8_t location) {
 uint8_t temp,tempb; 
 // START_address_settings
 
@@ -186,11 +186,8 @@ if (location != 0) {
 
 
 
-void Save_LED_Settings (uint8_t location) {
+void Save_LED_Settings_old (uint8_t location) {
     
-
-
-
   if ( location < 0 || location > 10) return; 
 
 
@@ -288,6 +285,175 @@ void cache eeprom_read_string(uint16_t address, char* buffer, uint16_t length) {
   if ((buf != 0x00) && (position >= 1)) {
     buffer[position - 1] = 0;
   }
+
+}
+
+
+void cache Save_LED_Settings (uint8_t location) {
+
+WS2812_Settings.LastOpState = LastOpState ; 
+WS2812_Settings.Timer = WS2812interval;
+WS2812_Settings.Animationspeed = CurrentAnimationSpeed; 
+WS2812_Settings.Brightness = CurrentBrightness;
+WS2812_Settings.Color = NewColour; 
+WS2812_Settings.var1 = var1; 
+WS2812_Settings.var2 = var2;
+WS2812_Settings.var3 = var3;
+WS2812_Settings.var4 = var4;
+WS2812_Settings.var5 = IntervalMultiplier;
+WS2812_Settings.var6 = var6;
+WS2812_Settings.var7 = var7;
+WS2812_Settings.var8 = var8;
+WS2812_Settings.var9 = var9;
+WS2812_Settings.var10 = var10; 
+  
+  if ( location < 0 || location > 10) return;  // check valid storage range. 
+  uint16_t address = START_address_settings + (32 * location); 
+  EEPROM_writeAnything( address, WS2812_Settings); 
+
+  ///////
+
+     if (location == 0 ) EEPROM.write(LastOpState_Address, 0); // if were no longer on preset.. but defualt back to 0
+
+     EEPROM_commit_var = true;
+     //Serial.print("Settings Saved for : ");
+     //Serial.println(location);
+
+   //  String msg  = String(location) + " Saved";
+
+     if (location != 0)   { 
+     // send_mqtt_msg("Status", msg); 
+      current_loaded_preset_changed = false; 
+      current_loaded_preset = location; 
+    }
+//////
+
+
+
+}
+
+
+void cache Load_LED_Defaults (uint8_t location) {
+
+// START_address_settings
+if ( location < 0 || location > 10) location = 0; 
+uint16_t address = START_address_settings + (32 * location); 
+EEPROM_readAnything(address, WS2812_Settings);
+
+  //LastOpState = WS2812_Settings.LastOpState; 
+
+  if (WS2812_Settings.LastOpState != 0 ) {  LastOpState = (operatingState)WS2812_Settings.LastOpState; };  // Stops last opstate being over written by an OFF..
+
+
+  WS2812interval = WS2812_Settings.Timer;
+  CurrentAnimationSpeed = WS2812_Settings.Animationspeed; 
+  CurrentBrightness = WS2812_Settings.Brightness;
+  NewColour = WS2812_Settings.Color; 
+  var1 = WS2812_Settings.var1; 
+  var2 = WS2812_Settings.var2;
+  var3 = WS2812_Settings.var3;
+  var4 = WS2812_Settings.var4;
+  IntervalMultiplier = WS2812_Settings.var5;
+  var6 = WS2812_Settings.var6;
+  var7 = WS2812_Settings.var7;
+  var8 = WS2812_Settings.var8;
+  var9 = WS2812_Settings.var9;
+  var10 = WS2812_Settings.var10; 
+
+
+
+Serial.println("Settings loaded -------------------------"); 
+Serial.println(WS2812_Settings.LastOpState);
+Serial.println(WS2812_Settings.Timer);
+Serial.println(WS2812_Settings.Animationspeed);
+Serial.println(WS2812_Settings.Brightness);
+Serial.print(WS2812_Settings.Color.R);
+Serial.print("  "); 
+Serial.print(WS2812_Settings.Color.G);
+Serial.print("  "); 
+Serial.println(WS2812_Settings.Color.B);
+Serial.println(WS2812_Settings.var1);
+Serial.println(WS2812_Settings.var2);
+Serial.println(WS2812_Settings.var3);
+Serial.println(WS2812_Settings.var4);
+Serial.println(WS2812_Settings.var5);
+Serial.println(WS2812_Settings.var6);
+Serial.println(WS2812_Settings.var7);
+Serial.println(WS2812_Settings.var8);
+Serial.println(WS2812_Settings.var9);
+Serial.println(WS2812_Settings.var10);
+Serial.println("End-------------------------"); 
+
+        String Rstring, Gstring, Bstring;
+        uint8_t R, G, B; 
+        R = WS2812_Settings.Color.R;
+        G = WS2812_Settings.Color.G;
+        B = WS2812_Settings.Color.B;
+
+
+      if (R == 0) { Rstring = "00" ;
+        } else if  ( R < 16 && R > 0 ) {
+           Rstring = "0" + String(R,HEX); 
+        } else {
+           Rstring = String(R,HEX); 
+        } 
+
+      if (G == 0) { Gstring = "00" ;
+        } else if  ( G < 16 && G > 0 ) {
+           Gstring = "0" + String(G,HEX); 
+        } else {
+           Gstring = String(G,HEX); 
+        } 
+
+      if (B == 0) { Bstring = "00" ;
+        } else if  ( B < 16 && B > 0 ) {
+           Bstring = "0" + String(B,HEX); 
+        } else {
+           Bstring = String(B,HEX); 
+        } 
+
+  //    if (G == 0) { Gstring = "00" ;} else  Gstring = String(G,HEX);       
+  //    if (B == 0) { Bstring = "00" ;} else  Bstring = String(B,HEX); 
+
+      Debug("Colour debugging (String) R=") ; 
+      Debug(Rstring); 
+      Debug(", G=");
+      Debug(Gstring);
+      Debug(", B=");
+      Debugln(Bstring); 
+
+      WebRGBcolour = Rstring + Gstring + Bstring; 
+
+  //    if (R < 16 && R > 0) WebRGBcolour = "0" + WebRGBcolour; 
+
+
+      WebRGBcolour.toUpperCase();
+
+      Debug("Final result = "); 
+      Debugln(WebRGBcolour); 
+//////
+
+      if (IntervalMultiplier == 0) IntervalMultiplier = 1; 
+
+
+if (location != 0) {
+
+    //send_mqtt_msg("loadpreset", String("0")); // not sure about this!
+
+  //  String msg  = String(location) + " Loaded";
+  //  send_mqtt_msg("Status", msg); 
+  //  send_current_settings();
+    // This line ensures that upon reboot if a preset was loaded, that is NOT 0, it gets reloaded
+    // if it is a loaded on that has been changed.  not needed.... 
+    EEPROM.write(LastOpState_Address, location);
+    
+    EEPROM_commit_var = true; 
+
+    //////
+
+
+}
+
 
 }
 

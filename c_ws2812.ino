@@ -1,13 +1,16 @@
 // TODO.... 
-// 1.  Move pixelcount and Pin to config
-// 2.  Move save settings to Main Page
+// 1.  Move animationspeed AND effects timer into one variable! 
+// 2.  
 // 3.  consolidate text and order of effects
 // 4.  MQTT - direct to pixel buffer (maybe have to re work the size of the buffer --->  look at update by mqtt...)
-// 5.  MQTT - send current saved state.... and 0 when state has changed. 
+// 5.   
 // 6.  Maybe get changes in current dim level to Walk the pixel buffer... and NOT reset the animation effect state
 // 7.  rework ALL effects to use animations class in progress
 // 8.  SORT OUT THE HSL FLOATS STUFF
-// 9   Squares timing seems off... happening quickly when it should not... 
+// 9   Implement Var3 as pallette type.. Colour Picker, Complementary, analogous, Split complements, triadic, tetradic : http://www.sessions.edu/color-calculator
+// 10. Var4 = Pallette Range
+// 11. Var? = No of available colours to choose from.   
+// 12. Use AJAX and XML to serve static web page!  
 
 // EEPROM ALLOCATIONS:
 
@@ -23,7 +26,7 @@
 //int filter=80;
 
 
-// what!
+//!
 
 
 

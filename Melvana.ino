@@ -24,6 +24,6 @@
 #include <NeoPixelBus.h>
 #include "enumerates.h"
 #include "a_0plugin_headers.h"
-
+#include "eeprom_writeanything.h"
 
 ADC_MODE(ADC_VCC);
