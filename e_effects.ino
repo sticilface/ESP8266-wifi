@@ -135,8 +135,8 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 //Debug("\n1, "); 
 
       counter++;  // Is in use yet.... 
-      uint16_t lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 5 ), 2, 2000);
-      uint16_t upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 5 ), 1, 2000);
+      uint16_t lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 2, 2000);
+      uint16_t upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
 
        lower_boundary = map ( lower_boundary_2000 , 1, 2000, 500 , 65000 );
        upper_boundary = map ( upper_boundary_2000 , 1, 2000, 500 , 65000 );

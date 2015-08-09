@@ -454,10 +454,15 @@ if ( port > 0 && size > 0) {
 
 }
 
+void cache OTAreset2() {
+      OTA.stop();
+      OTA.begin(aport); // resume listenting.. 
+}
+
 void cache OTAreset() {
     
     WiFiUDP::stopAll();
-    delay(5);
+    //delay(5);
     OTA.begin(aport); // resume listenting.. 
     Debugln("OTA UDP restarted"); 
     server.send(200, "text", "DONE");

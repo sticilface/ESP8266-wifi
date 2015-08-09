@@ -189,6 +189,7 @@ Debugln("1");
   //Serial.println("HTTP server started");
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
+    timer.setInterval(60000, OTAreset2); // this resets the UDP every 10 min....
 
   //  timer.setInterval(Uptimer_timeout, uptime);
   //Serial.println("Timers set up");

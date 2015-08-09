@@ -13,7 +13,9 @@ PubSubClient mqttclient(wifiClient) ;
 
 
 // multicast DNS responder
-MDNSResponder mdns;
+//MDNSResponder mdns; // not needed anymore... still compiled though!  
+
+
 
  /// set timer....
 SimpleTimer timer;
@@ -24,8 +26,7 @@ SimpleTimer timer;
 
   NeoPixelBus* strip = NULL; // dynamic
   NeoPixelAnimator* animator = NULL;
-  
- uint8_t* pixelsPOINT = NULL;
+  uint8_t* pixelsPOINT = NULL;
 
 
 
