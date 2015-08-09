@@ -11,6 +11,17 @@
 // "Size of effect    "};// var 10
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+// 
+// 
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   uint16_t x,y, total_y;
@@ -37,16 +48,6 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   if (Number_of_colours == 0 ) Number_of_colours = 10; // set the default numbers of colours in palette. 
   total_y = return_total_y(total_x); 
 
-      //Serial.println("Generating coordinates.");
-   //          uint8_t count = 0; 
-   //   static uint32_t runningcount = 0; 
-   //   static int numbercalled = 0;
-   //   static bool temp_bug_track2 = false; 
-   //   static uint32_t espcyclecount = 0 ; 
-   //   static uint32_t temp_timer = 0; 
-   //   static bool pause_and_reboot_effect = false; 
-   //          uint32_t now = millis(); 
-
      uint32_t  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
      uint32_t  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
 
@@ -62,21 +63,9 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       animator->FadeTo(1000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
      }
 
-     
-    //  if (effect_option == 0) { 
-    //       dimoffset = WS2812_Settings.Brightness / 5;
-    //       RgbColor Top =     dim ( Wheel (  random(255)  ), (uint8_t)dimoffset );
-    //       RgbColor Bottom =  dim ( Wheel (  random(255)  ), (uint8_t)dimoffset ) ;        
-    //       top_bottom_fade(  Top , Bottom , total_x, WS2812_Settings.Timer * 32); 
-    // }
+
 
     Debugln("Squares 2 Running");
-    
-     //  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
-     //  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
-    
-    //if (temp_upper_boundary > 65000) temp_upper_boundary = 65000; 
-
     Debugf("Min time = %u \n", lower_boundary);
     Debugf("Max time = %u \n", upper_boundary);
 
@@ -236,6 +225,15 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 // end of Squares2
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+// 
+// 
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) { 
   uint16_t total_x; 
   static uint32_t random_time = 0 ; 
@@ -310,7 +308,6 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
 
     } // end of if that generates effect. 
 
-///////////////////////////////////////////////////////
     break;
 
     case POST_EFFECT:
@@ -320,6 +317,15 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
   }
 
 } // end of actual function.....
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+// 
+// 
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -340,7 +346,7 @@ void cache StripOFF() {
                   strip->SetPixelColor(n, HslColor(original.H,original.S,new_lightness));
         };
 
-        animator->StartAnimation(n, WS2812_Settings.Timer, animUpdate);
+        animator->StartAnimation(n, 2000 , animUpdate);
     }
 
     break;
@@ -356,11 +362,12 @@ void cache StripOFF() {
 
 }
 
-//void cache SetRGBcolour (RgbColor value) {
-
-//SetRGBcolour(value, WS2812_Settings.Timer); 
-
-//}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+// 
+// 
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void cache RGBcolour () {
 
@@ -373,7 +380,7 @@ void cache RGBcolour () {
     case PRE_EFFECT:
     Debugln("Effect set to Color"); 
     Pre_effect(); 
-    animator->FadeTo(WS2812_Settings.Timer, dim(WS2812_Settings.Color)); 
+    animator->FadeTo(2000, dim(WS2812_Settings.Color)); 
     break;
 
     case RUN_EFFECT:
@@ -393,6 +400,105 @@ void cache RGBcolour () {
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+// 
+// 
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+ void cache rainbow() {
+
+  static int wsPoint =0;
+
+
+  switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+
+
+      for (uint16_t n = 0; n < strip->PixelCount(); n++)
+            {
+              RgbColor original = strip->GetPixelColor(n);
+              RgbColor newcolor = dim(Wheel( n + wsPoint)); 
+
+        AnimUpdateCallback animUpdate = [=](float progress)
+        {
+              RgbColor updatedColor = RgbColor::LinearBlend(original, newcolor, progress);
+              strip->SetPixelColor(n, updatedColor);
+        };
+        animator->StartAnimation(n, 2000 , animUpdate);
+    }
+
+    Debug("Pre effect end") ; 
+    wsPoint++;  
+    Pre_effect(); 
+
+    break;
+    case RUN_EFFECT:  
+
+      if (millis() > (lasteffectupdate) && (!animator->IsAnimating()) ){
+
+        for(int i=0; i < strip->PixelCount(); i++) {
+          strip->SetPixelColor(i, dim(Wheel( i + wsPoint)));
+         }
+         wsPoint++;
+         if (wsPoint == 256) wsPoint = 0; 
+         lasteffectupdate = millis() + WS2812_Settings.Timer ;
+      }
+ 
+    break;
+    case POST_EFFECT:
+    Post_effect(); 
+    Debug("Rainbow END"); 
+    break;
+
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+// 
+// 
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void  cache Rainbowcycle() {
+  switch(Current_Effect_State) {
+    case PRE_EFFECT:
+    effectPosition = 0; 
+    Pre_effect(); 
+    for (uint16_t i = 0; i < pixelCount; i++)
+            {
+              RgbColor original = strip->GetPixelColor(i);
+        
+        AnimUpdateCallback animUpdate = [=](float progress)
+        {
+           RgbColor updatedColor = RgbColor::LinearBlend(original, dim(Wheel(i * 256 / pixelCount + effectPosition)) ,  progress) ;
+            strip->SetPixelColor(i, updatedColor);
+        };
+
+        animator->StartAnimation(i, 2000, animUpdate);
+        lasteffectupdate = millis();  
+    effectPosition++; 
+    }
+    break;
+    case RUN_EFFECT:  
+    if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
+      if (millis() - lasteffectupdate > WS2812_Settings.Timer) {      
+
+           for(uint16_t i=0; i< pixelCount; i++) {
+                strip->SetPixelColor(i, dim(Wheel(i * 256 / pixelCount + effectPosition)));
+            }
+          if (effectPosition==256*5) effectPosition=0; 
+          lasteffectupdate = millis(); 
+          effectPosition++;
+          }
+    break;
+    case POST_EFFECT:
+    Post_effect(); 
+    break;
+  }
+} // END OF RAINBOW CYCLE
 

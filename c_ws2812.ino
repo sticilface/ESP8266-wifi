@@ -1142,42 +1142,7 @@ switch(Current_Effect_State) {
 
 
 
-void  cache Rainbowcycle() {
-  switch(Current_Effect_State) {
-    case PRE_EFFECT:
-    effectPosition = 0; 
-    Pre_effect(); 
-    for (uint16_t i = 0; i < pixelCount; i++)
-            {
-              RgbColor original = strip->GetPixelColor(i);
-        
-        AnimUpdateCallback animUpdate = [=](float progress)
-        {
-           RgbColor updatedColor = RgbColor::LinearBlend(original, dim(Wheel(i * 256 / pixelCount + effectPosition)) ,  progress) ;
-            strip->SetPixelColor(i, updatedColor);
-        };
-        animator->StartAnimation(i, 2000, animUpdate);
-        lasteffectupdate = millis();  
-    effectPosition++; 
-    }
-    break;
-    case RUN_EFFECT:  
-    if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
-      if (millis() - lasteffectupdate > WS2812_Settings.Timer) {      
 
-           for(uint16_t i=0; i< pixelCount; i++) {
-                strip->SetPixelColor(i, dim(Wheel(i * 256 / pixelCount + effectPosition)));
-            }
-          if (effectPosition==256*5) effectPosition=0; 
-          lasteffectupdate = millis(); 
-          effectPosition++;
-          }
-    break;
-    case POST_EFFECT:
-    Post_effect(); 
-    break;
-  }
-} // END OF RAINBOW CYCLE
 
 
 
@@ -1338,44 +1303,25 @@ switch(Current_Effect_State) {
 
 } // end of test 4
 
- void cache rainbow() {
 
 
-switch(Current_Effect_State) {
-
-    case PRE_EFFECT:
-    Pre_effect();
-
-    break;
-    case RUN_EFFECT:  
 
 
-      if (millis() > (lasteffectupdate) ){
+// void rainbow(uint8_t wait) {
+//   uint16_t i, j;
 
-     static int wsPoint =0;
-
-     for(int i=0; i<pixelCount; i++) {
-        //RgbColor tempcolour = Wheel(i+wsPoint);
-        strip->SetPixelColor(i, dim(Wheel(i+wsPoint)));
-     }
-    
-//      if (wsPoint == WS2812_Settings.var3) wsPoint = WS2812_Settings.var2; 
-       wsPoint++;
-       lasteffectupdate = millis() + WS2812_Settings.Timer ;
-
-//    if(WS2812_Settings.var3 == 0) WS2812_Settings.var3 = 255; // MAKE sure that there is a +ve end point for the colour wheel... else wsPoint = var3;
-
-    }
- 
-    break;
-    case POST_EFFECT:
-    Post_effect(); 
-    break;
-
-}
+//   for(j=0; j<256; j++) {
+//     for(i=0; i<strip.numPixels(); i++) {
+//       strip.setPixelColor(i, Wheel((i+j) & 255));
+//     }
+//     strip.show();
+//     delay(wait);
+//   }
+// }
 
 
-}
+
+
 
 /*
 
