@@ -12,24 +12,171 @@
 // 11. Var? = No of available colours to choose from.   
 // 12. Use AJAX and XML to serve static web page!  
 
-// EEPROM ALLOCATIONS:
 
-// PixelCount_address + 0 =  
-// PixelCount_address + 1 =  
-// PixelCount_address + 2 =  
-// PixelCount_address + 3 =  LastOpState
-
-// START OF SAVED SETTINGS 160
+void cache ws2812 ()  // put switch cases here...
+{
 
 
-//int spectrumValue[7];
-//int filter=80;
+static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
+static unsigned long HoldingState_Failover = 0; 
+static unsigned long timer_PixelPower = 0; 
 
 
-//!
+switch (opState)
+   {
+   case OFF:
+      StripOFF();
+      break;
+   case RAINBOW:
+      rainbow();
+      break;
+   case COLOR:
+      SetRGBcolour(WS2812_Settings.Color);
+      break;
+   case ChaseRainbow:
+      theatreChaseRainbow();
+      break;
+   case FADE:
+      Fade();
+      break;
+   case ADALIGHT:
+      Adalight();
+      break;
+   case TEST:
+      test();
+      break;
+   case LOOPAROUND:
+      LoopAround(192, 200);
+      break;
+   case PICKRANDOM:
+      PickRandom(128);
+      break;
+   case FADEINFADEOUT:
+      FadeInFadeOutRinseRepeat(192);
+      break;
+   case COOLBLOBS:
+      CoolBlobs();
+      break;    
+    case UDP:
+      UDPfunc();
+      break;
+    case RAINBOWCYCLE:
+      Rainbowcycle();
+      break;
+    case SPIRAL:
+      spiral();
+      break;
+    case SQUARES2:
+      Squares2(0);
+      break;
+    case SQUARESRANDOM:
+      Squares2(1);
+      break;
+    case TEST4:
+      test4();
+      break;
+    case SQUARES:
+      Squares();
+      break;
+    case EQ1:
+      eq1();
+      break;
+    case RANDOM:
+      Random_colour();
+      break;
+    case RANDOMFUNC:
+      Random_function();
+      break;
+    //case ARTNET:
+    //  Art_Net_func ();
+    //  break;
+    case RANDOM_TOP_BOTTOM:
+      Effect_Top_Bottom(TWOCOLOUR,HSL);
+      break;
+    case RANDOM_TOP_BOTTOM_LINEAR:
+      Effect_Top_Bottom(TWOCOLOUR, RGB);
+      break;    
+    case SINGLE_COLOUR_FADE:
+      Effect_Top_Bottom(SINGLECOLOUR, HSL);
+      break;  
+    case RANDOM_COLOUR_FADE:
+      Effect_Top_Bottom(RANDOMSINGLECOLOUR,HSL);
+      break;      
+    case HSICYCLE:
+      HSI_Cycle();
+      break;
+    case NEWANIMATIONS:
+      test_newanimations();
+      break;
+   }
 
 
 
+if (millis() - update_strip_time > 30) {
+    if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
+    delay(0);
+    strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+    update_strip_time = millis();
+  } 
+
+  
+  if (millis() - timer_PixelPower > 10000 && opState != OFF) {
+       power = getPixelPower();
+       //Debugf("Power =%u \n",power); 
+       timer_PixelPower = millis();
+
+    //   File f = SPIFFS.open("/power.htm", "a");
+    //   f.println(power);
+    //   f.close();
+    }
+ 
+
+
+if (opState != HoldingOpState) {
+  static bool triggered = false; 
+  if (!triggered) { 
+    HoldingState_Failover = millis(); 
+    triggered = true; 
+  } 
+
+
+if (millis() - HoldingState_Failover > 5000) {
+    opState = HoldingOpState;
+    triggered = false; 
+    Current_Effect_State = PRE_EFFECT; 
+  //  Serial.println("failover activated");
+  }
+
+}
+
+if(LED_Settings_Changed) {
+  Save_LED_Settings(0);         
+  current_loaded_preset_changed = true;                                                 // Save the new settings as default
+  send_mqtt_msg("Preset", "0");       // Update the MQTT preset selection to 0
+  LED_Settings_Changed = false;                                                   // Reset settings changed. 
+}
+
+
+/*
+static bool ani_update = false;
+
+if (!ani_update && strip->IsAnimating()) {
+  Serial.print("Animating...");
+  ani_update = true;
+} else if (ani_update && !strip->IsAnimating()) {
+  Serial.println("Stopped");
+  ani_update = false;
+}
+*/
+
+//    send_mqtt_msg("effect", MODE_STRING[opState]); 
+
+
+
+if (paused) lasteffectupdate = millis(); 
+
+
+} // end of ws2812 function 
 
 
 void  cache handle_WS2812 () { // handles the web commands...
@@ -884,172 +1031,6 @@ void cache initiateWS2812 ()
 
 
 
-void cache ws2812 ()  // put switch cases here...
-{
-
-
-static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
-static unsigned long HoldingState_Failover = 0; 
-static unsigned long timer_PixelPower = 0; 
-  //Serial.print("ws2812 called case = " + String(opState));
-  //wsPoint += 1;
-
-switch (opState)
-   {
-   case OFF:
-      //if (strip) StripOFF();
-   StripOFF();
-      break;
-   case RAINBOW:
-      rainbow();
-      break;
-   case COLOR:
-      SetRGBcolour(WS2812_Settings.Color);
-      break;
-   case ChaseRainbow:
-      theatreChaseRainbow();
-      break;
-   case FADE:
-      Fade();
-      break;
-   case ADALIGHT:
-      Adalight();
-      break;
-   case TEST:
-      test();
-      break;
-   case LOOPAROUND:
-      LoopAround(192, 200);
-      break;
-   case PICKRANDOM:
-      PickRandom(128);
-      break;
-   case FADEINFADEOUT:
-      FadeInFadeOutRinseRepeat(192);
-      break;
-   case COOLBLOBS:
-      CoolBlobs();
-      break;    
-    case UDP:
-      UDPfunc();
-      break;
-    case RAINBOWCYCLE:
-      Rainbowcycle();
-      break;
-    case SPIRAL:
-      spiral();
-      break;
-    case SQUARES2:
-      Squares2(0);
-      break;
-    case SQUARESRANDOM:
-      Squares2(1);
-      break;
-    case TEST4:
-      test4();
-      break;
-    case SQUARES:
-      Squares();
-      break;
-    case EQ1:
-      eq1();
-      break;
-    case RANDOM:
-      Random_colour();
-      break;
-    case RANDOMFUNC:
-      Random_function();
-      break;
-    //case ARTNET:
-    //  Art_Net_func ();
-    //  break;
-    case RANDOM_TOP_BOTTOM:
-      Effect_Top_Bottom(TWOCOLOUR,HSL);
-      break;
-    case RANDOM_TOP_BOTTOM_LINEAR:
-      Effect_Top_Bottom(TWOCOLOUR, RGB);
-      break;    
-    case SINGLE_COLOUR_FADE:
-      Effect_Top_Bottom(SINGLECOLOUR, HSL);
-      break;  
-    case RANDOM_COLOUR_FADE:
-      Effect_Top_Bottom(RANDOMSINGLECOLOUR,HSL);
-      break;      
-    case HSICYCLE:
-      HSI_Cycle();
-      break;
-    case NEWANIMATIONS:
-      test_newanimations();
-      break;
-   }
-
-
-
-if (millis() - update_strip_time > 30) {
-    if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
-    delay(0);
-    strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
-    update_strip_time = millis();
-  } 
-
-  
-  if (millis() - timer_PixelPower > 10000 && opState != OFF) {
-       power = getPixelPower();
-       //Debugf("Power =%u \n",power); 
-       timer_PixelPower = millis();
-
-    //   File f = SPIFFS.open("/power.htm", "a");
-    //   f.println(power);
-    //   f.close();
-    }
- 
-
-
-if (opState != HoldingOpState) {
-  static bool triggered = false; 
-  if (!triggered) { 
-    HoldingState_Failover = millis(); 
-    triggered = true; 
-  } 
-
-
-if (millis() - HoldingState_Failover > 5000) {
-    opState = HoldingOpState;
-    triggered = false; 
-    Current_Effect_State = PRE_EFFECT; 
-  //  Serial.println("failover activated");
-  }
-
-}
-
-if(LED_Settings_Changed) {
-  Save_LED_Settings(0);         
-  current_loaded_preset_changed = true;                                                 // Save the new settings as default
-  send_mqtt_msg("Preset", "0");       // Update the MQTT preset selection to 0
-  LED_Settings_Changed = false;                                                   // Reset settings changed. 
-}
-
-
-/*
-static bool ani_update = false;
-
-if (!ani_update && strip->IsAnimating()) {
-  Serial.print("Animating...");
-  ani_update = true;
-} else if (ani_update && !strip->IsAnimating()) {
-  Serial.println("Stopped");
-  ani_update = false;
-}
-*/
-
-//    send_mqtt_msg("effect", MODE_STRING[opState]); 
-
-
-
-if (paused) lasteffectupdate = millis(); 
-
-
-} // end of ws2812 function 
 
 
 void cache HSI_Cycle() {
@@ -1423,10 +1404,10 @@ void  cache Rainbowcycle() {
 void cache test4() {
 
   uint8_t x,y, total_y;
-  uint8_t total_x = WS2812_Settings.var7; 
-  uint8_t square_size = WS2812_Settings.var10;
-  uint8_t numberofpoints = WS2812_Settings.var8; // default 5, if it = 10, then its random......
-  uint8_t effect_option = WS2812_Settings.var6;
+  uint8_t total_x = WS2812_Settings.Total_X; 
+  uint8_t square_size = WS2812_Settings.Effect_Max_Size;
+  uint8_t numberofpoints = WS2812_Settings.Effect_Count ; // default 5, if it = 10, then its random......
+  uint8_t effect_option = WS2812_Settings.Effect_Option;
   uint8_t dimoffset ; 
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 1;
@@ -1594,11 +1575,11 @@ switch(Current_Effect_State) {
         strip->SetPixelColor(i, dim(Wheel(i+wsPoint)));
      }
     
-      if (wsPoint == WS2812_Settings.var3) wsPoint = WS2812_Settings.var2; 
+//      if (wsPoint == WS2812_Settings.var3) wsPoint = WS2812_Settings.var2; 
        wsPoint++;
        lasteffectupdate = millis() + WS2812_Settings.Timer ;
 
-    if(WS2812_Settings.var3 == 0) WS2812_Settings.var3 = 255; // MAKE sure that there is a +ve end point for the colour wheel... else wsPoint = var3;
+//    if(WS2812_Settings.var3 == 0) WS2812_Settings.var3 = 255; // MAKE sure that there is a +ve end point for the colour wheel... else wsPoint = var3;
 
     }
  
@@ -2130,7 +2111,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
     
 
-  if (strip->PixelCount() < 10) WS2812_Settings.var7 = 1; // can't remember what this does...  sets x width i think... 
+  if (strip->PixelCount() < 10) WS2812_Settings.Total_X = 1; // can't remember what this does...  sets x width i think... 
 
 
 }
@@ -2208,31 +2189,31 @@ bool updateLEDs = false;
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
       Debugln("Reset functions true"); 
       }; 
-   if (server.hasArg("var1")) WS2812_Settings.var1 = server.arg("var1").toInt();
-   if (server.hasArg("var2")) WS2812_Settings.var2 = server.arg("var2").toInt(); // colour point min
-   if (server.hasArg("var3")) WS2812_Settings.var3 = server.arg("var3").toInt(); // colour point max
-   if (server.hasArg("var4")) WS2812_Settings.var4 = server.arg("var4").toInt();
-   if (server.hasArg("var5")) WS2812_Settings.var5 = server.arg("var5").toInt();
-   if (server.hasArg("var6")) WS2812_Settings.var6 = server.arg("var6").toInt();
-   if (server.hasArg("var7")) WS2812_Settings.var7 = server.arg("var7").toInt();
-   if (server.hasArg("var8")) WS2812_Settings.var8 = server.arg("var8").toInt();
-   if (server.hasArg("var9")) WS2812_Settings.var9 = server.arg("var9").toInt();
-   if (server.hasArg("var10"))  WS2812_Settings.var10 = server.arg("var10").toInt();   //  Serial.println("Var 10 updated"); }; 
+   if (server.hasArg("var1")) WS2812_Settings.Palette_Choice = (Palette)server.arg("var1").toInt();
+   if (server.hasArg("var2")) WS2812_Settings.Palette_Range = server.arg("var2").toInt(); // colour point min
+   if (server.hasArg("var3")) WS2812_Settings.Palette_Number = server.arg("var3").toInt(); // colour point max
+   if (server.hasArg("var4")) WS2812_Settings.Random = server.arg("var4").toInt();
+   if (server.hasArg("var5")) WS2812_Settings.Time_Stretch = server.arg("var5").toInt();
+   if (server.hasArg("var6")) WS2812_Settings.Total_X = server.arg("var6").toInt();
+   if (server.hasArg("var7")) WS2812_Settings.Effect_Count = server.arg("var7").toInt();
+   if (server.hasArg("var8")) WS2812_Settings.Effect_Min_Size = server.arg("var8").toInt();
+   if (server.hasArg("var9")) WS2812_Settings.Effect_Max_Size = server.arg("var9").toInt();
+   if (server.hasArg("var10"))  WS2812_Settings.Effect_Option = server.arg("var10").toInt();   //  Serial.println("Var 10 updated"); }; 
   
    if (server.hasArg("preset")) Save_LED_Settings(server.arg("preset").toInt() );
   
    // String a = ESP.getFlashChipSizeByChipId(); 
    if (server.arg("reset") == "true") { 
-      WS2812_Settings.var1 = 0; 
-      WS2812_Settings.var2 = 0; 
-      WS2812_Settings.var3 = 0; 
-      WS2812_Settings.var4 = 0; 
-      WS2812_Settings.var5 = 0; 
-      WS2812_Settings.var6 = 0; 
-      WS2812_Settings.var7 = 0; 
-      WS2812_Settings.var8 = 0; 
-      WS2812_Settings.var9 = 0; 
-      WS2812_Settings.var10 = 0;};
+      WS2812_Settings.Palette_Choice = ALL; 
+      WS2812_Settings.Palette_Range = 0; 
+      WS2812_Settings.Palette_Number = 0; 
+      WS2812_Settings.Random = 0; 
+      WS2812_Settings.Time_Stretch = 0; 
+      WS2812_Settings.Total_X = 0; 
+      WS2812_Settings.Effect_Count = 0; 
+      WS2812_Settings.Effect_Min_Size = 0; 
+      WS2812_Settings.Effect_Max_Size = 0; 
+      WS2812_Settings.Effect_Option = 0;};
 
   if (server.hasArg("leds")) {
     pixelCount = server.arg("leds").toInt();
@@ -2267,16 +2248,16 @@ bool updateLEDs = false;
    // buf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
     String inserted; 
 
-    if (k ==0) inserted = String(WS2812_Settings.var1);
-    if (k ==1) inserted = String(WS2812_Settings.var2);
-    if (k ==2) inserted = String(WS2812_Settings.var3);
-    if (k ==3) inserted = String(WS2812_Settings.var4);
-    if (k ==4) inserted = String(WS2812_Settings.var5);
-    if (k ==5) inserted = String(WS2812_Settings.var6);
-    if (k ==6) inserted = String(WS2812_Settings.var7);
-    if (k ==7) inserted = String(WS2812_Settings.var8);
-    if (k ==8) inserted = String(WS2812_Settings.var9);
-    if (k ==9) inserted = String(WS2812_Settings.var10);
+    if (k ==0) inserted = String(WS2812_Settings.Palette_Choice);
+    if (k ==1) inserted = String(WS2812_Settings.Palette_Range);
+    if (k ==2) inserted = String(WS2812_Settings.Palette_Number);
+    if (k ==3) inserted = String(WS2812_Settings.Random);
+    if (k ==4) inserted = String(WS2812_Settings.Time_Stretch);
+    if (k ==5) inserted = String(WS2812_Settings.Total_X);
+    if (k ==6) inserted = String(WS2812_Settings.Effect_Count);
+    if (k ==7) inserted = String(WS2812_Settings.Effect_Min_Size);
+    if (k ==8) inserted = String(WS2812_Settings.Effect_Max_Size);
+    if (k ==9) inserted = String(WS2812_Settings.Effect_Option);
 
 
     buf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value='"+ inserted +"'><br>";
@@ -2481,6 +2462,61 @@ void cache Set_Colour_ToptoBottom() {
 
 }
 
+//  This function returns a random colour from palette if no index is specified!  
+RgbColor cache Return_Palette (RgbColor Input) {
+      uint8_t random_choice = random(1);
+      uint8_t Index; 
+      if (random_choice == 0) Index = 0;
+      if (random_choice == 1) Index = WS2812_Settings.Palette_Number; 
+      Return_Palette (Input, Index) ;
+}
+
+/////////////////////
+//
+//      This function depends on all the globals for WS2812_Settings.*  
+//      
+//
+//
+/////////////////////
+
+RgbColor cache Return_Palette (RgbColor Input, uint8_t Index) {
+float Palette_Range;
+
+switch (WS2812_Settings.Palette_Choice) {
+
+          case ALL:
+                return Wheel(random(255)); 
+          break;
+
+          case COMPLEMENTARY:              
+              return Return_Complementary(Input);
+          break;
+
+          case MONOCHROMATIC:
+                //Debugln("MONOCHROMATIC"); 
+          break;
+
+          case ANALOGOUS:
+              Palette_Range = 10 / float(WS2812_Settings.Palette_Range);
+              Index = WS2812_Settings.Palette_Number % Index; 
+          return Return_Analogous (Input, Index, WS2812_Settings.Palette_Number, Palette_Range );
+          
+          break;
+          case SPLITCOMPLEMENTS:
+                //Debugln("SPLITCOMPLEMENTS"); 
+
+          break;
+          case TRIADIC:
+                //Debugln("TRIADIC"); 
+
+          break;
+          case TETRADIC:
+                //Debugln("TETRADIC"); 
+
+          break;
+      }
+
+}
 
 
 
@@ -2566,160 +2602,6 @@ return RgbColor( HslColor(NewHue, OriginalHSL.S, OriginalHSL.L) );
 
 }
 
-// "Ceiling           ", // var 1
-// "Floor             ", // var 2
-
-
-void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) { 
-  uint8_t total_x; 
-  uint32_t random_time; 
-  float Ceiling, Floor; 
-  RgbColor colour_top, colour_bottom; 
-
-  switch(Current_Effect_State) {
-
-
-    case PRE_EFFECT:
-    Pre_effect(); 
-    //Serial.println("Top Bottom PRE...");
-    lasteffectupdate = 0; 
-    break;
-    case RUN_EFFECT: // 
-    random_time = (random(WS2812_Settings.Timer*30, (WS2812_Settings.Timer * 300) ));
-      if (  
-            ( 
-              ( millis() - lasteffectupdate > random_time ) ||  ( lasteffectupdate == 0 )
-            ) 
-                &&  (animator->IsAnimating() == false ) 
-          ) 
-
-          { // only generate new effect if NOT blending..
-       
-          if (WS2812_Settings.var1 == 0) { Ceiling = 0.2f; } else { Ceiling = (float)WS2812_Settings.var1 / 255.0f ; }; 
-          if (WS2812_Settings.var2 == 0) { Floor = -0.2f; } else { Floor = ((float)WS2812_Settings.var2 / 255.0f) * -1 ; } ;
-          if (WS2812_Settings.var7 == 0 && pixelCount > 10) { 
-            total_x = 13; 
-          } else if (WS2812_Settings.var7 == 0 && pixelCount < 10) {
-            total_x = 1; 
-          } else { 
-            total_x = WS2812_Settings.var7; 
-          }; 
-
-          //Serial.print("Total X = ");
-          //Serial.println(total_x);
-
-if (Setting == TWOCOLOUR) {
-       colour_top    = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
-//       colour_bottom = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
-
-       colour_bottom = Return_Complementary(colour_top);
-
-} else if (Setting == SINGLECOLOUR) {
-       colour_top    = Manipulate_Hue(WS2812_Settings.Color, Ceiling); 
-       colour_bottom = Manipulate_Hue(WS2812_Settings.Color, Floor);
-} else if (Setting == RANDOMSINGLECOLOUR) {
-       RgbColor random_colour_choice = Wheel(random(0,255));     
-       colour_top    = Manipulate_Hue(random_colour_choice, Ceiling); 
-       colour_bottom = Manipulate_Hue(random_colour_choice, Floor);
-}; 
-      colour_top = dim(colour_top);
-      colour_bottom = dim(colour_bottom); 
-
-      top_bottom_fade(colour_top,colour_bottom, total_x, CurrentAnimationSpeed, Method); 
-      lasteffectupdate = millis(); 
-          }
-
-    break;
-    case POST_EFFECT:
-    Post_effect(); 
-        //Serial.println("Top Bottom POST...");
-    break;
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-//static uint32_t Random_func_timeout = 0, Random_func_lasttime = 0; 
-static uint8_t current_r = 0, total_x = 0;
-
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
-
-
-if (var7 == 0 ) {total_x = 13;} else total_x = var7;
-    
-    if ( (millis() > lasteffectupdate  ) && (!strip->IsAnimating()) ) {
-
-
- //     Serial.println();
- //     Serial.print("Effect updated..(");
- //     Serial.print(strip->IsAnimating());
-//      Serial.print(") ");
-
-      uint16_t random_animation_speed = random(2000, 20000);
-      uint8_t vvv,bbb,dif = 0 ; 
-      vvv = random(255);
-
-do {
-      bbb = random(255); 
-      dif = vvv - bbb; 
-      dif = abs(dif);
-      } while (dif < 50);
-
-
-      Serial.print("top: ");
-      Serial.print(vvv);
-      Serial.print(" bottom: ");
-      Serial.print(bbb);
-      Serial.print(" Abs diff: ");
-      Serial.print(abs(dif)); 
-
-      RgbColor random_colour_top = Wheel(vvv); //  RgbColor(255,0,0); 
-      RgbColor random_colour_bottom = Wheel(bbb); //  RgbColor(255,0,0); 
-
-      //Serial.print("  (PRE)");
-      
-      top_bottom_fade(random_colour_top, random_colour_bottom, total_x, fadetype);
-      
-
-
-      //Serial.println("  (POST) ");
-      
-
-      //Random_func_lasttime = millis() + CurrentAnimationSpeed;  // was working...  changed to get updates working....
-
-      lasteffectupdate = millis() + random(WS2812interval*30, (WS2812interval * 300) ) + CurrentAnimationSpeed;
-      if (fadetype == 2) lasteffectupdate = millis() + CurrentAnimationSpeed + 500; // This effect does not require changing.... 
-
-      //Serial.print("Random_func_lasttime: ");
-      //Serial.print(Random_func_lasttime); 
-      // Random_func_timeout = random(60000, 60000*5);
-      
-
-      //Random_func_timeout = random(WS2812interval*30, (WS2812interval * 300) ) + CurrentAnimationSpeed; 
-      //Serial.print("   Random_func_timeout: ");
-      //Serial.println(Random_func_timeout); 
-
-    }
-  //}
-
-
-if (Current_Effect_State == POST_EFFECT) Post_effect(); 
-
-*/
-} // end of actual function.....
-
 
 
 RgbColor cache Return_Complementary(RgbColor Value) {
@@ -2740,14 +2622,7 @@ RgbColor cache Return_Analogous(RgbColor Value, uint8_t position, uint8_t total,
     if (HUE < 0) HUE += 1;
     if (HUE > 1) HUE -= 1;
     //Serial.print("")
-    original.H = HUE; 
-  
-  //  Serial.print(position);
-  //  Serial.print(": ");
-  //  Serial.print(HUE_lower,5);
-  //  Serial.print(" --> ");
-  //  Serial.println(HUE,5);
-  
+    original.H = HUE;   
     return RgbColor(original);
 }
 

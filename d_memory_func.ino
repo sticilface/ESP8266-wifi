@@ -340,12 +340,12 @@ void cache Load_LED_Defaults (uint8_t location) {
 // START_address_settings
 if ( location < 0 || location > 10) location = 0; 
 uint16_t address = START_address_settings + (32 * location); 
-EEPROM_readAnything(address, WS2812_Settings);
+int bytes_read = EEPROM_readAnything(address, WS2812_Settings);
 
   //LastOpState = WS2812_Settings.LastOpState; 
 
 //  if (WS2812_Settings.LastOpState != 0 ) {  LastOpState = (operatingState)WS2812_Settings.LastOpState; };  // Stops last opstate being over written by an OFF..
-  if (WS2812_Settings.SavedOpState != OFF ) { LastOpState = WS2812_Settings.SavedOpState; };  // Stops last opstate being over written by an OFF..
+  if (WS2812_Settings.SavedOpState != OFF ) { LastOpState = (operatingState)WS2812_Settings.SavedOpState; };  // Stops last opstate being over written by an OFF..
 
 
   //WS2812interval = WS2812_Settings.Timer;
@@ -367,27 +367,48 @@ EEPROM_readAnything(address, WS2812_Settings);
 
 
 
-Serial.println("Settings loaded ------------"); 
-Serial.println(WS2812_Settings.SavedOpState);
-Serial.println(WS2812_Settings.Timer);
-Serial.println(WS2812_Settings.Animationspeed);
-Serial.println(WS2812_Settings.Brightness);
-Serial.print(WS2812_Settings.Color.R);
-Serial.print("  "); 
-Serial.print(WS2812_Settings.Color.G);
-Serial.print("  "); 
-Serial.println(WS2812_Settings.Color.B);
-Serial.println(WS2812_Settings.var1);
-Serial.println(WS2812_Settings.var2);
-Serial.println(WS2812_Settings.var3);
-Serial.println(WS2812_Settings.var4);
-Serial.println(WS2812_Settings.var5);
-Serial.println(WS2812_Settings.var6);
-Serial.println(WS2812_Settings.var7);
-Serial.println(WS2812_Settings.var8);
-Serial.println(WS2812_Settings.var9);
-Serial.println(WS2812_Settings.var10);
-Serial.println("End-------------------------"); 
+Serial.print("Settings loaded ------------ ");
+Debug(bytes_read) ;
+Debug(" Bytes read");
+Serial.println();
+  Debug("Op State        ==> ");
+Debugln(WS2812_Settings.SavedOpState);
+  Debug("Timer           ==> ");
+Debugln(WS2812_Settings.Timer);
+  Debug("Animation speed ==> ");
+Debugln(WS2812_Settings.Animationspeed);
+  Debug("Brightness      ==> ");
+Debugln(WS2812_Settings.Brightness);
+  Debug("Brightness      ==> ");
+Debug(WS2812_Settings.Color.R);
+Debug("  "); 
+Debug(WS2812_Settings.Color.G);
+Debug("  "); 
+Debugln(WS2812_Settings.Color.B);
+  Debug("Palette         ==> ");
+Debugln(WS2812_Settings.Palette_Choice);
+  Debug("Palette Range   ==> ");
+Debugln(WS2812_Settings.Palette_Range);
+  Debug("Number Colours  ==> ");  
+Debugln(WS2812_Settings.Palette_Number);
+  Debug("Random          ==> ");  
+Debugln(WS2812_Settings.Random);
+  Debug("Time Stretch    ==> ");
+Debugln(WS2812_Settings.Time_Stretch);
+  Debug("Total X         ==> ");
+Debugln(WS2812_Settings.Total_X);
+  Debug("Effect Count    ==> ");
+Debugln(WS2812_Settings.Effect_Count);
+  Debug("Effect Min Size ==> ");
+Debugln(WS2812_Settings.Effect_Min_Size);
+  Debug("Effect Max Size ==> ");
+Debugln(WS2812_Settings.Effect_Max_Size);
+  Debug("Effect Option   ==> ");
+Debugln(WS2812_Settings.Effect_Option);
+//Serial.println(WS2812_Settings.var8);
+//Serial.println(WS2812_Settings.var9);
+//Serial.println(WS2812_Settings.var10);
+Debugln("End-------------------------"); 
 
         String Rstring, Gstring, Bstring;
         uint8_t R, G, B; 

@@ -191,11 +191,13 @@ bool paused = false;
 bool LED_Settings_Changed = false; 
 uint16_t CurrentAnimationSpeed = 2000; 
 uint8_t IntervalMultiplier = 1; 
+bool Effect_Refresh = false; 
 
 //RgbColor NewColour = RgbColor(0,0,0);
 
 String WebRGBcolour = "000000"; // This is for the WEBPAGE... takes the value when colour is changed...
 
+   Palette Palette_Choice;  //   1
 
 
 enum effectState { PRE_EFFECT = 0, RUN_EFFECT, POST_EFFECT};
@@ -209,17 +211,7 @@ uint16_t effectPosition = 0;
 //var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
 //var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
 
-static const char *VAR_STRING[] = {
-"Palette           ", // var 1
-"Palette Range     ", // var 2
-"Number Of Colours ", // var 3
-"Var4              ", // var 4
-"IntervalMultiplier", // var 5
-"Effect Option     ", // var 6
-"Total_X           ", // var 7
-"Number of effects ", // var 8
-"Var9              ", // var 9
-"Size of effect    "};// var 10
+
 
 
 //#ifdef LOOPDEBUG
@@ -251,12 +243,35 @@ struct config_t
 } configuration;
 
 
+   //operatingState SavedOpState;
+
+
 struct WS2812Settings_t {
-   operatingState SavedOpState;
+   uint8_t SavedOpState;
    uint16_t Timer;
    uint16_t Animationspeed; 
    uint8_t Brightness;
    RgbColor Color;
-   uint8_t var1,var2,var3,var4,var5,var6,var7,var8,var9,var10;  
+   uint8_t Palette_Choice;  //   1
+   uint8_t Palette_Range;   //   2
+   uint8_t Palette_Number;  //   3
+   bool    Random;          //   4
+   uint8_t Time_Stretch;    //   5 
+   uint8_t Total_X;         //   6
+   uint8_t Effect_Count;    //   7
+   uint8_t Effect_Min_Size; //   8
+   uint8_t Effect_Max_Size; //   9
+   uint8_t Effect_Option;   //   10
 } WS2812_Settings;
 
+static const char *VAR_STRING[] = {
+"Palette             ", // var 1
+"Palette Range       ", // var 2
+"Number Of Colours   ", // var 3
+"Random Colour       ", // var 4
+"Effect Time Stretch ", // var 5
+"Total X             ", // var 6
+"Active Effects      ", // var 7
+"Min Size Of Effect  ", // var 8
+"Max Size Of Effect  ", // var 9
+"Effect Option       "};// var 10

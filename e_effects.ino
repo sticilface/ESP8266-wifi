@@ -14,10 +14,12 @@
 void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   uint16_t x,y, total_y;
-  uint16_t total_x = WS2812_Settings.var7; 
-  uint8_t  square_size =  WS2812_Settings.var10;
-  uint8_t  numberofpoints = WS2812_Settings.var8; // default 5, if it = 10, then its random......
-  uint8_t  effect_option = WS2812_Settings.var6;
+  uint16_t total_x = WS2812_Settings.Total_X; 
+  uint8_t  square_size =  WS2812_Settings.Effect_Max_Size;
+  uint8_t  numberofpoints = WS2812_Settings.Effect_Count; // default 5, if it = 10, then its random......
+  uint8_t  effect_option = WS2812_Settings.Effect_Option;
+  uint8_t  Palette_Range = WS2812_Settings.Palette_Range; 
+  uint8_t  Number_of_colours = WS2812_Settings.Palette_Number; 
   uint8_t  dimoffset ; 
   int      pixel; // has to carry negative value now. 
   uint32_t timeforsequence; 
@@ -31,9 +33,9 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   if (square_size == 0) square_size = 3;  
   if (numberofpoints == 0) numberofpoints = 1;
   if (total_x == 0) total_x = 13; 
-
+  if (Palette_Range == 0) Palette_Range = 10;
+  if (Number_of_colours == 0 ) Number_of_colours = 10; // set the default numbers of colours in palette. 
   total_y = return_total_y(total_x); 
-
 
       //Serial.println("Generating coordinates.");
    //          uint8_t count = 0; 
@@ -45,12 +47,11 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
    //   static bool pause_and_reboot_effect = false; 
    //          uint32_t now = millis(); 
 
-    uint32_t temp_lower_boundary  ;
-    uint32_t temp_upper_boundary  ;
+     uint32_t  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+     uint32_t  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+
 
   switch(Current_Effect_State) {
-
- 
 
   case PRE_EFFECT:
 
@@ -64,32 +65,35 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
      
      if (effect_option == 0) { 
           dimoffset = WS2812_Settings.Brightness / 5;
-          RgbColor Top =     dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset );
-          RgbColor Bottom =  dim ( Wheel (  random(0,255)  ), (uint8_t)dimoffset ) ;        
-          top_bottom_fade(  Top , Bottom , total_x, CurrentAnimationSpeed); 
+          RgbColor Top =     dim ( Wheel (  random(255)  ), (uint8_t)dimoffset );
+          RgbColor Bottom =  dim ( Wheel (  random(255)  ), (uint8_t)dimoffset ) ;        
+          top_bottom_fade(  Top , Bottom , total_x, WS2812_Settings.Timer * 32); 
     }
 
     Debugln("Squares 2 Running");
     
-    temp_lower_boundary = CurrentAnimationSpeed * IntervalMultiplier * 1 ;
-    temp_upper_boundary = CurrentAnimationSpeed * IntervalMultiplier * 10 ;
+     //  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+     //  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
     
-    if (temp_upper_boundary > 65000) temp_upper_boundary = 65000; 
+    //if (temp_upper_boundary > 65000) temp_upper_boundary = 65000; 
 
-    Debugf("Min time = %u \n", temp_lower_boundary);
-    Debugf("Max time = %u \n", temp_upper_boundary);
+    Debugf("Min time = %u \n", lower_boundary);
+    Debugf("Max time = %u \n", upper_boundary);
 
     Pre_effect();  // PRE effect SETS LAST EFFECT UPDATE TO ZERO... ? is this requires?
     lasteffectupdate = millis();  // this has to go here otherwise the pre_effect routine restarts it...
 
     break;
+
+
   case RUN_EFFECT:  
 
-      if ( lasteffectupdate == 0 ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
+      if ( Effect_Refresh == true ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
         Current_Effect_State = PRE_EFFECT;
         break; 
       }
 
+      //if (Effect_Refresh == true)
 
      // if  ( (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) && effectPosition < numberofpoints ) {      
       if  ( effectPosition < numberofpoints ) {
@@ -100,7 +104,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
         //Serial.print("Colour chosen: ");
         //Serial.println(numbercalled++); 
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
-      if (mode == 1) square_size = random(2,7);
+      if (mode == 1) square_size = random(WS2812_Settings.Effect_Min_Size  ,  WS2812_Settings.Effect_Max_Size);
       
      // checks to see if it is a linear string or not... if less then it is equal to 0 ...
      if (total_x > square_size) { 
@@ -120,36 +124,62 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       for (uint16_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
 
           pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
+
           if (pixel >= 0) { 
                 if (animator->IsAnimating(pixel)) { coordinates_OK = false ;  break; }; 
-          }
-
+                          }
             if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true ; }; 
           }
 
     if (coordinates_OK) {
-          counter++; 
-          if (WS2812_Settings.var1 == 0) WS2812_Settings.var1 = 10; 
-          float range = 10.0 / float(WS2812_Settings.var1);
-          if (effect_option == 3 ) {
-            if (counter % numberofpoints == 0) { static_colour = random(255); position = 0 ;} ; 
-            //if (position > numberofpoints) position = 0; 
-            color = Return_Analogous(Wheel(static_colour), position++, numberofpoints , range) ;
-            color = dim(color);
-            } else if (effect_option == 4) { 
-            color = Return_Analogous(WS2812_Settings.Color, random(numberofpoints), numberofpoints , range) ;
-            color = dim(color);               
-            } else { 
-            color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
-            }
+
+          //counter++; 
+   
+       lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+       upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+       timeforsequence = random(lower_boundary, upper_boundary);
+
+////////////////
+//
+//
+//        Colour generation.  If you want random colour... pick a random colour when 10 times max animation time
+//        None random = picking random colour from palette based on CHOSEN COLOUR...           
+//
+/////////////////          
+              if (WS2812_Settings.Random == true ) {
+                if (millis() - counter > upper_boundary * 10 ) { static_colour = random(255); counter = millis() ; } ; 
+                color = Return_Palette(Wheel(static_colour)) ;
+              } else {
+                color = Return_Palette(WS2812_Settings.Color) ;
+              }
+
+          
+
+
+      color = dim(color);
+
+          // if (effect_option == 3 ) {
+          //   if (counter % numberofpoints == 0) { static_colour = random(255); position = 0 ;} ; 
+          //   //if (position > numberofpoints) position = 0; 
+          //   color = Return_Analogous(Wheel(static_colour), position++, numberofpoints , range) ;
+          //   color = dim(color);
+          //   } else if (effect_option == 4) { 
+          //   color = dim(color);               
+          //   } else { 
+          //   color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
+          //   }
        
 
-      uint32_t lower_boundary = CurrentAnimationSpeed * IntervalMultiplier * 1 ;
-      uint32_t upper_boundary = CurrentAnimationSpeed * IntervalMultiplier * 100 ;
+       //lower_boundary = WS2812_Settings.Timer * IntervalMultiplier * 1 ;
+       //upper_boundary = WS2812_Settings.Timer * IntervalMultiplier * 100 ;
+       
 
-      upper_boundary = constrain(upper_boundary, lower_boundary ,65000); // can get rid of this when animation scaling 
-      timeforsequence = random(lower_boundary,upper_boundary);
-     // Debugf("Time = %u \n",timeforsequence);
+
+
+
+      //upper_boundary = constrain(upper_boundary, lower_boundary ,65000); // can get rid of this when animation scaling 
+      
+      //Debugf("Time = %u \n", timeforsequence);
       //timeforsequence = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
 
     for (uint16_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
@@ -158,9 +188,6 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
             if (sq_pixel == 0) effectPosition++; // adds to running count. 
 
             if (pixel >= 0) {
-     
-//            if (sq_pixel > 0) Debug(",");
-//            Debugf("%3u", pixel); 
 
             RgbColor originalColor = strip->GetPixelColor(pixel);
           
@@ -196,3 +223,97 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
 } 
 // end of Squares2
+
+
+void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) { 
+  uint16_t total_x; 
+  static uint32_t random_time = 0 ; 
+  //float Ceiling, Floor; 
+  RgbColor colour_top, colour_bottom; 
+
+     uint32_t  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+     uint32_t  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+     
+     uint16_t  animation_time ; // = random_time / 10; 
+
+  switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+    Pre_effect(); 
+    Debugln("Top Bottom PRE...");
+    lasteffectupdate = 0; 
+    break;
+
+
+    case RUN_EFFECT: // 
+  
+
+      if (  
+            ( 
+              ( millis() - lasteffectupdate > random_time ) ||  ( Effect_Refresh == true )
+            ) 
+                &&  (animator->IsAnimating() == false ) 
+          ) 
+
+          { // only generate new effect if NOT blending..
+       
+
+
+   //       if (WS2812_Settings.var1 == 0) { Ceiling = 0.2f; } else { Ceiling = (float)WS2812_Settings.var1 / 255.0f ; }; 
+   //       if (WS2812_Settings.var2 == 0) { Floor = -0.2f; } else { Floor = ((float)WS2812_Settings.var2 / 255.0f) * -1 ; } ;
+          if (WS2812_Settings.Total_X == 0 && pixelCount > 10) { 
+            total_x = 13; 
+          } else if (WS2812_Settings.Total_X == 0 && pixelCount < 10) {
+            total_x = 1; 
+          } else { 
+            total_x = WS2812_Settings.Total_X; 
+          }; 
+
+
+///////// ----   Generate Top Colours
+
+        if (WS2812_Settings.Random == true)  {
+                colour_top  = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
+              } else {
+                colour_top  = WS2812_Settings.Color ; //  RgbColor(255,0,0); 
+              }
+
+///////// ----   Generate Bottom Colours
+
+                colour_bottom = Return_Palette (colour_top);
+                colour_top = dim(colour_top);
+                colour_bottom = dim(colour_bottom); 
+
+/////// --- Timing
+
+                lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+                upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+                random_time = random( lower_boundary, upper_boundary ); // generate length of animation
+    //Debugf("Time = %u \n", random_time);
+
+                animation_time = random_time / 10; 
+
+      top_bottom_fade(colour_top,colour_bottom, WS2812_Settings.Total_X, animation_time, Method); 
+      
+      lasteffectupdate = millis(); 
+
+    } // end of if that generates effect. 
+
+///////////////////////////////////////////////////////
+    break;
+
+    case POST_EFFECT:
+    Post_effect(); 
+        //Serial.println("Top Bottom POST...");
+    break;
+  }
+
+} // end of actual function.....
+
+
+
+
+
+
+
+
