@@ -25,7 +25,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint32_t timeforsequence; 
   bool     coordinates_OK = false;
   uint16_t x_rand,y_rand;
-  static uint32_t counter; 
+  static uint32_t counter, effect_timer; 
   static uint16_t position = 0; 
    RgbColor color;
    static uint8_t static_colour; 
@@ -63,12 +63,12 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
      }
 
      
-     if (effect_option == 0) { 
-          dimoffset = WS2812_Settings.Brightness / 5;
-          RgbColor Top =     dim ( Wheel (  random(255)  ), (uint8_t)dimoffset );
-          RgbColor Bottom =  dim ( Wheel (  random(255)  ), (uint8_t)dimoffset ) ;        
-          top_bottom_fade(  Top , Bottom , total_x, WS2812_Settings.Timer * 32); 
-    }
+    //  if (effect_option == 0) { 
+    //       dimoffset = WS2812_Settings.Brightness / 5;
+    //       RgbColor Top =     dim ( Wheel (  random(255)  ), (uint8_t)dimoffset );
+    //       RgbColor Bottom =  dim ( Wheel (  random(255)  ), (uint8_t)dimoffset ) ;        
+    //       top_bottom_fade(  Top , Bottom , total_x, WS2812_Settings.Timer * 32); 
+    // }
 
     Debugln("Squares 2 Running");
     
@@ -88,10 +88,11 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   case RUN_EFFECT:  
 
-      if ( Effect_Refresh == true ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
-        Current_Effect_State = PRE_EFFECT;
-        break; 
-      }
+    //  if ( Effect_Refresh == true ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
+    //    Current_Effect_State = PRE_EFFECT;
+    //    Effect_Refresh == false; 
+    //    break; 
+    //  }
 
       //if (Effect_Refresh == true)
 
@@ -105,7 +106,6 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
         //Serial.println(numbercalled++); 
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
       if (mode == 1) square_size = random(WS2812_Settings.Effect_Min_Size  ,  WS2812_Settings.Effect_Max_Size);
-      
      // checks to see if it is a linear string or not... if less then it is equal to 0 ...
      if (total_x > square_size) { 
            x_rand = random(0, total_x - square_size) ; 
@@ -132,11 +132,14 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           }
 
     if (coordinates_OK) {
+//Debug("\n1, "); 
 
-          //counter++; 
-   
-       lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
-       upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+      counter++;  // Is in use yet.... 
+      uint16_t lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 5 ), 2, 2000);
+      uint16_t upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 5 ), 1, 2000);
+
+       lower_boundary = map ( lower_boundary_2000 , 1, 2000, 500 , 65000 );
+       upper_boundary = map ( upper_boundary_2000 , 1, 2000, 500 , 65000 );
        timeforsequence = random(lower_boundary, upper_boundary);
 
 ////////////////
@@ -146,11 +149,15 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 //        None random = picking random colour from palette based on CHOSEN COLOUR...           
 //
 /////////////////          
+//Debug("2, "); 
+        yield();
               if (WS2812_Settings.Random == true ) {
-                if (millis() - counter > upper_boundary * 10 ) { static_colour = random(255); counter = millis() ; } ; 
-                color = Return_Palette(Wheel(static_colour)) ;
+                if (millis() - effect_timer > upper_boundary * 10 ) { static_colour = random(255); effect_timer = millis() ; } ; 
+                color = Return_Palette(Wheel(static_colour), counter) ;
               } else {
-                color = Return_Palette(WS2812_Settings.Color) ;
+                //Debug("3, "); 
+                color = Return_Palette(WS2812_Settings.Color, counter) ;
+                //Debug("4, "); 
               }
 
           
@@ -181,10 +188,12 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       
       //Debugf("Time = %u \n", timeforsequence);
       //timeforsequence = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
+//Debug("5, "); 
 
     for (uint16_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
             pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x );    
+
             if (sq_pixel == 0) effectPosition++; // adds to running count. 
 
             if (pixel >= 0) {
@@ -207,6 +216,8 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           } // end of if for is pixel valid... >=0
           yield();
         }
+
+//Debug("6"); 
 
         lasteffectupdate = millis(); // NOT really needed.....
 
@@ -312,7 +323,75 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
 
 
 
+void cache StripOFF() {
 
+  switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+    Pre_effect(); 
+
+        for (uint16_t n = 0; n < strip->PixelCount(); n++)
+            {
+              HslColor original = strip->GetPixelColor(n);
+
+        AnimUpdateCallback animUpdate = [=](float progress)
+        {
+                  float new_lightness = original.L - (original.L  * progress) ;
+                  strip->SetPixelColor(n, HslColor(original.H,original.S,new_lightness));
+        };
+
+        animator->StartAnimation(n, WS2812_Settings.Timer, animUpdate);
+    }
+
+    break;
+
+    case RUN_EFFECT:
+
+    break;
+
+    case POST_EFFECT:
+    Post_effect(); 
+    break;
+  }
+
+}
+
+//void cache SetRGBcolour (RgbColor value) {
+
+//SetRGBcolour(value, WS2812_Settings.Timer); 
+
+//}
+
+void cache RGBcolour () {
+
+
+    //long  now1 = millis(); 
+    //long interval = now1 - lasteffectupdate; 
+    
+  switch(Current_Effect_State) {
+    
+    case PRE_EFFECT:
+    Debugln("Effect set to Color"); 
+    Pre_effect(); 
+    animator->FadeTo(WS2812_Settings.Timer, dim(WS2812_Settings.Color)); 
+    break;
+
+    case RUN_EFFECT:
+
+    if (Effect_Refresh == true) { 
+      Debugln("Effect Refresh Called"); 
+      Current_Effect_State = PRE_EFFECT;
+      Effect_Refresh = false;
+    }
+
+
+    break;
+    case POST_EFFECT:
+        Debugln("Color END"); 
+        Post_effect(); 
+        break;
+  }
+}
 
 
 

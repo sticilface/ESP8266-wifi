@@ -39,7 +39,7 @@ void LoadParams()
 void EEPROM_wipe() {
 
 for (int i = 0; i < 512; i++) EEPROM.write(i,0);
-EEPROM_commit_var = true;
+EEPROM.commit();
 Serial.print("EEPROM WIPED");
 delay(100);
 }
@@ -308,6 +308,8 @@ WS2812_Settings.var7 = var7;
 WS2812_Settings.var8 = var8;
 WS2812_Settings.var9 = var9;
 WS2812_Settings.var10 = var10; */
+WS2812_Settings.SavedOpState = (uint8_t)LastOpState; 
+Debugf("Saved opState = %u \n", WS2812_Settings.SavedOpState); 
   
   if ( location < 0 || location > 10) return;  // check valid storage range. 
   uint16_t address = START_address_settings + (32 * location); 
@@ -345,7 +347,7 @@ int bytes_read = EEPROM_readAnything(address, WS2812_Settings);
   //LastOpState = WS2812_Settings.LastOpState; 
 
 //  if (WS2812_Settings.LastOpState != 0 ) {  LastOpState = (operatingState)WS2812_Settings.LastOpState; };  // Stops last opstate being over written by an OFF..
-  if (WS2812_Settings.SavedOpState != OFF ) { LastOpState = (operatingState)WS2812_Settings.SavedOpState; };  // Stops last opstate being over written by an OFF..
+  if (WS2812_Settings.SavedOpState != 0 ) { LastOpState = (operatingState)WS2812_Settings.SavedOpState; };  // Stops last opstate being over written by an OFF..
 
 
   //WS2812interval = WS2812_Settings.Timer;

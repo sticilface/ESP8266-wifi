@@ -388,7 +388,8 @@ Debugf("CMD = %u, PORT = %u, SIZE = %u \n", cmd, port, size);
 if (cmd == 99 && port == 0 && size == 0) ESP.restart(); 
 
 if (cmd == 100 && port == 1 && size == 1) { 
-  EEPROM_wipe(); 
+  for (int i = START_address_settings; i < 512; i++) EEPROM.write(i,0);
+  EEPROM.commit(); 
   delay(2);
   ESP.restart();
 }
