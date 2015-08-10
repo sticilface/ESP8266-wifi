@@ -19,8 +19,9 @@ void cache ws2812 ()  // put switch cases here...
 
 static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
 static unsigned long HoldingState_Failover = 0; 
-static unsigned long timer_PixelPower = 0; 
+static unsigned long timer_PixelPower = 0, timer_effect_tick = 0; 
 
+if (millis() - timer_effect_tick > WS2812_Settings.Timer) {
 
 switch (opState)
    {
@@ -110,7 +111,9 @@ switch (opState)
       break;
    }
 
+timer_effect_tick = millis();
 
+} // end of if timer for effect generation.... 
 
 if (millis() - update_strip_time > 30) {
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
@@ -2211,7 +2214,7 @@ RgbColor cache Return_Palette (RgbColor Input) {
 //
 /////////////////////
 
-RgbColor cache Return_Palette (RgbColor Input, uint8_t Index) {
+RgbColor cache Return_Palette (RgbColor Input, uint16_t Index) {
 float Palette_Range = 10 / float(WS2812_Settings.Palette_Range);
 RgbColor Output = RgbColor(0,0,0); 
 
@@ -2451,22 +2454,22 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-void cache aaa(RgbColor a) {
+// void cache aaa(RgbColor a) {
 
 
 
-}
+// }
 
-void cache aaa(HslColor b) {
+// void cache aaa(HslColor b) {
 
 
   
-}
+// }
 
-void cache aaa(String b) {
+// void cache aaa(String b) {
 
 
-}
+// }
 /*
 
 void cache send_status () {

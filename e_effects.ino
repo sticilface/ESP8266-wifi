@@ -122,8 +122,11 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     if (coordinates_OK) {
 //Debug("\n1, "); 
+      counter++; 
+      counter = counter % numberofpoints; //  counter++;  // Is in use
 
-      counter++;  // Is in use yet.... 
+      //Debugln(counter);
+
       uint16_t lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 2, 2000);
       uint16_t upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
 
