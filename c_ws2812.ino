@@ -16,12 +16,11 @@
 void cache ws2812 ()  // put switch cases here...
 {
 
-
 static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
 static unsigned long HoldingState_Failover = 0; 
 static unsigned long timer_PixelPower = 0, timer_effect_tick = 0; 
 
-if (millis() - timer_effect_tick > WS2812_Settings.Timer) {
+if (millis() - timer_effect_tick >= timer_effect_tick_timeout ) { // timer_effect_tick_timeout
 
 switch (opState)
    {
@@ -115,14 +114,13 @@ timer_effect_tick = millis();
 
 } // end of if timer for effect generation.... 
 
-if (millis() - update_strip_time > 30) {
+if (  (millis() - update_strip_time > 30) && ( opState != ADALIGHT || opState != UDP ) ) {
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
     delay(0);
     strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
     update_strip_time = millis();
   } 
 
-  
   if (millis() - timer_PixelPower > 10000 && opState != OFF) {
        power = getPixelPower();
        //Debugf("Power =%u \n",power); 
@@ -1656,7 +1654,7 @@ void cache Adalight_Flash() {
 
 
 void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
- 
+  
   uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
   static boolean Adalight_configured;
   static uint16_t effectbuf_position = 0;
@@ -1695,6 +1693,7 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 
     case MODE_INITIALISE:
       Serial.println("Begining of Adalight");
+      timer_effect_tick_timeout = 0; 
       if(millis() > 60000) Adalight_Flash(); 
       state = MODE_HEADER;
       Pre_effect();  
@@ -1764,6 +1763,8 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
     case MODE_SHOW:
 
       strip->Dirty(); // MUST USE if you're using the direct buffer copy... 
+      strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+
       pixellatchtime = millis();
       state = MODE_HEADER;
       break;
@@ -1771,6 +1772,7 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
     case MODE_FINISH:
 
       Serial.print("END OF ADALIGHT..."); 
+      timer_effect_tick_timeout = 100; 
       //Current_Effect_State = PRE_EFFECT; 
       //opState = HoldingOpState; 
       //state == MODE_INITIALISE; 
@@ -1857,7 +1859,7 @@ int packetSize;
   switch(Current_Effect_State) {
 
     case PRE_EFFECT:
-
+      timer_effect_tick_timeout = 0; 
       //Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
       if(millis() > 60000) Adalight_Flash(); 
       Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, UDPlightPort); 
@@ -1879,6 +1881,8 @@ int packetSize;
               }
               Udp.flush();
               strip->Dirty(); 
+              strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+
         }
       
       break;
@@ -1887,6 +1891,7 @@ int packetSize;
       //packetno = 0; 
       Udp.stop(); 
       Post_effect(); 
+      timer_effect_tick_timeout = 100; 
       break; 
 
       

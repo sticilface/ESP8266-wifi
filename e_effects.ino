@@ -36,8 +36,11 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint32_t timeforsequence; 
   bool     coordinates_OK = false;
   uint16_t x_rand,y_rand;
+  uint16_t lower_boundary_2000, upper_boundary_2000 ; 
+  uint32_t lower_boundary, upper_boundary ; 
+
   static uint32_t counter, effect_timer; 
-  static uint16_t position = 0; 
+  //static uint16_t position = 0; 
    RgbColor color;
    static uint8_t static_colour; 
 // these are defaults... 
@@ -47,9 +50,11 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   if (Palette_Range == 0) Palette_Range = 10;
   if (Number_of_colours == 0 ) Number_of_colours = 10; // set the default numbers of colours in palette. 
   total_y = return_total_y(total_x); 
+  
+     //uint32_t  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+     //uint32_t  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
 
-     uint32_t  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
-     uint32_t  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+
 
 
   switch(Current_Effect_State) {
@@ -62,12 +67,17 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
      if (effect_option > 0) {
       animator->FadeTo(1000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
      }
+       
+       lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 2, 2000);
+       upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
 
-
+       lower_boundary = map ( lower_boundary_2000 , 1, 2000, 50 , 65000 );
+       upper_boundary = map ( upper_boundary_2000 , 1, 2000, 50 , 65000 );
 
     Debugln("Squares 2 Running");
     Debugf("Min time = %u \n", lower_boundary);
     Debugf("Max time = %u \n", upper_boundary);
+    Debugf("Total effects = %u \n", numberofpoints); 
 
     Pre_effect();  // PRE effect SETS LAST EFFECT UPDATE TO ZERO... ? is this requires?
     lasteffectupdate = millis();  // this has to go here otherwise the pre_effect routine restarts it...
@@ -77,11 +87,11 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   case RUN_EFFECT:  
 
-    //  if ( Effect_Refresh == true ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
-    //    Current_Effect_State = PRE_EFFECT;
-    //    Effect_Refresh == false; 
-    //    break; 
-    //  }
+      if ( Effect_Refresh == true ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
+        Current_Effect_State = PRE_EFFECT;
+        Effect_Refresh == false; 
+        break; 
+      }
 
       //if (Effect_Refresh == true)
 
@@ -125,13 +135,14 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       counter++; 
       counter = counter % numberofpoints; //  counter++;  // Is in use
 
-      //Debugln(counter);
+      Debugf("Counter = %u, effectposition = %u \n", counter, effectPosition);
 
       uint16_t lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 2, 2000);
       uint16_t upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
 
-       lower_boundary = map ( lower_boundary_2000 , 1, 2000, 500 , 65000 );
-       upper_boundary = map ( upper_boundary_2000 , 1, 2000, 500 , 65000 );
+       lower_boundary = map ( lower_boundary_2000 , 1, 2000, 50 , 65000 );
+       upper_boundary = map ( upper_boundary_2000 , 1, 2000, 50 , 65000 );
+
        timeforsequence = random(lower_boundary, upper_boundary);
 
 ////////////////

@@ -192,6 +192,7 @@ bool LED_Settings_Changed = false;
 uint16_t CurrentAnimationSpeed = 2000; 
 uint8_t IntervalMultiplier = 1; 
 bool Effect_Refresh = false; 
+uint16_t timer_effect_tick_timeout = 10;//0; 
 
 //RgbColor NewColour = RgbColor(0,0,0);
 

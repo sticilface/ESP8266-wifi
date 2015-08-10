@@ -39,7 +39,7 @@ void setup( void ) {
 
 #ifdef DEBUG_YES
   Serial.setDebugOutput(true);
-  Debugln("YOU HAVE #DEBUG_YES defined");
+  Debugln("*****    #DEBUG_YES defined *****");
 #else
   Serial.setDebugOutput(false);
 #endif
