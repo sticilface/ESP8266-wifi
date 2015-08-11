@@ -20,7 +20,7 @@ static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh ra
 static unsigned long HoldingState_Failover = 0; 
 static unsigned long timer_PixelPower = 0, timer_effect_tick = 0; 
 
-if (millis() - timer_effect_tick >= timer_effect_tick_timeout ) { // timer_effect_tick_timeout
+if (millis() - timer_effect_tick >= timer_effect_tick_timeout ) { // timer_effect_tick_timeout is global, default 10msec
 
 switch (opState)
    {
@@ -2034,34 +2034,34 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 
 
-uint16_t cache return_pixel(uint16_t x, uint16_t y, uint8_t pitch) {
-  int a = (pitch * y) + x; 
-  if ( a > strip->PixelCount() ) a = -1; 
+uint16_t cache return_pixel(uint16_t x, uint16_t y, uint16_t total_in_x) {
+  uint16_t a = (total_in_x * y) + x + 1;  // the added 1 is to allow a void pixel to equal 0. 
+  if ( a > strip->PixelCount() ) return 0;   
   return a; 
 }
 
 
-uint16_t cache return_total_y(uint8_t pitch) {
- uint16_t y = pixelCount / pitch; 
- float remainder = pixelCount % pitch;
+uint16_t cache return_total_y(uint16_t total_in_x) {
+ uint16_t y = pixelCount / total_in_x; 
+ uint8_t remainder = pixelCount % total_in_x;
  if (remainder > 0) { y++; } 
   return y;
 };
 
 
 //  Returns a pixel number... starting in bottom left...
-int cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_y , uint16_t desired_pixel, uint8_t grid_size, uint16_t total_in_row) {
+uint16_t cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_y , uint16_t desired_pixel, uint8_t grid_size, uint16_t total_in_x) {
 
-  int pixel; 
+  uint16_t pixel; 
   uint16_t pixel_x, pixel_y;
   uint8_t row, row_left  ;
-  row = desired_pixel / grid_size; 
-  row_left = desired_pixel % grid_size;
-  pixel_y = first_pixel_y + row;  
-  pixel_x = first_pixel_x + row_left; 
-  pixel = return_pixel(pixel_x, pixel_y, total_in_row);
-  if (row >= return_total_y(total_in_row)) pixel = -1; 
-  if (row_left >= total_in_row ) pixel = -1; 
+  row = desired_pixel / grid_size;  //     which row in square
+  row_left = desired_pixel % grid_size; // how many pixels are left to go in the row.
+  pixel_y = first_pixel_y + row;   //      where y pixel is on whole grid
+  pixel_x = first_pixel_x + row_left;  //  where x pixel is on whole grid
+  pixel = return_pixel(pixel_x, pixel_y, total_in_x);
+  if (pixel_y > return_total_y(total_in_x)) return 0 ; 
+  if (pixel_x > total_in_x ) return 0 ; 
   return pixel; 
 }
 

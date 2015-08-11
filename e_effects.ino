@@ -32,7 +32,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint8_t  Palette_Range = WS2812_Settings.Palette_Range; 
   uint8_t  Number_of_colours = WS2812_Settings.Palette_Number; 
   uint8_t  dimoffset ; 
-  int      pixel; // has to carry negative value now. 
+  uint16_t      pixel; // has to carry negative value now. 
   uint32_t timeforsequence; 
   bool     coordinates_OK = false;
   uint16_t x_rand,y_rand;
@@ -68,7 +68,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       animator->FadeTo(1000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
      }
        
-       lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 2, 2000);
+       lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 1, 2000);
        upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
 
        lower_boundary = map ( lower_boundary_2000 , 1, 2000, 50 , 65000 );
@@ -89,7 +89,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       if ( Effect_Refresh == true ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
         Current_Effect_State = PRE_EFFECT;
-        Effect_Refresh == false; 
+        Effect_Refresh = false; 
         break; 
       }
 
@@ -124,8 +124,8 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
           pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
 
-          if (pixel >= 0) { 
-                if (animator->IsAnimating(pixel)) { coordinates_OK = false ;  break; }; 
+          if (pixel > 0) { 
+                if (animator->IsAnimating(pixel - 1)) { coordinates_OK = false ;  break; }; 
                           }
             if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true ; }; 
           }
@@ -135,10 +135,15 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       counter++; 
       counter = counter % numberofpoints; //  counter++;  // Is in use
 
-      Debugf("Counter = %u, effectposition = %u \n", counter, effectPosition);
+//      Debugf("Counter = %u, effectposition = %u, (%u,%u) \n", counter, effectPosition, x_rand,y_rand);
 
-      uint16_t lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 2, 2000);
-      uint16_t upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
+   //   uint16_t lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 2, 2000);
+   //   uint16_t upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
+
+   //    lower_boundary = map ( lower_boundary_2000 , 1, 2000, 50 , 65000 );
+   //    upper_boundary = map ( upper_boundary_2000 , 1, 2000, 50 , 65000 );
+       lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 1, 2000);
+       upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
 
        lower_boundary = map ( lower_boundary_2000 , 1, 2000, 50 , 65000 );
        upper_boundary = map ( upper_boundary_2000 , 1, 2000, 50 , 65000 );
@@ -196,10 +201,13 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     for (uint16_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
             pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x );    
+ //           if (sq_pixel > 0) Debug(", ");
+ //           Debug(pixel);
+            //Serial.print(",");
 
             if (sq_pixel == 0) effectPosition++; // adds to running count. 
 
-            if (pixel >= 0) {
+            if (pixel > 0) {
 
             RgbColor originalColor = strip->GetPixelColor(pixel);
           
@@ -211,21 +219,21 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
                 float new_progress = progress * 2.0; 
                 if (new_progress >= 1) new_progress = (2.0 - new_progress); 
                 RgbColor updatedColor = RgbColor::LinearBlend(originalColor, color, new_progress);
-                strip->SetPixelColor(pixel, updatedColor);
+                strip->SetPixelColor(pixel - 1, updatedColor);
                 if (sq_pixel == 0 && progress == 1.0) effectPosition--; 
             };
 
-            animator->StartAnimation(pixel, timeforsequence , animUpdate); // might change this to be a random variant...
+            animator->StartAnimation(pixel - 1, timeforsequence , animUpdate); // might change this to be a random variant...
           } // end of if for is pixel valid... >=0
           yield();
         }
 
-//Debug("6"); 
+ //        Debugln();
 
         lasteffectupdate = millis(); // NOT really needed.....
 
           }
-        } else {break; };
+        };
     break;
 
     case POST_EFFECT:
