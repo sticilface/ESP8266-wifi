@@ -208,8 +208,8 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
             if (sq_pixel == 0) effectPosition++; // adds to running count. 
 
             if (pixel > 0) {
-
-            RgbColor originalColor = strip->GetPixelColor(pixel);
+                pixel -= 1;   //*****       SUBTRACT ONE TO GET TRUE PIXEL       **** 
+            RgbColor originalColor = strip->GetPixelColor( pixel  ); // subtract one... to get true pixel... 
           
             // define the effect to apply, in this case linear blend
             AnimUpdateCallback animUpdate = [=](float progress)
@@ -219,11 +219,11 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
                 float new_progress = progress * 2.0; 
                 if (new_progress >= 1) new_progress = (2.0 - new_progress); 
                 RgbColor updatedColor = RgbColor::LinearBlend(originalColor, color, new_progress);
-                strip->SetPixelColor(pixel - 1, updatedColor);
+                strip->SetPixelColor(pixel, updatedColor);
                 if (sq_pixel == 0 && progress == 1.0) effectPosition--; 
             };
 
-            animator->StartAnimation(pixel - 1, timeforsequence , animUpdate); // might change this to be a random variant...
+            animator->StartAnimation(pixel, timeforsequence , animUpdate); // might change this to be a random variant...
           } // end of if for is pixel valid... >=0
           yield();
         }

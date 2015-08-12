@@ -6,7 +6,7 @@ void setup( void ) {
 
   EEPROM.begin(512);
   
-  SPIFFS.begin();
+  //SPIFFS.begin();
 
 
  bool wiped = firstboot(); 
@@ -167,7 +167,7 @@ Debugln("1");
   server.on("/misc", handle_misc);
   server.on("/power", handle_power); 
 
-  server.serveStatic("/", SPIFFS, "/");
+  //server.serveStatic("/", SPIFFS, "/");
 
 
   buf.reserve(1024);
@@ -198,7 +198,7 @@ Debugln("1");
  // listener.begin(8266);
   
 if(WiFi.waitForConnectResult() == WL_CONNECTED){
-    MDNS.begin(deviceid);
+    //MDNS.begin(deviceid);
     //MDNS.addService("arduino", "tcp", aport);
     //MDNS.addService("http", "tcp", 80);
     OTA.begin(aport);

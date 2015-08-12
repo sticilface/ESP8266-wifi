@@ -1921,7 +1921,7 @@ void cache handle_lights_config() {
 
 bool updateLEDs = false; 
 
-   if (server.args() > 1 || ( server.hasArg("preset") == false  && server.args() == 1) ) { 
+   if (server.args() > 1 || ( server.hasArg("preset") == false && server.args() == 1) ) { 
       lasteffectupdate = 0; 
       Random_func_timeout = 0; 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
@@ -1975,14 +1975,16 @@ bool updateLEDs = false;
     buf = insertvariable ( buf, String(deviceid));
     
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+
     server.send(200, "text/html", "");
+
     WiFiClient client = server.client();
     server.sendContent(buf);
     buf = " "; 
 
   //buf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
 
-  for (int k=0; k < 10; k++ ) {
+  for (uint8_t k=0; k < 10; k++ ) {
   //buf += "<option value='" + String(k) + selected + ">" + String(MODE_STRING[k]) + "</option>";
    // buf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
     String inserted; 
@@ -2001,8 +2003,10 @@ bool updateLEDs = false;
 
     buf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value='"+ inserted +"'><br>";
   }
+  
+  server.sendContent(buf);
 
-  buf += F("<input type='submit' value='Submit'>\
+  buf = F("<input type='submit' value='Submit'>\
           </form></p>\
           <form action='/lightsconfig' method='POST'>\
           <p>Save Preset: <input type='text' id='leds' name='preset' value='%' >\
@@ -2258,13 +2262,19 @@ switch (WS2812_Settings.Palette_Choice) {
           case TRIADIC:           // 5
                 //Debugln("TRIADIC"); 
                 Index = Index % 3; 
+                if (Index == 0 ) Output = Input; 
+                if (Index == 1 ) Output = Return_Multiple( Input,  1 , 3);
+                if (Index == 2 ) Output = Return_Multiple( Input,  2 , 3);
 
 
           break;
           case TETRADIC:          // 6
                 //Debugln("TETRADIC"); 
                 Index = Index % 4; 
-
+                if (Index == 0 ) Output = Input; 
+                if (Index == 1 ) Output = Return_Multiple( Input,  1 , 4);
+                if (Index == 2 ) Output = Return_Multiple( Input,  2 , 4);
+                if (Index == 2 ) Output = Return_Multiple( Input,  3 , 4);
 
           break;
       }
@@ -2395,11 +2405,17 @@ RgbColor cache Return_Analogous(RgbColor Value, uint8_t position, uint8_t total,
     return RgbColor(original);
 }
 
+RgbColor cache Return_Multiple(RgbColor Value, uint8_t position, uint8_t total) {
 
+    HslColor original = HslColor(Value);
+    float HUE = original.H;
+    float HUE_gap = 1.0 / float(total); // HUE - (range / 2.0);
+    HUE = HUE + (position * HUE_gap); 
+    if (HUE > 1) HUE -= 1;
+    original.H = HUE;   
+    return RgbColor(original);   
 
-
-
-
+}
 
 void test_newanimations() {
 
