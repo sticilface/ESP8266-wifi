@@ -455,8 +455,15 @@ if ( port > 0 && size > 0) {
 }
 
 void cache OTAreset2() {
-      OTA.stop();
-      OTA.begin(aport); // resume listenting.. 
+  int sec = millis() / 1000;
+  int min = sec / 60;
+  int hr = min / 60;
+    
+  char Up_time[20]; 
+  Debugf ("%02d:%02d:%02d\n", hr, min % 60, sec % 60 );
+
+    //  OTA.stop();
+    //  OTA.begin(aport); // resume listenting.. 
 }
 
 void cache OTAreset() {
@@ -473,10 +480,10 @@ void cache OTAreset() {
 
 String cache insertvariable(String Source , String insert) {
 
-int position = Source.indexOf("%");
+//int position = Source.indexOf("%");
 String one, two; 
 one = Source.substring(0,Source.indexOf('%') );
-two = Source.substring(Source.indexOf('%') +1 , Source.length());
+two = Source.substring(Source.indexOf('%') + 1 , Source.length());
 
 return (one + insert + two); 
 }

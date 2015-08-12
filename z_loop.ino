@@ -25,7 +25,7 @@ if (!isOTAupdate) {
 			EEPROM.commit(); // takes 35msec to perform. 
 			eepromcommit_timer = 0;
 			EEPROM_commit_var = false;
-			Debugln("EEPROM commit written!"); 
+			Debugln("EEPROM written!"); 
 			}	 
 	}
 

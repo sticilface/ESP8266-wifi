@@ -164,8 +164,8 @@ Debugln("1");
   server.on("/ota", OTAreset);
   //server.on("/test", handle_test);
 
-  server.on("/misc", handle_misc);
-  server.on("/power", handle_power); 
+  //server.on("/misc", handle_misc);
+  //server.on("/power", handle_power); 
 
   //server.serveStatic("/", SPIFFS, "/");
 
@@ -187,10 +187,12 @@ Debugln("1");
   server.begin();
 
   //Serial.println("HTTP server started");
-    timer.setInterval(APtimeout, deactivateAP);
-    timer.setInterval(MQTTtimeout, initiatemqqt);
-    timer.setInterval(60000, OTAreset2); // this resets the UDP every 10 min....
+  
+  //  timer.setInterval(APtimeout, deactivateAP);
+  //  timer.setInterval(MQTTtimeout, initiatemqqt);
 
+    timer.setInterval(300000, OTAreset2); // this resets the UDP every 10 min....
+ 
   //  timer.setInterval(Uptimer_timeout, uptime);
   //Serial.println("Timers set up");
 

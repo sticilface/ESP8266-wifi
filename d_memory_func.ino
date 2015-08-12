@@ -372,7 +372,7 @@ int bytes_read = EEPROM_readAnything(address, WS2812_Settings);
 Serial.print("Settings loaded ------------ ");
 Debug(bytes_read) ;
 Debug(" Bytes read");
-Serial.println();
+Serial.println(" ------------" ); 
   Debug("Op State        ==> ");
 Debugln(WS2812_Settings.SavedOpState);
   Debug("Timer           ==> ");
@@ -381,7 +381,7 @@ Debugln(WS2812_Settings.Timer);
 Debugln(WS2812_Settings.Animationspeed);
   Debug("Brightness      ==> ");
 Debugln(WS2812_Settings.Brightness);
-  Debug("Brightness      ==> ");
+  Debug("Colour          ==> ");
 Debug(WS2812_Settings.Color.R);
 Debug("  "); 
 Debug(WS2812_Settings.Color.G);
@@ -448,16 +448,15 @@ Debugln("End-------------------------");
       Debug(", G=");
       Debug(Gstring);
       Debug(", B=");
-      Debugln(Bstring); 
-
+      Debug(Bstring); 
+      Debug(" ==> "); 
       WebRGBcolour = Rstring + Gstring + Bstring; 
 
   //    if (R < 16 && R > 0) WebRGBcolour = "0" + WebRGBcolour; 
 
-
       WebRGBcolour.toUpperCase();
 
-      Debug("Final result = "); 
+      //Debug("Final result = "); 
       Debugln(WebRGBcolour); 
 //////
 

@@ -158,7 +158,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 //
 /////////////////          
 //Debug("2, "); 
-        yield();
+        //yield();
               if (WS2812_Settings.Random == true ) {
                 if (millis() - effect_timer > upper_boundary * 10 ) { static_colour = random(255); effect_timer = millis() ; } ; 
                 color = Return_Palette(Wheel(static_colour), counter) ;
@@ -171,7 +171,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
           
 
 
-      color = dim(color);
+            color = dim(color);
 
           // if (effect_option == 3 ) {
           //   if (counter % numberofpoints == 0) { static_colour = random(255); position = 0 ;} ; 
@@ -225,7 +225,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
             animator->StartAnimation(pixel, timeforsequence , animUpdate); // might change this to be a random variant...
           } // end of if for is pixel valid... >=0
-          yield();
+          //yield();
         }
 
  //        Debugln();

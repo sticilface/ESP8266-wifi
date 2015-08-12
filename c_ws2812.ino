@@ -244,9 +244,11 @@ Select Mode <select name='modedrop' onchange='this.form.submit();'>\
   buf = insertvariable ( content3, String(deviceid));
   buf = insertvariable ( buf, String(deviceid));
   
-  if (WiFi.status() == WL_CONNECTED) 
-    { buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
-    } else { buf = insertvariable ( buf, " "); } ;
+ // if (WiFi.status() == WL_CONNECTED) 
+ //   { buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
+ //   } else { buf = insertvariable ( buf, " "); } ;
+buf = insertvariable ( buf, " "); // get rid of this when above is included...
+
 
   buf = insertvariable ( buf, paused_string);
 
@@ -636,7 +638,7 @@ void cache WS2812_Set_New_Colour (String instruction) {
       Debug(SAT); 
       Debug(", Lig = ");       
       Debugln(LIG); */
-  
+      Effect_Refresh = true;                  // flag current effect that settings have changed 
       send_mqtt_msg("colour", WebRGBcolour); 
 
 /*
@@ -681,7 +683,7 @@ void cache WS2812_Set_New_Colour (String instruction) {
 void cache WS2812timer_command_string (String Value)
 
 {
-
+Effect_Refresh = true;                  // flag current effect that settings have changed 
 lasteffectupdate = 0;
 WS2812_Settings.Timer = Value.toInt();
 send_mqtt_msg("timer", Value); 
@@ -2268,6 +2270,7 @@ switch (WS2812_Settings.Palette_Choice) {
 
 
           break;
+
           case TETRADIC:          // 6
                 //Debugln("TETRADIC"); 
                 Index = Index % 4; 
@@ -2277,8 +2280,17 @@ switch (WS2812_Settings.Palette_Choice) {
                 if (Index == 2 ) Output = Return_Multiple( Input,  3 , 4);
 
           break;
+
+          case MULTI:          // 7
+                //Debugln("TETRADIC"); 
+                Index = Index % WS2812_Settings.Palette_Number; 
+                //if (Index == 0 ) Output = Input; 
+                Output = Return_Multiple( Input,  Index , WS2812_Settings.Palette_Number );
+
+          break;
+
       }
-      yield();
+      //yield();
       return Output; 
 
 }
@@ -2359,11 +2371,9 @@ for (y = 0; y < total_y; y++) {
 
 RgbColor Manipulate_Hue(RgbColor original, float amount ) {
 
-HslColor OriginalHSL = HslColor(original); 
-
-float NewHue = OriginalHSL.H + amount; 
-
-return RgbColor( HslColor(NewHue, OriginalHSL.S, OriginalHSL.L) ); 
+    HslColor OriginalHSL = HslColor(original); 
+    float NewHue = OriginalHSL.H + amount; 
+    return RgbColor( HslColor(NewHue, OriginalHSL.S, OriginalHSL.L) ); 
 
 }
 
@@ -2376,7 +2386,7 @@ RgbColor cache Return_Complementary(RgbColor Value) {
     return RgbColor(original);
 }
 
-RgbColor cache Return_Split_Complementary(RgbColor Input, uint8_t position, float range) {
+RgbColor cache Return_Split_Complementary(RgbColor Input, uint16_t position, float range) {
     HslColor original = HslColor(Input);
     float HUE = original.H + 0.5;
           HUE = HUE - (range / 2.0);
@@ -2387,25 +2397,20 @@ RgbColor cache Return_Split_Complementary(RgbColor Input, uint8_t position, floa
           return RgbColor(original);
 }
 
+RgbColor cache Return_Analogous(RgbColor Value, uint16_t position, uint16_t total, float range) {
 
-
-
-
-RgbColor cache Return_Analogous(RgbColor Value, uint8_t position, uint8_t total, float range) {
     HslColor original = HslColor(Value);
     float HUE = original.H;
     float HUE_lower = HUE - (range / 2.0);
-    //float HUE_upper = HUE + (spread / 2.0);
     float steps = range / float(total); 
     HUE = HUE_lower + ( float(position) * float(steps) ); 
     if (HUE < 0) HUE += 1;
     if (HUE > 1) HUE -= 1;
-    //Serial.print("")
     original.H = HUE;   
     return RgbColor(original);
 }
 
-RgbColor cache Return_Multiple(RgbColor Value, uint8_t position, uint8_t total) {
+RgbColor cache Return_Multiple(RgbColor Value, uint16_t position, uint16_t total) {
 
     HslColor original = HslColor(Value);
     float HUE = original.H;
@@ -2416,6 +2421,10 @@ RgbColor cache Return_Multiple(RgbColor Value, uint8_t position, uint8_t total) 
     return RgbColor(original);   
 
 }
+
+
+
+
 
 void test_newanimations() {
 
