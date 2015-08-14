@@ -116,7 +116,6 @@ timer_effect_tick = millis();
 
 if (  (millis() - update_strip_time > 30) && ( opState != ADALIGHT || opState != UDP ) ) {
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
-    delay(0);
     strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
     update_strip_time = millis();
   } 

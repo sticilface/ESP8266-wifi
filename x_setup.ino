@@ -164,7 +164,7 @@ Debugln("1");
   server.on("/ota", OTAreset);
   //server.on("/test", handle_test);
 
-  //server.on("/misc", handle_misc);
+  server.on("/misc", handle_misc);
   //server.on("/power", handle_power); 
 
   //server.serveStatic("/", SPIFFS, "/");
