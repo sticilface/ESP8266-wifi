@@ -76,13 +76,13 @@ void setup( void ) {
     {
       WiFi.mode(WIFI_AP_STA);
       wifimode = 2;
-      Debugln("EMERGENCY ACCESS MODE ENABLED");
+      Debugln("AP MODE");
       AP_STA_timer = millis();
 
     } else {
 
     WiFi.mode(WIFI_STA);
-    Debugln("NORMAL ACCESS MODE ENABLED");
+    Debugln("NORMAL MODE");
     wifimode = 1;
     } 
 
