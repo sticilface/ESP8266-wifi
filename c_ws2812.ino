@@ -117,8 +117,11 @@ timer_effect_tick = millis();
 if (  (millis() - update_strip_time > 30) && ( opState != ADALIGHT || opState != UDP ) ) {
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
     strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+    //  one LED takes 30uS of nointeruppts, 100 takes 3ms. 
     update_strip_time = millis();
   } 
+
+
 
   if (millis() - timer_PixelPower > 10000 && opState != OFF) {
        power = getPixelPower();
@@ -1824,7 +1827,8 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     }
 
     if (commitchanges == true) {
-        EEPROM_commit_var = true;
+        //EEPROM_commit_var = true;
+        EEPROM.commit(); // actually save changes to avoid having a boot loop....  and unable to exit... 
         Debugln("WS2812 Settings Updated."); 
         }
 
@@ -1834,21 +1838,27 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   {
     delete animator;
   }
+//Debugln("1");
   if (strip != NULL)
   {           
+//Debugln("2");
   strip->ClearTo(RgbColor(0,0,0));    // this set the strip to off before changing pixel amount...    
+//Debugln("3");
   strip->Show();  
+//Debugln("4");
   delete strip;
+  
   }
 
-
+//Debugln("5");
   strip = new NeoPixelBus(count, pin);
+// Debugln("6");
   animator = new NeoPixelAnimator(strip);
+///Debugln("7");
   pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
-    
-
+//Debugln("8");
   if (strip->PixelCount() < 10) WS2812_Settings.Total_X = 1; // can't remember what this does...  sets x width i think... 
-
+//Debugln("9");
 
 }
 
@@ -1938,7 +1948,7 @@ bool updateLEDs = false;
    if (server.hasArg("var7")) WS2812_Settings.Effect_Count = server.arg("var7").toInt();
    if (server.hasArg("var8")) WS2812_Settings.Effect_Min_Size = server.arg("var8").toInt();
    if (server.hasArg("var9")) WS2812_Settings.Effect_Max_Size = server.arg("var9").toInt();
-   if (server.hasArg("var10"))  WS2812_Settings.Effect_Option = server.arg("var10").toInt();   //  Serial.println("Var 10 updated"); }; 
+   if (server.hasArg("var10"))WS2812_Settings.Effect_Option = server.arg("var10").toInt();   //  Serial.println("Var 10 updated"); }; 
   
    if (server.hasArg("preset")) Save_LED_Settings(server.arg("preset").toInt() );
   
@@ -2041,7 +2051,7 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 uint16_t cache return_pixel(uint16_t x, uint16_t y, uint16_t total_in_x) {
   uint16_t a = (total_in_x * y) + x + 1;  // the added 1 is to allow a void pixel to equal 0. 
-  if ( a > strip->PixelCount() ) return 0;   
+  if ( a >= strip->PixelCount() ) return 0;   
   return a; 
 }
 
@@ -2057,7 +2067,7 @@ uint16_t cache return_total_y(uint16_t total_in_x) {
 //  Returns a pixel number... starting in bottom left...
 uint16_t cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_y , uint16_t desired_pixel, uint8_t grid_size, uint16_t total_in_x) {
 
-  uint16_t pixel; 
+  uint16_t pixel, total_y; 
   uint16_t pixel_x, pixel_y;
   uint8_t row, row_left  ;
   row = desired_pixel / grid_size;  //     which row in square
@@ -2065,8 +2075,15 @@ uint16_t cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_
   pixel_y = first_pixel_y + row;   //      where y pixel is on whole grid
   pixel_x = first_pixel_x + row_left;  //  where x pixel is on whole grid
   pixel = return_pixel(pixel_x, pixel_y, total_in_x);
-  if (pixel_y > return_total_y(total_in_x)) return 0 ; 
-  if (pixel_x > total_in_x ) return 0 ; 
+  total_y = return_total_y(total_in_x);
+
+
+
+  if (pixel_y >= return_total_y(total_in_x)) pixel =  0 ; 
+  if (pixel_x >= total_in_x ) pixel = 0 ; 
+
+  //Debugf("(%u,%u) ? %u -> row = %u, row_left = %u ==> (%u,%u) ==> #%u  | %u ?x %u, %u ?y %u \n", first_pixel_x, first_pixel_y, desired_pixel, row, row_left, pixel_x, pixel_y, pixel, pixel_x, total_in_x, pixel_y, total_y) ;
+
   return pixel; 
 }
 

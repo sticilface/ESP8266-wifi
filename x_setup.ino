@@ -200,8 +200,8 @@ Debugln("1");
  // listener.begin(8266);
   
 if(WiFi.waitForConnectResult() == WL_CONNECTED){
-    //MDNS.begin(deviceid);
-    //MDNS.addService("arduino", "tcp", aport);
+    MDNS.begin(deviceid);
+    MDNS.addService("arduino", "tcp", aport);
     //MDNS.addService("http", "tcp", 80);
     OTA.begin(aport);
     TelnetServer.begin();

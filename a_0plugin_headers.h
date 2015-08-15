@@ -1,5 +1,5 @@
 
-//#define DEBUG_YES
+#define DEBUG_YES
 
 
 //////////////   NOT IN USE.....
@@ -19,18 +19,19 @@
 
 
 #ifdef DEBUG_YES
-#define Debug(x)    Serial.print(x)
-#define Debugln(x)  Serial.println(x)
-#define Debugf(...) Serial.printf(__VA_ARGS__)
-#define Debugflush  Serial.flush
+	#define Debug(x)    Serial.print(x)
+	#define Debugln(x)  Serial.println(x)
+	#define Debugf(...) Serial.printf(__VA_ARGS__)
+	#define Debugflush  Serial.flush
 #else
-#define Debug(x)    {}
-#define Debugln(x)  {}
-#define Debugf(...) {}
-#define Debugflush  {}
+	#define Debug(x)    {}
+	#define Debugln(x)  {}
+	#define Debugf(...) {}
+	#define Debugflush  {}
 #endif
 
 #define cache  ICACHE_FLASH_ATTR
+
 //#define WIFIOVERRIDE
 
 //#define SQUAREDEBUG

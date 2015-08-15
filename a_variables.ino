@@ -201,7 +201,6 @@ String WebRGBcolour = "000000"; // This is for the WEBPAGE... takes the value wh
    Palette Palette_Choice;  //   1
 
 
-enum effectState { PRE_EFFECT = 0, RUN_EFFECT, POST_EFFECT};
 effectState Current_Effect_State = PRE_EFFECT; 
 
 unsigned long Random_func_timeout = 0;

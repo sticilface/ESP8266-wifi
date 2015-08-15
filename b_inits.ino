@@ -1,4 +1,4 @@
-#define PIN 15 // not sure what this is for...
+//#define PIN 15 // not sure what this is for...
 ESP8266WebServer server(80);
 
 WiFiClient wifiClient;
@@ -8,8 +8,6 @@ WiFiClient wifiClient;
 
 
 PubSubClient mqttclient(wifiClient) ; 
-
-
 
 
 // multicast DNS responder
@@ -35,5 +33,6 @@ WiFiUDP Udp;
 
 //WiFiUDP listener;
 WiFiServer TelnetServer(aport);
+
 WiFiClient Telnet;
 WiFiUDP OTA;
