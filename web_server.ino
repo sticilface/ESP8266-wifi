@@ -406,6 +406,7 @@ void handle_misc ()
   <!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name='viewport' content='initial-scale=1'><title> % ESP Melvide</title></head><body><h1> Misc Functions</h1>\
   <p> Version = % \
   <br> Compile Time = % \
+  <br> SDK Version = % \
   <br> Heap Size = % \
   <br> Flash Size = % \
   <br> Flash Size by ID = % \
@@ -417,6 +418,7 @@ void handle_misc ()
   <br> Up Time = % \
   <br> VCC = % \
   <br> RSSI = % \
+  <br> CPU freq = % \
   <p><form action='/misc' method='POST'>\
   <p> Select Speed <select name='serial' onchange='this.form.submit();'>\
   ");
@@ -426,6 +428,7 @@ void handle_misc ()
   buf = insertvariable (content0, String(deviceid)); 
   buf = insertvariable ( buf, version);  
   buf = insertvariable (buf, String(compile_date));
+  buf = insertvariable (buf, String(ESP.getSdkVersion()));
   buf = insertvariable ( buf, String(ESP.getFreeHeap()));
   buf = insertvariable ( buf, String(ESP.getFlashChipSize()));
   buf = insertvariable ( buf, String(ESP.getFlashChipSizeByChipId()));
@@ -437,6 +440,7 @@ void handle_misc ()
   buf = insertvariable  (buf, String(Up_time));
   buf = insertvariable  (buf, String(ESP.getVcc()));
   buf = insertvariable (buf, String(WiFi.RSSI()));
+  buf = insertvariable (buf, String(ESP.getCpuFreqMHz())); 
   
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send(200, "text/html", "");

@@ -192,7 +192,7 @@ bool LED_Settings_Changed = false;
 uint16_t CurrentAnimationSpeed = 2000; 
 uint8_t IntervalMultiplier = 1; 
 bool Effect_Refresh = false; 
-uint16_t timer_effect_tick_timeout = 10;//0; 
+uint8_t timer_effect_tick_timeout = 10; // controls the flow of effect generation... put to 0 by UDP and ADAlight...
 
 //RgbColor NewColour = RgbColor(0,0,0);
 
@@ -247,21 +247,22 @@ struct config_t
 
 
 struct WS2812Settings_t {
-   uint8_t SavedOpState;
+   uint8_t  SavedOpState;
    uint16_t Timer;
    uint16_t Animationspeed; 
-   uint8_t Brightness;
+   uint8_t  Brightness;
    RgbColor Color;
-   uint8_t Palette_Choice;  //   1
-   uint8_t Palette_Range;   //   2
-   uint8_t Palette_Number;  //   3
-   bool    Random;          //   4
-   uint8_t Time_Stretch;    //   5 
-   uint8_t Total_X;         //   6
-   uint8_t Effect_Count;    //   7
-   uint8_t Effect_Min_Size; //   8
-   uint8_t Effect_Max_Size; //   9
-   uint8_t Effect_Option;   //   10
+   uint8_t  Palette_Choice;  //   1
+   uint8_t  Palette_Range;   //   2
+   uint8_t  Palette_Number;  //   3
+   bool     Random;          //   4
+   uint8_t  Time_Stretch;    //   5 
+   uint16_t Total_X;         //   6
+   uint8_t  Effect_Count;    //   7
+   uint8_t  Effect_Min_Size; //   8
+   uint8_t  Effect_Max_Size; //   9
+   uint8_t  Effect_Option;   //   10
+   uint8_t  CheckSum;        //
 } WS2812_Settings;
 
 static const char *VAR_STRING[] = {

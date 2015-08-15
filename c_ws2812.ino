@@ -194,7 +194,7 @@ bool updateLEDs = false;
  if (server.hasArg("preset")) WS2812_preset_string(server.arg("preset"));
  if ((server.arg("dim") != String(WS2812_Settings.Brightness)) && (server.arg("dim").length() != 0)) WS2812_dim_string(server.arg("dim"));
  if ((server.arg("timer") != String(WS2812_Settings.Timer)) && (server.arg("timer").length() != 0)) WS2812timer_command_string(server.arg("timer"));
- if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  AnimationSpeed_command_string(server.arg("anispeed"));
+ //if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  AnimationSpeed_command_string(server.arg("anispeed"));
  if (server.hasArg("paused")) {
       paused = (server.arg("paused")).toInt();
       if (paused) animator->Pause(); 
@@ -301,10 +301,10 @@ for (int k=0; k < numberofmodes; k++ ) {
  // 4 = pixelCount String(pixelCount)
  // 5 = pixelPIN String(pixelPIN)
  // 6 = String(power) 
-  
+  //    <br>Animation: <input type='range' name='anispeed'min='1' max='10000' value='%' onchange='this.form.submit();' >\
+
   String content1 = F("\
   <form name=sliders action='/ws2812' method='POST'>\
-  <br>Animation: <input type='range' name='anispeed'min='1' max='10000' value='%' onchange='this.form.submit();' >\
   <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
   <br>Timer: <input type='range' name='timer'min='1' max='2000' value='%' onchange='this.form.submit();'>\
   </form><br>\
@@ -316,8 +316,8 @@ for (int k=0; k < numberofmodes; k++ ) {
     <br>Power = %mA\
   ");
   
-  buf = insertvariable ( content1, String(CurrentAnimationSpeed)); 
-  buf = insertvariable ( buf, String(WS2812_Settings.Brightness)); 
+  //buf = insertvariable ( content1, String(CurrentAnimationSpeed)); 
+  buf = insertvariable ( content1, String(WS2812_Settings.Brightness)); 
   buf = insertvariable ( buf, String(WS2812_Settings.Timer)); 
  // buf = insertvariable ( buf, String(pixelCount)); 
  // buf = insertvariable ( buf, String(pixelPIN)); 
@@ -2051,7 +2051,7 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 uint16_t cache return_pixel(uint16_t x, uint16_t y, uint16_t total_in_x) {
   uint16_t a = (total_in_x * y) + x + 1;  // the added 1 is to allow a void pixel to equal 0. 
-  if ( a >= strip->PixelCount() ) return 0;   
+  if ( a > strip->PixelCount() ) return 0;   
   return a; 
 }
 
@@ -2075,12 +2075,8 @@ uint16_t cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_
   pixel_y = first_pixel_y + row;   //      where y pixel is on whole grid
   pixel_x = first_pixel_x + row_left;  //  where x pixel is on whole grid
   pixel = return_pixel(pixel_x, pixel_y, total_in_x);
-  total_y = return_total_y(total_in_x);
-
-
-
-  if (pixel_y >= return_total_y(total_in_x)) pixel =  0 ; 
-  if (pixel_x >= total_in_x ) pixel = 0 ; 
+  if (pixel_y >= return_total_y(total_in_x)) return  0 ; 
+  if (pixel_x >= total_in_x ) return 0 ; 
 
   //Debugf("(%u,%u) ? %u -> row = %u, row_left = %u ==> (%u,%u) ==> #%u  | %u ?x %u, %u ?y %u \n", first_pixel_x, first_pixel_y, desired_pixel, row, row_left, pixel_x, pixel_y, pixel, pixel_x, total_in_x, pixel_y, total_y) ;
 
