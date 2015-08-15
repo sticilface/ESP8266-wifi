@@ -32,7 +32,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint8_t  Palette_Range = WS2812_Settings.Palette_Range; 
   uint8_t  Number_of_colours = WS2812_Settings.Palette_Number; 
   uint8_t  dimoffset ; 
-  uint16_t      pixel; // has to carry negative value now. 
+  uint16_t pixel; // has to carry negative value now. 
   uint32_t timeforsequence; 
   bool     coordinates_OK = false;
   uint16_t x_rand,y_rand;
@@ -155,6 +155,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
    //    lower_boundary = map ( lower_boundary_2000 , 1, 2000, 50 , 65000 );
    //    upper_boundary = map ( upper_boundary_2000 , 1, 2000, 50 , 65000 );
+
        lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 1, 2000);
        upper_boundary_2000 = constrain (WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 3 ), 1, 2000);
 
@@ -276,10 +277,10 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
   //float Ceiling, Floor; 
   RgbColor colour_top, colour_bottom; 
 
-     uint32_t  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
-     uint32_t  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+     uint32_t  lower_boundary; //  = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+     uint32_t  upper_boundary; //  = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
      
-     uint16_t  animation_time ; // = random_time / 10; 
+     uint16_t  animation_time; // = random_time / 10; 
 
   switch(Current_Effect_State) {
 
@@ -294,15 +295,12 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
   
 
       if (  
-            ( 
-              ( millis() - lasteffectupdate > random_time ) ||  ( Effect_Refresh == true )
-            ) 
-                &&  (animator->IsAnimating() == false ) 
+              ( millis() - lasteffectupdate > random_time  && animator->IsAnimating() == false ) ||  ( Effect_Refresh == true )
           ) 
 
           { // only generate new effect if NOT blending..
        
-
+            Effect_Refresh = false; // this stops the effect from looping constantly...
 
    //       if (WS2812_Settings.var1 == 0) { Ceiling = 0.2f; } else { Ceiling = (float)WS2812_Settings.var1 / 255.0f ; }; 
    //       if (WS2812_Settings.var2 == 0) { Floor = -0.2f; } else { Floor = ((float)WS2812_Settings.var2 / 255.0f) * -1 ; } ;
@@ -318,27 +316,34 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
 ///////// ----   Generate Top Colours
 
         if (WS2812_Settings.Random == true)  {
-                colour_top  = Wheel(random(0,255)) ; //  RgbColor(255,0,0); 
+                colour_top  = Wheel(random(255)) ; //  RgbColor(255,0,0); 
               } else {
                 colour_top  = WS2812_Settings.Color ; //  RgbColor(255,0,0); 
               }
 
 ///////// ----   Generate Bottom Colours
 
-                colour_bottom = Return_Palette (colour_top);
-                colour_top = dim(colour_top);
+                colour_bottom = Return_Palette (colour_top, 1);
+
+                colour_top =    dim(colour_top);
                 colour_bottom = dim(colour_bottom); 
 
 /////// --- Timing
 
-                lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
-                upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
+                lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 10000 , 600000 );
+                upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 10000 , 600000 );
+                
                 random_time = random( lower_boundary, upper_boundary ); // generate length of animation
     //Debugf("Time = %u \n", random_time);
 
-                animation_time = random_time / 10; 
 
-      top_bottom_fade(colour_top,colour_bottom, WS2812_Settings.Total_X, animation_time, Method); 
+                lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 500 , 65000 );
+                upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 500 , 65000 );
+
+                animation_time = random( lower_boundary, upper_boundary ); // generate length of animation
+
+
+      top_bottom_fade(colour_top, colour_bottom, WS2812_Settings.Total_X, animation_time, Method); 
       
       lasteffectupdate = millis(); 
 

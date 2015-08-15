@@ -2313,10 +2313,12 @@ switch (WS2812_Settings.Palette_Choice) {
 // Overloaded func for topbottom fade...
 void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x) {
 
-  top_bottom_fade(Top,Bottom, count_x, CurrentAnimationSpeed, HSL);
+  uint16_t timer = map ( WS2812_Settings.Timer , 1, 2000, 500 , 65000 );
+
+  top_bottom_fade(Top,Bottom, count_x, timer, HSL);
 }
 
-void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x,uint16_t time) {
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x, uint16_t time) {
 
   top_bottom_fade(Top,Bottom, count_x, time, HSL);
 }
@@ -2337,17 +2339,19 @@ HslColor colourHSL;
 for (y = 0; y < total_y; y++) {
 
     colour_steps = (float) y / (float) total_y; 
+
     if (y == 0) colour_steps = 0.0f; // this stets the top blend.  
     if (y == total_y - 1) colour_steps = 1.0f;  // this sets the bottom blend
   // colour_stepsF = (float)colour_steps / 255.0;  // this converts it to float for new lib...
 
     if (Method == RGB) { colourRGB = RgbColor::LinearBlend(Top, Bottom, colour_steps); };
-    if (Method == HSL) { colourHSL = HslColor::LinearBlend(HslColor(Top), HslColor(Bottom), colour_steps); 
+    if (Method == HSL) { colourHSL = HslColor::LinearBlend(Top, Bottom, colour_steps); 
                          colourRGB = RgbColor(colourHSL) ;
                         };
  
     for( x = 0; x < count_x; x++) {
-        uint16_t pixel = return_pixel(x,y, count_x);  // which pixel
+
+        uint16_t pixel = return_pixel(x, y, count_x) - 1 ;  // which pixel  
         RgbColor original = strip->GetPixelColor(pixel); // get the orginal colour of it, RGB
         if (pixel >= strip->PixelCount()) break; // escape if out of bounds...
 
