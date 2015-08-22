@@ -36,6 +36,7 @@ void setup( void ) {
 
   Serial.begin(serialspeed); // 921600 460800 115200
   //Serial.begin(2000000); // 921600 460800 115200
+Serial.print("\n\n");
 
 #ifdef DEBUG_YES
   Serial.setDebugOutput(true);
