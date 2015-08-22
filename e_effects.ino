@@ -90,7 +90,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
     Debugf("Total effects = %u \n", numberofpoints); 
 
     Pre_effect();  // PRE effect SETS LAST EFFECT UPDATE TO ZERO... ? is this requires?
-    lasteffectupdate = millis();  // this has to go here otherwise the pre_effect routine restarts it...
+    lasteffectupdate = 0; // millis();  // this has to go here otherwise the pre_effect routine restarts it...
 
     break;
 
@@ -106,9 +106,10 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
       //if (Effect_Refresh == true)
      //Debugf("\n effectposit = %u, numberofpoints = %u, effectstate = %u : ", effectPosition,numberofpoints,(uint8_t)Current_Effect_State );
+       //uint16_t effect_timeout = ;
 
-     // if  ( (millis() - lasteffectupdate > ( WS2812interval * IntervalMultiplier ) ) && effectPosition < numberofpoints ) {      
-      if  ( effectPosition < numberofpoints ) {
+     if  ( (millis() - lasteffectupdate > WS2812_Settings.Timer ) && effectPosition < numberofpoints ) {   //   This staggers the effects...
+    ///  if  ( effectPosition < numberofpoints ) {
 //      espcyclecount = ESP.getCycleCount(); 
 
        //if (effect_option == 1 ) {
@@ -274,7 +275,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) { 
   uint16_t total_x; 
   static uint32_t random_time = 0 ; 
-  //float Ceiling, Floor; 
+
   RgbColor colour_top, colour_bottom; 
 
      uint32_t  lower_boundary; //  = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
@@ -296,7 +297,7 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
 
       if (  
               ( millis() - lasteffectupdate > random_time  && animator->IsAnimating() == false ) ||  ( Effect_Refresh == true )
-          ) 
+         ) 
 
           { // only generate new effect if NOT blending..
        
@@ -333,19 +334,19 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
                 lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 10000 , 600000 );
                 upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 10000 , 600000 );
                 
-                random_time = random( lower_boundary, upper_boundary ); // generate length of animation
+                random_time = random( lower_boundary, upper_boundary ); // generate length of animation pause
     //Debugf("Time = %u \n", random_time);
 
 
                 lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 500 , 65000 );
                 upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 500 , 65000 );
 
-                animation_time = random( lower_boundary, upper_boundary ); // generate length of animation
+                animation_time = (uint16_t) random( lower_boundary, upper_boundary ); // generate length of animation
 
 
-      top_bottom_fade(colour_top, colour_bottom, WS2812_Settings.Total_X, animation_time, Method); 
+                top_bottom_fade(colour_top, colour_bottom, WS2812_Settings.Total_X, animation_time, Method); 
       
-      lasteffectupdate = millis(); 
+                lasteffectupdate = millis(); 
 
     } // end of if that generates effect. 
 

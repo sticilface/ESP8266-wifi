@@ -25,7 +25,8 @@ void ICACHE_FLASH_ATTR handle_bytedump() {
   // your 32s are : 31,63,95,127,159,191,223,255,287,319,351,383,415,447,479,511
   Serial.println("Begining html dump of EEPROM.");
 
-  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+
 
   server.send(200, "text/html", "");
 
@@ -157,7 +158,18 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   //bool mqttconnected = mqttclient.connected();
   
 
-  buf = F("<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head><meta name='viewport' content='initial-scale=1'><title>Wifi Configuration</title></head><body><h1>Wifi Config</h1>");
+  buf = F("\
+<!DOCTYPE HTML>\
+  <head>\
+    <title>Wifi Configuration</title>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'/>\
+    <meta http-equiv='Pragma' content='no-cache'>\
+    <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
+    <style>\
+       body {background-color: #E6E6FA;}\
+    </style> \
+  </head>\
+    <body><h1>Wifi Config</h1>");
   buf += "<p>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
   buf += "<br>Current SSID is: " + String(ssid);
   buf += "<br>Current MQTT Server is: " + mqttserver_string + "..." + ((mqttclient.connected())?"Connected":"Disconnected");
@@ -169,11 +181,14 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   //buf += "<input type='radio' name='state' value='1' checked>On<input type='radio' name='state' value='0'>Off<\p>"; 
   buf += "\n\n<p>Please Select Wifi Network...</p>";
 
-    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+
     server.send(200, "text/html", "");
     WiFiClient client = server.client();
-    server.sendContent(buf);
-    buf = " ";
+    //server.sendContent(buf);
+    server.client().print(buf); 
+
+        buf = " ";
 
 
   String checked;
@@ -202,7 +217,8 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   buf += htmlendstring; 
 
 
-    server.sendContent(buf);
+    //server.sendContent(buf);
+    server.client().print(buf); 
 
     //server.send(200, "text/html", buf);
 
@@ -434,17 +450,21 @@ void handle_misc ()
   buf = insertvariable ( buf, String(ESP.getFlashChipSizeByChipId()));
   buf = insertvariable ( buf, String(ESP.getFlashChipId()));
   buf = insertvariable ( buf, String(ESP.getChipId()));
-  buf = insertvariable ( buf, String(ESP.getSketchSize()  ));
-  buf = insertvariable ( buf, String(ESP.getFreeSketchSpace()));
+  buf = insertvariable ( buf, " " ) ; // String(ESP.getSketchSize()  ));
+  buf = insertvariable ( buf, " " ) ; // String(ESP.getFreeSketchSpace()));
   buf = insertvariable ( buf, String(millis()));
   buf = insertvariable  (buf, String(Up_time));
   buf = insertvariable  (buf, String(ESP.getVcc()));
   buf = insertvariable (buf, String(WiFi.RSSI()));
   buf = insertvariable (buf, String(ESP.getCpuFreqMHz())); 
-  
-  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  //server.sendHeader("Content-Length", "1000");
+  //server.setContentLength(buf.length());
+
+    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+
   server.send(200, "text/html", "");
   WiFiClient client = server.client();
+
   server.sendContent(buf);
   buf = " "; 
   

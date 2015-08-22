@@ -114,13 +114,32 @@ timer_effect_tick = millis();
 
 } // end of if timer for effect generation.... 
 
+// if (  (millis() - update_strip_time > 15) && ( opState != ADALIGHT || opState != UDP ) ) {
+
+//     static bool alternate_flag = false; 
+
+//     if ( animator->IsAnimating() && !alternate_flag ) { animator->UpdateAnimations(100); }  // do animatiors every 30
+  
+//     SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms.  // do show every 15.. to make smooth...
+//     //  one LED takes 30uS of nointeruppts, 100 takes 3ms. 
+//     update_strip_time = millis();
+
+//     alternate_flag = !alternate_flag; 
+  
+//   } 
+
+
 if (  (millis() - update_strip_time > 30) && ( opState != ADALIGHT || opState != UDP ) ) {
+
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
-    strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+  
+    SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
     //  one LED takes 30uS of nointeruppts, 100 takes 3ms. 
     update_strip_time = millis();
+  
   } 
 
+if (SendFail) SendFail = strip->Show(); // is this a retry, so that if it is called too soon.. it will still try again
 
 
   if (millis() - timer_PixelPower > 10000 && opState != OFF) {
@@ -233,9 +252,20 @@ bool updateLEDs = false;
       } else {
         paused_string = F("<a href='/ws2812?paused=1'>PAUSE</a>") ; 
       }
+//<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
 
 String content3 = F("\
-<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
+<!DOCTYPE HTML>\
+  <head>\
+    <title>%</title>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'/>\
+    <meta http-equiv='Pragma' content='no-cache'>\
+    <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
+    <style>\
+       body {background-color: #E6E6FA;}\
+    </style> \
+  </head>\
+<body><h1> % </h1>\
 %\
 <br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
 <br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
@@ -247,19 +277,21 @@ Select Mode <select name='modedrop' onchange='this.form.submit();'>\
   buf = insertvariable ( buf, String(deviceid));
   
  // if (WiFi.status() == WL_CONNECTED) 
- //   { buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
+  buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
  //   } else { buf = insertvariable ( buf, " "); } ;
-buf = insertvariable ( buf, " "); // get rid of this when above is included...
-
+//buf = insertvariable ( buf, " "); // get rid of this when above is included...
 
   buf = insertvariable ( buf, paused_string);
 
 
 //  if (wifimode == 1) { buf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
-    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+
     server.send(200, "text/html", "");
     WiFiClient client = server.client();
-    server.sendContent(buf);
+
+    //server.sendContent(buf);
+    server.client().print(buf);
 
  buf = " ";
 
@@ -277,11 +309,11 @@ for (int k=0; k < numberofmodes; k++ ) {
   buf += "</form></p>";
 
 
-    server.sendContent(buf);
-
+    //server.sendContent(buf);
+    server.client().print(buf);
     buf = " "; 
 
-  if(WiFi.status() == WL_CONNECTED) {
+  //if(WiFi.status() == WL_CONNECTED) {
   String content0 = F("<p><form action='/ws2812' method='POST'\
   <p>Color: <input class='color' name='rgbpicker' value = '%' >\
   <br>  <input type='submit' value='Submit'/>\
@@ -290,9 +322,9 @@ for (int k=0; k < numberofmodes; k++ ) {
 
   buf = insertvariable ( content0, WebRGBcolour);  //WebRGBcolour
   
-  server.sendContent(buf);
-
-  }  // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
+    //server.sendContent(buf);
+    server.client().print(buf);
+  //}  // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
   
 
  // 1 = CurrentAnimationSpeed String(CurrentAnimationSpeed) 
@@ -336,8 +368,8 @@ for (int k=0; k < numberofmodes; k++ ) {
   //server.send(200, "text/html", buf);
 
 
-    server.sendContent(buf);
-
+    //server.sendContent(buf);
+    server.client().print(buf);
 
 //if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 //power = getPixelPower();
@@ -1669,6 +1701,7 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
   static unsigned long ada_sent = 0; 
   static unsigned long pixellatchtime = 0;
   const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
+  static bool SendFailhere = false; 
   //const unsigned long initializetimeout = 10000; 
   //static unsigned long initializetime = 0; 
     //if (!Adalight_configured) {
@@ -1750,6 +1783,7 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 
         //  this bit is what might... be causing the flashing... as it extends past memory stuctures....
         while (Serial.available() && effectbuf_position < 3 * strip->PixelCount()) {  // was <=  
+          
           pixelsPOINT[effectbuf_position++] = Serial.read();
           //if (effectbuf_position == 3 * strip->PixelCount()) break; 
         }
@@ -1767,10 +1801,19 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
     case MODE_SHOW:
 
       strip->Dirty(); // MUST USE if you're using the direct buffer copy... 
-      strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
 
-      pixellatchtime = millis();
-      state = MODE_HEADER;
+  //    do { SendFail = strip->Show(); } while ( SendFail == 1 ) ;
+
+      // SendFailhere = strip->Show();
+       pixellatchtime = millis();
+
+      //if (!strip->Show()) state = MODE_HEADER;
+
+            strip->Show(1);
+
+            state = MODE_HEADER;
+
+      
       break;
 
     case MODE_FINISH:
@@ -1892,7 +1935,7 @@ int packetSize;
               }
               Udp.flush();
               strip->Dirty(); 
-              strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+              SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
 
         }
       
@@ -1977,8 +2020,17 @@ bool updateLEDs = false;
 
 
   String content = F("\
-    <!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'>\
-    <title> % </title></head><body><h1> % </h1>\
+<!DOCTYPE HTML>\
+  <head>\
+    <title>%</title>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'/>\
+    <meta http-equiv='Pragma' content='no-cache'>\
+    <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
+    <style>\
+       body {background-color: #E6E6FA;}\
+    </style> \
+  </head>\
+    <body><h1> % </h1>\
     <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>\
     <form name=form action='/lightsconfig' method='POST'>");
 
@@ -1986,11 +2038,11 @@ bool updateLEDs = false;
     buf = insertvariable ( buf, String(deviceid));
     
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-
     server.send(200, "text/html", "");
 
     WiFiClient client = server.client();
-    server.sendContent(buf);
+    //server.sendContent(buf);
+    server.client().print(buf); 
     buf = " "; 
 
   //buf += "Select Mode <select name='modedrop' onchange='this.form.submit();'>";
@@ -2015,8 +2067,9 @@ bool updateLEDs = false;
     buf += String(VAR_STRING[k]) + " : <input type='text' id='var" + String(k+1) + "' name='var" + String(k+1) + "' value='"+ inserted +"'><br>";
   }
   
-  server.sendContent(buf);
-
+    //server.sendContent(buf);
+    server.client().print(buf); 
+    
   buf = F("<input type='submit' value='Submit'>\
           </form></p>\
           <form action='/lightsconfig' method='POST'>\
@@ -2036,8 +2089,8 @@ bool updateLEDs = false;
   buf = insertvariable ( buf, String(pixelPIN)); 
 
 
-  server.sendContent(buf);
-
+    //server.sendContent(buf);
+    server.client().print(buf); 
 
 if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
@@ -2051,7 +2104,7 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 uint16_t cache return_pixel(uint16_t x, uint16_t y, uint16_t total_in_x) {
   uint16_t a = (total_in_x * y) + x + 1;  // the added 1 is to allow a void pixel to equal 0. 
-  if ( a > strip->PixelCount() ) return 0;   
+  if ( a > strip->PixelCount() + 1 ) return 0;   // need the one otherwise it will stop one short of the end..
   return a; 
 }
 
@@ -2074,9 +2127,11 @@ uint16_t cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_
   row_left = desired_pixel % grid_size; // how many pixels are left to go in the row.
   pixel_y = first_pixel_y + row;   //      where y pixel is on whole grid
   pixel_x = first_pixel_x + row_left;  //  where x pixel is on whole grid
-  pixel = return_pixel(pixel_x, pixel_y, total_in_x);
+
   if (pixel_y >= return_total_y(total_in_x)) return  0 ; 
   if (pixel_x >= total_in_x ) return 0 ; 
+
+  pixel = return_pixel(pixel_x, pixel_y, total_in_x);
 
   //Debugf("(%u,%u) ? %u -> row = %u, row_left = %u ==> (%u,%u) ==> #%u  | %u ?x %u, %u ?y %u \n", first_pixel_x, first_pixel_y, desired_pixel, row, row_left, pixel_x, pixel_y, pixel, pixel_x, total_in_x, pixel_y, total_y) ;
 
@@ -2222,11 +2277,9 @@ void cache Set_Colour_ToptoBottom() {
 
 //  This function returns a random colour from palette if no index is specified!  
 RgbColor cache Return_Palette (RgbColor Input) {
-      uint8_t random_choice = random(1);
+      uint8_t random_choice = random(1, WS2812_Settings.Palette_Number );
       uint8_t Index; 
-      if (random_choice == 0) Index = 0;
-      if (random_choice == 1) Index = WS2812_Settings.Palette_Number; 
-      Return_Palette (Input, Index) ;
+      Return_Palette (Input, random_choice) ;
 }
 
 /////////////////////
@@ -2325,7 +2378,7 @@ void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x, uin
 
 
 
-void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x, uint16_t time, BlendMethod Method) {
+void cache top_bottom_fade( RgbColor Top, RgbColor Bottom, uint16_t count_x, uint16_t animation_time, BlendMethod Method) {
 
 uint16_t x,y;
 float colour_steps; 
@@ -2338,22 +2391,31 @@ HslColor colourHSL;
 
 for (y = 0; y < total_y; y++) {
 
-    colour_steps = (float) y / (float) total_y; 
+    colour_steps = float(y) / float(total_y);    // give the % complete of blend.... 
 
-    if (y == 0) colour_steps = 0.0f; // this stets the top blend.  
-    if (y == total_y - 1) colour_steps = 1.0f;  // this sets the bottom blend
+    if (y == 0) colour_steps = 0.0f; // this stets the top blend.  to ensure a 0%
+    if (y == total_y - 1) colour_steps = 1.0f;  // this sets the bottom blend to ensure it hits 100% 
   // colour_stepsF = (float)colour_steps / 255.0;  // this converts it to float for new lib...
 
     if (Method == RGB) { colourRGB = RgbColor::LinearBlend(Top, Bottom, colour_steps); };
-    if (Method == HSL) { colourHSL = HslColor::LinearBlend(Top, Bottom, colour_steps); 
-                         colourRGB = RgbColor(colourHSL) ;
-                        };
- 
+    // if (Method == HSL) { colourHSL = HslColor::LinearBlend(Top, Bottom, colour_steps); 
+    //                      colourRGB = RgbColor(colourHSL) ;
+    //                     };
+     if (Method == HSL) { colourRGB = HslColor::LinearBlend(Top, Bottom, colour_steps); };
+
+
     for( x = 0; x < count_x; x++) {
 
-        uint16_t pixel = return_pixel(x, y, count_x) - 1 ;  // which pixel  
+        uint16_t pixel = return_pixel(x, y, count_x);  // which pixel  
+
+
+        if (pixel > 0) { // is the pixel valid
+            pixel -= 1;    // return pixel to true pixel
+
+//        Debugf("%3u ",pixel);
+
         RgbColor original = strip->GetPixelColor(pixel); // get the orginal colour of it, RGB
-        if (pixel >= strip->PixelCount()) break; // escape if out of bounds...
+        //if (pixel >= strip->PixelCount()) break; // escape if out of bounds...
 
         AnimUpdateCallback animUpdate = [=](float progress)
             {
@@ -2365,9 +2427,11 @@ for (y = 0; y < total_y; y++) {
                 strip->SetPixelColor(pixel, updatedColor);
              // }; 
             };
-            animator->StartAnimation(pixel, time, animUpdate);
-    } // END of x ......
+            animator->StartAnimation(pixel, animation_time, animUpdate);
 
+        } // end of valid pixel....
+    } // END of x ......
+//    Debugln();
 }  // END of y......
     
 } // END of tom_bottom_fade

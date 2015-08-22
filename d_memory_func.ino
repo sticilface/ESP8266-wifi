@@ -293,7 +293,7 @@ void cache Save_LED_Settings (uint8_t location) {
 
 //WS2812_Settings.LastOpState = LastOpState ; 
 //WS2812_Settings.Timer = WS2812interval;
-WS2812_Settings.Animationspeed = CurrentAnimationSpeed;  // trying to get rid of this !  
+//WS2812_Settings.Animationspeed = CurrentAnimationSpeed;  // trying to get rid of this !  
 //WS2812_Settings.Brightness = CurrentBrightness;
 //WS2812_Settings.Color = NewColour; 
 
@@ -312,8 +312,21 @@ WS2812_Settings.SavedOpState = (uint8_t)LastOpState;
 Debugf("Saved opState = %u \n", WS2812_Settings.SavedOpState); 
   
   if ( location < 0 || location > 10) return;  // check valid storage range. 
+
+
+
+
+
   uint16_t address = START_address_settings + (32 * location); 
-  EEPROM_writeAnything( address, WS2812_Settings); 
+  uint8_t byteswritten = EEPROM_writeAnything( address, WS2812_Settings); 
+
+  // uint8_t chksum = 0;
+  // for (uint16_t i = 0; i < byteswritten - 1 ; i++) {
+  //   chksum += EEPROM.read(address+i); 
+  // }
+
+  // EEPROM.write( address + byteswritten , chksum); 
+  // Debugf("Checksum = %u\n",chksum);
 
   ///////
 
@@ -356,23 +369,24 @@ int bytes_read = EEPROM_readAnything(address, WS2812_Settings);
   //NewColour = WS2812_Settings.Color; 
 
 
-/*  var1 = WS2812_Settings.var1; 
-  var2 = WS2812_Settings.var2;
-  var3 = WS2812_Settings.var3;
-  var4 = WS2812_Settings.var4;
-  IntervalMultiplier = WS2812_Settings.var5;
-  var6 = WS2812_Settings.var6;
-  var7 = WS2812_Settings.var7;
-  var8 = WS2812_Settings.var8;
-  var9 = WS2812_Settings.var9;
-  var10 = WS2812_Settings.var10; */
+// uint8_t chksum = 0;
+
+// for (uint16_t i = 0; i < bytes_read - 1 ; i++) {
+//     chksum += EEPROM.read(address+i); 
+// }
 
 
 
-Serial.print("Settings loaded ------------ ");
-Debug(bytes_read) ;
-Debug(" Bytes read");
-Serial.println(" ------------" ); 
+Serial.print("Settings loaded ------- ");
+Serial.print(bytes_read) ;
+Serial.print(" Bytes read");
+Serial.print(" ------- \n" ); 
+// Serial.print(chksum);
+// Serial.print(" = ");
+// Serial.print(WS2812_Settings.CheckSum);
+// Serial.print( " ==> ");
+// if (chksum == WS2812_Settings.CheckSum) { Serial.println("OK"); } else { Serial.println("CRC Failed"); };
+
   Debug("Op State        ==> ");
 Debugln(WS2812_Settings.SavedOpState);
   Debug("Timer           ==> ");

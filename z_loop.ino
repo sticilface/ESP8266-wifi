@@ -2,17 +2,29 @@ void loop( void ) {
   // put your main code here, to run repeatedly:
 
 
-//	static uint32_t loop_time = 0, loop_count = 0, loop_timeout = 0, loop_cycle = 0 ; 
+	//static uint32_t loop_time = 0, loop_count = 0, loop_timeout = 0, loop_cycle = 0 ; 
 
 if (!isOTAupdate) {
 
  	mqttclient.loop();
+ 	//optimistic_yield(1000);
  	yield();
+  	
   	server.handleClient();
+  	
   	yield();
+  	
   	timer.run();
+  	
   	yield();
+
   	loop_Plugin();
+
+  	yield();
+
+ // #ifdef MDNSSERVICE
+ //   	MDNS.update();
+ // #endif
 
 //if (wifimode == 1) mdns.update();  
 
@@ -31,12 +43,16 @@ if (!isOTAupdate) {
 
   };
 
-
+//delay(1); /// test loop... see how it goes... 
 //loop_count++;
 
-//if (millis() - loop_timeout > 1000) {
-//Serial.println(ESP.getFreeHeap());
- //uint32_t temp = (ESP.getCycleCount() - loop_cycle ) / loop_count ; 
+// if (millis() - loop_timeout > 500) {
+// //Serial.println(ESP.getFreeHeap());
+//  //uint32_t temp = (ESP.getCycleCount() - loop_cycle ) / loop_count ; 
+// loop_timeout = millis();
+// Debug(".");
+// };
+
 
 //loop_count = loop_count / 10 ; 
 

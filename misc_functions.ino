@@ -468,6 +468,7 @@ void cache OTAreset2() {
 
 void cache OTAreset() {
     
+
     WiFiUDP::stopAll();
     //delay(5);
     OTA.begin(aport); // resume listenting.. 

@@ -248,7 +248,17 @@ void cache handle_mqtt() {
   //int MQTT_enabled_checked = MQTT_enabled;
   
   String content = F("\
-      <!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
+<!DOCTYPE HTML>\
+  <head>\
+    <title> % </title>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'/>\
+    <meta http-equiv='Pragma' content='no-cache'>\
+    <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
+    <style>\
+       body {background-color: #E6E6FA;}\
+    </style> \
+  </head>\
+      <body><h1> % </h1>\
       <title>MQTT Configuration</title></head><body><h1>MQTT Config</h1>\
       <form action='/mqtt' method='POST'> ENABLED:\
       <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='NO' % > NO \
@@ -265,7 +275,8 @@ void cache handle_mqtt() {
     server.send(200, "text/html", "");
     WiFiClient client = server.client();
 
-   server.sendContent(buf);
+    //server.sendContent(buf);
+    server.client().print(buf); 
    buf = F(" ");
 // 1 = String(mqttserver_string)
 
@@ -274,7 +285,8 @@ void cache handle_mqtt() {
 
   //buf = "<br>MQTT Server is: %..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>";
   //buf = insertvariable ( buf, String(deviceid));
-  server.sendContent(buf);
+    //server.sendContent(buf);
+    server.client().print(buf); 
 
 
   content = F("<br>Current device name is: <a href='http://%.local'>%</a>\
@@ -302,10 +314,12 @@ void cache handle_mqtt() {
   //buf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
   //buf += "  <input type='submit' value='Submit'/>" ; 
   //buf += "</form></p>"; 
-   server.sendContent(buf);
+    //server.sendContent(buf);
+    server.client().print(buf); 
 
 }
-  server.sendContent(htmlendstring);
+    //server.sendContent(buf);
+    server.client().print(htmlendstring); 
 
   //buf += htmlendstring; 
 

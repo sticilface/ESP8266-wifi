@@ -61,10 +61,10 @@ void setup( void ) {
   //Serial.println("OTA enabled");
   Serial.print("Compile Time: ");
   Serial.println(compile_date);
-  Debug("Sketch size: ");
-  Debugln(ESP.getSketchSize());
-  Debug("Free size: ");
-  Debugln(ESP.getFreeSketchSpace());
+  // Debug("Sketch size: ");
+  // Debugln(ESP.getSketchSize());
+  // Debug("Free size: ");
+  // Debugln(ESP.getFreeSketchSpace());
   
   
   
@@ -150,7 +150,7 @@ if (wifimode == 1) {
   ///// ----- Set up MQTT ------ //////
   if (MQTT_enabled) initiatemqqt (); 
 
-Debugln("1");
+  //Debugln("1");
 
   ///// ---- WEB SERVER ------/////
   
@@ -170,7 +170,7 @@ Debugln("1");
   //server.serveStatic("/", SPIFFS, "/");
 
 
-  buf.reserve(1024);
+  buf.reserve(2048);
   
   //httpupdate();  // definately NOT working yet
   
@@ -188,10 +188,10 @@ Debugln("1");
 
   //Serial.println("HTTP server started");
   
-  //  timer.setInterval(APtimeout, deactivateAP);
-  //  timer.setInterval(MQTTtimeout, initiatemqqt);
+    timer.setInterval(APtimeout, deactivateAP);
+    timer.setInterval(MQTTtimeout, initiatemqqt);
 
-    timer.setInterval(300000, OTAreset2); // this resets the UDP every 10 min....
+    //timer.setInterval(300000, OTAreset2); // this resets the UDP every 5 min....
  
   //  timer.setInterval(Uptimer_timeout, uptime);
   //Serial.println("Timers set up");
@@ -200,9 +200,12 @@ Debugln("1");
  // listener.begin(8266);
   
 if(WiFi.waitForConnectResult() == WL_CONNECTED){
+
+#ifdef MDNSSERVICE  
     MDNS.begin(deviceid);
     MDNS.addService("arduino", "tcp", aport);
     //MDNS.addService("http", "tcp", 80);
+#endif
     OTA.begin(aport);
     TelnetServer.begin();
     TelnetServer.setNoDelay(true);
