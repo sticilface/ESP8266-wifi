@@ -553,7 +553,7 @@ void  cache  WS2812_dim_string (String Value)
       WS2812_Settings.Brightness = a; 
 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-  Effect_Refresh = true;                  // flag current effect that settings have changed 
+      Effect_Refresh = true;                  // flag current effect that settings have changed 
 
     // Dim_Strip(CurrentBrightness);  // this is not working yet...  maybe implement...
 
@@ -750,11 +750,14 @@ if (Value.indexOf("rgb") >= 0)
 } */
 
 
+
 RgbColor cache dim(RgbColor original) {
+  uint8_t modified_brightness = GAMMA_2811[WS2812_Settings.Brightness]; 
 
     HslColor originalHSL = HslColor(original); 
     float originalLIG = originalHSL.L;
-    float newLIG =  originalLIG   * ( float(WS2812_Settings.Brightness) / 255.0 ) ; 
+
+    float newLIG =  originalLIG   * ( float(modified_brightness) / 255.0 ) ; 
     return RgbColor( HslColor(originalHSL.H, originalHSL.S, newLIG )  );
 }
 
