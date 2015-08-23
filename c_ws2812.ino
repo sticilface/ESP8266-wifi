@@ -142,7 +142,7 @@ if (  (millis() - update_strip_time > 30) && ( opState != ADALIGHT || opState !=
 if (SendFail) SendFail = strip->Show(); // is this a retry, so that if it is called too soon.. it will still try again
 
 
-  if (millis() - timer_PixelPower > 10000 && opState != OFF) {
+  if (millis() - timer_PixelPower > 10000) {
        power = getPixelPower();
        //Debugf("Power =%u \n",power); 
        timer_PixelPower = millis();
