@@ -1,7 +1,8 @@
 #define HSL_FLOAT
 #define MDNSSERVICE
-#define DEBUG_YES
+//#define DEBUG_YES
 //#define STAGING
+#define GAMMA_CORRECTION
 
 
 

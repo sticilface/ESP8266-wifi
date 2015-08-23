@@ -278,7 +278,6 @@ static const char *VAR_STRING[] = {
 "Max Size Of Effect  ", // var 9
 "Effect Option       "};// var 10
 
-#define GAMMA_CORRECTION
 
 #ifdef GAMMA_CORRECTION
 const uint8_t GAMMA_2811[] = {

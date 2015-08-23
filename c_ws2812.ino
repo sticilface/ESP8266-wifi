@@ -752,13 +752,18 @@ if (Value.indexOf("rgb") >= 0)
 
 
 RgbColor cache dim(RgbColor original) {
+
+#ifdef GAMMA_CORRECTION
   uint8_t modified_brightness = GAMMA_2811[WS2812_Settings.Brightness]; 
-
+#else
+  uint8_t modified_brightness = WS2812_Settings.Brightness ;
+#endif
+  
     HslColor originalHSL = HslColor(original); 
-    float originalLIG = originalHSL.L;
+    //float originalLIG = originalHSL.L;
 
-    float newLIG =  originalLIG   * ( float(modified_brightness) / 255.0 ) ; 
-    return RgbColor( HslColor(originalHSL.H, originalHSL.S, newLIG )  );
+     originalHSL.L =  originalHSL.L   * ( float(modified_brightness) / 255.0 ) ; 
+    return RgbColor( HslColor(originalHSL.H, originalHSL.S, originalHSL.L )  );
 }
 
 // RgbColor cache dim(RgbColor original, uint8_t brightness) {

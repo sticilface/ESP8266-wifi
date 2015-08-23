@@ -40,14 +40,16 @@ Serial.print("\n\n");
 
 #ifdef DEBUG_YES
   Serial.setDebugOutput(true);
-  Debugln("*****    #DEBUG_YES defined *****");
+  Debugln("*****    DEBUG_YES defined *****");
 #else
   Serial.setDebugOutput(false);
 #endif
+
+
  
   //delay(10); //ivan said not needed anymore
   
-  Serial.println();
+  //Serial.println();
 
 
   //Serial.print("Wiped = ");
