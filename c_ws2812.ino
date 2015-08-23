@@ -18,7 +18,7 @@ void cache ws2812 ()  // put switch cases here...
 
 static unsigned long update_strip_time = 0;  //  keeps track of pixel refresh rate... limits updates to 33 Hrz.....
 static unsigned long HoldingState_Failover = 0; 
-static unsigned long timer_PixelPower = 0, timer_effect_tick = 0; 
+static unsigned long timer_PixelPower = 0, timer_effect_tick = 0, send_fail_count = 0 ; 
 
 if (millis() - timer_effect_tick >= timer_effect_tick_timeout ) { // timer_effect_tick_timeout is global, default 10msec
 
@@ -139,14 +139,18 @@ if (  (millis() - update_strip_time > 30) && ( opState != ADALIGHT || opState !=
   
   } 
 
-if (SendFail) SendFail = strip->Show(); // is this a retry, so that if it is called too soon.. it will still try again
+if (SendFail) {
+  send_fail_count++; 
+  SendFail = strip->Show(); // is this a retry, so that if it is called too soon.. it will still try again
+}
 
 
   if (millis() - timer_PixelPower > 10000) {
        power = getPixelPower();
        //Debugf("Power =%u \n",power); 
        timer_PixelPower = millis();
-
+       Debugf("Send_Fail: count = %u, average/s = %u \n", send_fail_count, send_fail_count / 10);
+       send_fail_count = 0;
     //   File f = SPIFFS.open("/power.htm", "a");
     //   f.println(power);
     //   f.close();
@@ -166,7 +170,7 @@ if (millis() - HoldingState_Failover > 5000) {
     opState = HoldingOpState;
     triggered = false; 
     Current_Effect_State = PRE_EFFECT; 
-  //  Serial.println("failover activated");
+    Debugln("HoldingState Failover activated");
   }
 
 }
@@ -277,7 +281,9 @@ Select Mode <select name='modedrop' onchange='this.form.submit();'>\
   buf = insertvariable ( buf, String(deviceid));
   
  // if (WiFi.status() == WL_CONNECTED) 
-  buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
+buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
+ // old  buf = insertvariable ( buf, F("<script type='text/javascript' src='/jscolor.js'></script>"));
+
  //   } else { buf = insertvariable ( buf, " "); } ;
 //buf = insertvariable ( buf, " "); // get rid of this when above is included...
 
@@ -1809,7 +1815,7 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 
       //if (!strip->Show()) state = MODE_HEADER;
 
-            strip->Show(1);
+            strip->Show(0); // 2 means that it is inturrupts OFF the whole time... does NOT work with SDK1.3..
 
             state = MODE_HEADER;
 

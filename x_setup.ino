@@ -163,12 +163,26 @@ if (wifimode == 1) {
   server.on("/bytedump",handle_bytedump);
   server.on("/mqtt", handle_mqtt);
   server.on("/ota", OTAreset);
+  server.on("/jscolor.js", []() { server.send_P ( 200, "text/plain", PAGE_JSCOLOUR ); } );
+
+    /* JavaScript and Stylesheets */
+    server.on ("/style.css", []() { server.send_P(200, "text/plain", PAGE_STYLE_CSS); });
+    server.on ("/microajax.js", []() { server.send_P(200, "text/plain", PAGE_MICROAJAX_JS); });
+
+
+    server.on ("/test", []() { server.send_P(200, "text/html", PAGE_ROOT); });
+
+    server.on("/rootvals", send_root_vals_html);
+
+
   //server.on("/test", handle_test);
 
   server.on("/misc", handle_misc);
   //server.on("/power", handle_power); 
 
   //server.serveStatic("/", SPIFFS, "/");
+
+
 
 
   buf.reserve(2048);
