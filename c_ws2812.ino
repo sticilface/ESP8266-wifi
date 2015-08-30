@@ -851,11 +851,15 @@ Random_func_timeout = 0; //RESET additionall timeout...
 
 void cache Post_effect() {
 
-if ( animator->IsAnimating() ) {
-    for (uint16_t i = 0; i < strip->PixelCount();i++ ) {
-      animator->StopAnimation(i);
-    }
-}
+if (Enable_Animations) {
+  if ( animator->IsAnimating() ) {
+      for (uint16_t i = 0; i < strip->PixelCount();i++ ) {
+        animator->StopAnimation(i);
+     }
+  }
+} else strip->ClearTo(0,0,0); 
+
+
 
 Current_Effect_State = PRE_EFFECT; 
 opState = HoldingOpState; 
@@ -881,7 +885,7 @@ void cache initiateWS2812 ()
   //StripOFF();
   SetRandomSeed();
   
-  animator->Resume(); 
+  //animator->Resume(); 
 
 }
 
@@ -1904,7 +1908,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
         EEPROM.commit(); // actually save changes to avoid having a boot loop....  and unable to exit... 
         Debugln("WS2812 Settings Updated."); 
         }
-//Debugln("1");
+Debugln("1");
 
 //   if (animator != NULL)
 //   {
@@ -1922,23 +1926,24 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
   delete strip;
   
   }
-//Debugln("4");
+Debugln("2");
 
   strip = new NeoPixelBus(count, pin);
-//Debugln("5");
+Debugln("3");
 
     if (count > ANIMATION_LIMIT) { 
       Enable_Animations = false; 
       //animator = NULL; 
       Debugln("Animations Disabled");
     } else {
+
       if (animator != NULL) delete animator; // has to be here...
       animator = new NeoPixelAnimator(strip); //  this allows for massive strings with NO animator...
       Enable_Animations = true; 
       Debugln("Animations Enabled");
 
     }
-//Debugln("6");
+Debugln("4");
 
   pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
 

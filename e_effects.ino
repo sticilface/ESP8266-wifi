@@ -694,49 +694,20 @@ channel_start = 1;
     //   for (int i = 0; i < ((uniLast + 1) - universe); i++)
     //     seqErrors =+ seqError[i];
 
-    uint32_t seqErrors = 0;
+    uint32_t seqErrors = 0, packet_rate = 0;
+    static uint32_t packets_last = 0; 
     for (int i = 0; i < ((uniLast + 1) - universe); i++)
         seqErrors =+ seqError[i];
-            
-      Debugf("DMX: Total Packets = %u, Sequence errors = %u \n", e131.stats.num_packets, seqErrors);  
+    
+    packet_rate = ( e131.stats.num_packets - packets_last ) / 30;
+      Debugf("DMX: Total Packets = %u, Sequence errors = %u, Rate = %u /s \n", e131.stats.num_packets, seqErrors, packet_rate);  
       timeout_data = millis();
+      packets_last = e131.stats.num_packets; 
+
      }
 
 
- // if(e131.parsePacket()) {
- //      for (uint8_t universe_offset = 0; uinverse_offset < 4; universe_offset++) {
- //        if (e131.universe == WS2812_Settings.Effect_Option + uinverse_offset) {
 
- //            for (uint16_t i = 0; i < pixelCount; i++) {
-                
- //                uint16_t j = i * 3 + (CHANNEL_START - 1);
- //                strip->SetPixelColor(i, e131.data[j], e131.data[j+1], e131.data[j+2]);
- //            }
- //        }
- //      }
-
- //    strip->Show();
-
- //    }
-
-
-
-
-      // packetSize = Udp.parsePacket();
-
-      //   if  (Udp.available())  {
-      //     //Serial.println(packetno++);
-      //        for (int i = 0; i < packetSize; i = i + 3) {
-      //           if (i > pixelCount * 3) break;         // Stops reading if LED count is reached. 
-      //               pixelsPOINT[i + 1] = Udp.read();   // direct buffer is GRB, 
-      //               pixelsPOINT[i]     = Udp.read();
-      //               pixelsPOINT[i + 2] = Udp.read();
-      //         }
-      //         Udp.flush();
-      //         strip->Dirty(); 
-      //         SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
-
-      //   }
       
       break;
 

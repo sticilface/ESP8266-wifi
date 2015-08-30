@@ -204,7 +204,7 @@ uint8_t IntervalMultiplier = 1;
 bool Effect_Refresh = false; 
 uint8_t timer_effect_tick_timeout = 10; // controls the flow of effect generation... put to 0 by UDP and ADAlight...
 bool SendFail = false; 
-bool Enable_Animations = true; 
+bool Enable_Animations = false; 
 
 //RgbColor NewColour = RgbColor(0,0,0);
 
