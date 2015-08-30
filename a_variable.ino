@@ -157,7 +157,7 @@ ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
 COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,SQUARES2,
 SQUARESRANDOM,TEST4,SQUARES,EQ1,RANDOM,
 RANDOMFUNC, ARTNET, RANDOM_TOP_BOTTOM, RANDOM_TOP_BOTTOM_LINEAR, SINGLE_COLOUR_FADE,
-RANDOM_COLOUR_FADE, HSICYCLE, NEWANIMATIONS
+RANDOM_COLOUR_FADE, HSICYCLE, NEWANIMATIONS, DMX
 };
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
@@ -168,11 +168,21 @@ static const char *MODE_STRING[] = {
 "Cool-Blobs", "UDP", "Rainbow-Cycle","Spiral","Squares2",
 "Squares-Random","Test4","Squares","EQ1","Random-Colour", 
 "Random-Function", "Art-Net", "HSV-Top-Bottom", "Linear-Top-Bottom", "Single-Colour-Fade", 
-"Random-Colour-Fade", "HSIcycle", "New-Animations"
+"Random-Colour-Fade", "HSIcycle", "New-Animations", "DMX"
 };
-#define numberofmodes 28 /////// DONT FORGET THIS....
+#define numberofmodes 29 /////// DONT FORGET THIS....
+
+static const char *PALETTE_STRING[] = {
+"ALL", "Complementary", "Monochromatic", "Analogous", "Split-Complements", 
+"Triadic", "Tetradic", "Even-Spread"
+};
+#define numberofpalettes 8 /////// DONT FORGET THIS....
 
 
+
+
+
+uint16_t Pixel_Update_Freq = 0; 
 uint32_t lasteffectupdate = 0; 
 //uint16_t WS2812interval = 2000; 
 uint32_t power = 0; 
@@ -194,6 +204,7 @@ uint8_t IntervalMultiplier = 1;
 bool Effect_Refresh = false; 
 uint8_t timer_effect_tick_timeout = 10; // controls the flow of effect generation... put to 0 by UDP and ADAlight...
 bool SendFail = false; 
+bool Enable_Animations = true; 
 
 //RgbColor NewColour = RgbColor(0,0,0);
 
@@ -299,5 +310,14 @@ const uint8_t GAMMA_2811[] = {
     222,224,227,229,231,233,235,237,239,241,244,246,248,250,252,255
 };
 #endif
+
+
+// DMX....
+
+#define UNIVERSE 1      /* Universe to listen for */
+#define CHANNEL_START 1 /* Channel to start listening at */
+
+
+
 
 

@@ -14,7 +14,7 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
-// 
+//                      SQUARES
 // 
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,8 +59,9 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   case PRE_EFFECT:
 
     effectPosition = 0;   
-
+    if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break ; } //  DO NOT RUN IF ANIMATIONS DISABLED
      //if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
+    
     // if (effect_option > 0) {
      // animator->FadeTo(1000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
     // }
@@ -265,7 +266,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
-// 
+//        Effect_Top_Bottom
 // 
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,6 +287,9 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
   switch(Current_Effect_State) {
 
     case PRE_EFFECT:
+
+    if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
+
     Pre_effect(); 
     Debugln("Top Bottom PRE...");
     lasteffectupdate = 0; 
@@ -364,7 +368,7 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
-// 
+//        STRIP OFF
 // 
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -378,6 +382,7 @@ void cache StripOFF() {
     case PRE_EFFECT:
     Pre_effect(); 
 
+    if(Enable_Animations) {
         for (uint16_t n = 0; n < strip->PixelCount(); n++)
             {
               HslColor original = strip->GetPixelColor(n);
@@ -389,6 +394,9 @@ void cache StripOFF() {
         };
 
         animator->StartAnimation(n, 2000 , animUpdate);
+        } 
+    } else {
+      strip->ClearTo(0,0,0);
     }
 
     break;
@@ -422,7 +430,11 @@ void cache RGBcolour () {
     case PRE_EFFECT:
     Debugln("Effect set to Color"); 
     Pre_effect(); 
-    animator->FadeTo(2000, dim(WS2812_Settings.Color)); 
+
+    if (Enable_Animations)  animator->FadeTo(2000, dim(WS2812_Settings.Color)); 
+      else 
+        strip->ClearTo(dim(WS2812_Settings.Color)) ; 
+
     break;
 
     case RUN_EFFECT:
@@ -543,4 +555,209 @@ void  cache Rainbowcycle() {
     break;
   }
 } // END OF RAINBOW CYCLE
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//        DMX.... 
+// 
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+void cache DMXfunc () {
+
+int packetSize; 
+static uint32_t timeout = 0; 
+//TODO: Dynamically allocate seqTracker to support more than 4 universes w/ PIXELS_MAX change
+static uint8_t         *seqTracker;    /* Current sequence numbers for each Universe */
+static int32_t         lastPacket;     /* Packet timeout tracker */
+static uint8_t         ppu, uniTotal, universe, channel_start, uniLast; 
+static uint16_t        count, bounds ; 
+static uint32_t        *seqError;      /* Sequence error tracking for each universe */
+ static      uint32_t timeout_data = 0; 
+
+ppu = 170; 
+universe = WS2812_Settings.Effect_Option; 
+channel_start = 1;
+
+  switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+
+      timer_effect_tick_timeout = 0; // Enable RAPID flow.... 
+      Debugln("DMX Effect Started");
+      if(millis() > 30000) Adalight_Flash(); 
+
+
+
+       count = strip->PixelCount() * 3;
+       bounds = ppu * 3;
+        if (count % bounds) 
+            uniLast = universe + count / bounds;
+        else 
+            uniLast = universe + count / bounds - 1;
+
+        uniTotal = (uniLast + 1) - universe;
+
+        if (seqTracker) free(seqTracker);
+        if ((seqTracker = (uint8_t *)malloc(uniTotal)))
+        memset(seqTracker, 0x00, uniTotal);
+
+        if (seqError) free(seqError);
+        if ((seqError = (uint32_t *)malloc(uniTotal * 4)))
+        memset(seqError, 0x00, uniTotal * 4);
+
+      Debugf("Count = %u, bounds = %u, uniLast = %u, uniTotal = %u\n", count, bounds, uniLast, uniTotal);
+
+//  strip = new NeoPixelBus(count, pin);
+      //e131 = new 
+
+      e131.begin( E131_MULTICAST , universe ) ; // E131_MULTICAST // universe is optional and only used for Multicast configuration.
+
+
+  //    e131.begin( E131_MULTICAST , UNIVERSE) ; // E131_MULTICAST // universe is optional and only used for Multicast configuration.
+
+      Pre_effect(); 
+
+    break; 
+
+    case RUN_EFFECT:
+
+ // if(e131.parsePacket()) {
+ //        if (e131.universe == WS2812_Settings.Effect_Option) {
+ //            for (uint16_t i = 0; i < pixelCount; i++) {
+ //                uint16_t j = i * 3 + (CHANNEL_START - 1);
+ //                strip->SetPixelColor(i, e131.data[j], e131.data[j+1], e131.data[j+2]);
+ //            }
+ //            strip->Show();
+ //            timeout = millis(); 
+ //        }
+ //    }
+
+
+ if(e131.parsePacket()) {
+        if ((e131.universe >= universe) && (universe <= uniLast)) {
+            /* Universe offset and sequence tracking */
+            uint8_t uniOffset = (e131.universe - universe);
+            if (e131.packet->sequence_number != seqTracker[uniOffset]++) {
+                seqError[uniOffset]++;
+                seqTracker[uniOffset] = e131.packet->sequence_number + 1;
+            }
+            
+            /* Find out starting pixel based off the Universe */
+            uint16_t pixelStart = uniOffset * ppu;
+
+            /* Calculate how many pixels we need from this buffer */
+            uint16_t pixelStop = strip->PixelCount();
+            if ((pixelStart + ppu) < pixelStop)
+                //pixelStop = pixelStart + config.ppu;
+                  pixelStop = pixelStart + ppu;
+
+            /* Offset the channel if required for the first universe */
+            uint16_t offset = 0;
+            if (e131.universe == universe)
+                offset = channel_start - 1;
+
+            /* Set the pixel data */
+            uint16_t buffloc = 0;
+            for (uint16_t i = pixelStart; i < pixelStop; i++) {
+                uint16_t j = buffloc++ * 3 + offset;
+                //pixels.setPixelColor(i, e131.data[j], e131.data[j+1], e131.data[j+2]);
+                strip->SetPixelColor(i, e131.data[j], e131.data[j+1], e131.data[j+2]);
+            }
+
+            /* Refresh when last universe shows up  or within 10ms if missed */
+            if ((e131.universe == uniLast) || (millis() - lastPacket > 10)) {
+            //if (e131.universe == uniLast) {
+            //if (millis() - lastPacket > 25) {
+                lastPacket = millis();
+                strip->Show();
+            }
+        }
+    }
+
+
+
+//  Set to black if 30 seconds passed... 
+    if (millis() - timeout > 30000)  { 
+        strip->ClearTo(0,0,0); 
+        timeout = millis();
+      } 
+
+
+//  Print out errors...
+     if (millis() - timeout_data > 30000) {
+
+    //   for (int i = 0; i < ((uniLast + 1) - universe); i++)
+    //     seqErrors =+ seqError[i];
+
+    uint32_t seqErrors = 0;
+    for (int i = 0; i < ((uniLast + 1) - universe); i++)
+        seqErrors =+ seqError[i];
+            
+      Debugf("DMX: Total Packets = %u, Sequence errors = %u \n", e131.stats.num_packets, seqErrors);  
+      timeout_data = millis();
+     }
+
+
+ // if(e131.parsePacket()) {
+ //      for (uint8_t universe_offset = 0; uinverse_offset < 4; universe_offset++) {
+ //        if (e131.universe == WS2812_Settings.Effect_Option + uinverse_offset) {
+
+ //            for (uint16_t i = 0; i < pixelCount; i++) {
+                
+ //                uint16_t j = i * 3 + (CHANNEL_START - 1);
+ //                strip->SetPixelColor(i, e131.data[j], e131.data[j+1], e131.data[j+2]);
+ //            }
+ //        }
+ //      }
+
+ //    strip->Show();
+
+ //    }
+
+
+
+
+      // packetSize = Udp.parsePacket();
+
+      //   if  (Udp.available())  {
+      //     //Serial.println(packetno++);
+      //        for (int i = 0; i < packetSize; i = i + 3) {
+      //           if (i > pixelCount * 3) break;         // Stops reading if LED count is reached. 
+      //               pixelsPOINT[i + 1] = Udp.read();   // direct buffer is GRB, 
+      //               pixelsPOINT[i]     = Udp.read();
+      //               pixelsPOINT[i + 2] = Udp.read();
+      //         }
+      //         Udp.flush();
+      //         strip->Dirty(); 
+      //         SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+
+      //   }
+      
+      break;
+
+    case POST_EFFECT: 
+      //packetno = 0; 
+
+        // if (e131 != NULL)
+        // {
+        //     delete e131;
+
+        // }
+
+
+      Post_effect(); 
+      timer_effect_tick_timeout = 100; // Restore limiter RAPID flow.... 
+      break; 
+
+      
+} 
+}
+
+
+
 

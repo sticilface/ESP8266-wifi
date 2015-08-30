@@ -1,10 +1,15 @@
 #define HSL_FLOAT
 #define MDNSSERVICE
-//#define DEBUG_YES
+
+#define DEBUG_YES
+
+
 //#define STAGING
 #define GAMMA_CORRECTION
 
+#define ESPUARTWS2812 // USE UART to blast them out...
 
+#define ANIMATION_LIMIT 300 
 
 #include <WifiUDP.h>
 
@@ -26,7 +31,7 @@
 #include <EEPROM.h>
 #include <SimpleTimer.h>
 #include <NeoPixelBus.h>
-
+#include <E131.h>
 
 
 #include "enumerates.h"

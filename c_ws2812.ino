@@ -108,6 +108,9 @@ switch (opState)
     case NEWANIMATIONS:
       test_newanimations();
       break;
+    case DMX:
+      DMXfunc();
+      break;
    }
 
 timer_effect_tick = millis();
@@ -129,28 +132,39 @@ timer_effect_tick = millis();
 //   } 
 
 
-if (  (millis() - update_strip_time > 30) && ( opState != ADALIGHT || opState != UDP ) ) {
-
+if (  (millis() - update_strip_time > Pixel_Update_Freq) && ( opState != ADALIGHT || opState != UDP ) ) {
+  if (Enable_Animations) {
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
-  
+  }
+
+#ifndef ESPUARTWS2812 // NOT needed if driving LEDs using the UART Serial 1.
+
     SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+#else
+    strip->Show();
+#endif
     //  one LED takes 30uS of nointeruppts, 100 takes 3ms. 
     update_strip_time = millis();
   
   } 
 
-if (SendFail) {
-  send_fail_count++; 
-  SendFail = strip->Show(); // is this a retry, so that if it is called too soon.. it will still try again
-}
+#ifndef ESPUARTWS2812 // NOT needed if driving LEDs using the UART Serial 1.
+
+  if (SendFail) {
+    send_fail_count++; 
+    SendFail = strip->Show(); // is this a retry, so that if it is called too soon.. it will still try again
+  }
+
+#endif
 
 
-  if (millis() - timer_PixelPower > 10000) {
+  if (millis() - timer_PixelPower > 10000) { // was 10 seconds
        power = getPixelPower();
        //Debugf("Power =%u \n",power); 
        timer_PixelPower = millis();
-       Debugf("Send_Fail: count = %u, average/s = %u \n", send_fail_count, send_fail_count / 10);
-       send_fail_count = 0;
+    //   Debugf("HEAP = %u\n", ESP.getFreeHeap()); 
+    //   Debugf("Send_Fail: count = %u, average/s = %u \n", send_fail_count, send_fail_count / 10);
+    //   send_fail_count = 0;
     //   File f = SPIFFS.open("/power.htm", "a");
     //   f.println(power);
     //   f.close();
@@ -206,7 +220,7 @@ if (paused) lasteffectupdate = millis();
 
 
 void  cache handle_WS2812 () { // handles the web commands...
-animator->Pause();
+//animator->Pause();
 String paused_string, selected; 
 bool updateLEDs = false;
 
@@ -220,8 +234,10 @@ bool updateLEDs = false;
  //if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  AnimationSpeed_command_string(server.arg("anispeed"));
  if (server.hasArg("paused")) {
       paused = (server.arg("paused")).toInt();
+    if (Enable_Animations) {  
       if (paused) animator->Pause(); 
       if (!paused) animator->Resume(); 
+      }
     }
 
  if (server.hasArg("rgbpicker"))  { 
@@ -380,7 +396,7 @@ for (int k=0; k < numberofmodes; k++ ) {
 //if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 //power = getPixelPower();
 
-animator->Resume();
+//animator->Resume();
 }
 
 void cache AnimationSpeed_command_string (String Value) {
@@ -517,7 +533,7 @@ void cache send_current_settings () {
     send_mqtt_msg("timer", String(WS2812_Settings.Timer));
     send_mqtt_msg("brightness", String(WS2812_Settings.Brightness));
     send_mqtt_msg("Preset", String(current_loaded_preset)); 
-    send_mqtt_msg("animationspeed", String(CurrentAnimationSpeed));
+    //send_mqtt_msg("animationspeed", String(CurrentAnimationSpeed));
     send_mqtt_msg("effect", MODE_STRING[HoldingOpState] ); // has to be the effect of the future.. not the current one :)
 
 }
@@ -758,7 +774,7 @@ RgbColor cache dim(RgbColor original) {
 #else
   uint8_t modified_brightness = WS2812_Settings.Brightness ;
 #endif
-  
+
     HslColor originalHSL = HslColor(original); 
     //float originalLIG = originalHSL.L;
 
@@ -855,11 +871,16 @@ void cache initiateWS2812 ()
 {
   //opState = OFF;
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
+  Pixel_Update_Freq = 1 + ( pixelCount * 30 ) / 1000 ; 
+  
+  Debugf("Update frequency = %u\n", Pixel_Update_Freq);
+  
   strip->Begin();
 
 
   //StripOFF();
   SetRandomSeed();
+  
   animator->Resume(); 
 
 }
@@ -1130,21 +1151,21 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 void cache SetRandomSeed()
 {
- /* uint32_t seed;
+  // uint32_t seed;
   // random works best with a seed that can use 31 bits
   // analogRead on a unconnected pin tends toward less than four bits
-  seed = analogRead(0);
-  delay(1);
+  // seed = analogRead(0);
+  // delay(1);
   
-  for (int shifts = 3; shifts < 31; shifts += 3)
-  {
-    seed ^= analogRead(0) << shifts;
-    delay(1);
-  }
+  // for (int shifts = 3; shifts < 31; shifts += 3)
+  // {
+  //   seed ^= analogRead(0) << shifts;
+  //   delay(1);
+  // }
   
   // Serial.println(seed);
-  randomSeed(seed);
-*/
+  randomSeed(ESP.getCycleCount());
+
 }
 
 
@@ -1177,10 +1198,8 @@ switch(Current_Effect_State) {
  if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still animating! 
      
       if (millis() - lasteffectupdate > ( WS2812_Settings.Timer * 150 )) {      
-
-
-     fade_to(   dim(Wheel(random(0,255) ) ) , CurrentAnimationSpeed, RGB ) ;
-     lasteffectupdate = millis(); 
+      fade_to(   dim(Wheel(random(0,255) ) ) , CurrentAnimationSpeed, RGB ) ;
+      lasteffectupdate = millis(); 
 };
 
 
@@ -1261,13 +1280,6 @@ switch(Current_Effect_State) {
 
 Serial.println(")");
 }
-
-
-
-
-
-
-
 
     break;
 
@@ -1698,6 +1710,7 @@ void cache Adalight_Flash() {
         strip->Show(); 
     delay(200);
 
+
     strip->ClearTo(RgbColor(0,0,0));
 
   }
@@ -1822,9 +1835,12 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
        pixellatchtime = millis();
 
       //if (!strip->Show()) state = MODE_HEADER;
+#ifndef ESPUARTWS2812 // NOT needed if driving LEDs using the UART Serial 1.
 
-            strip->Show(0); // 2 means that it is inturrupts OFF the whole time... does NOT work with SDK1.3..
-
+    SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+#else
+    strip->Show();
+#endif
             state = MODE_HEADER;
 
       
@@ -1869,7 +1885,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     if (count != pixelCountstored) {
 
         Debugln("Pixel count changed..."); 
-        int a = pixelCount/256;
+        int a = pixelCount / 256;
         int b = pixelCount % 256;        
         EEPROM.write(PixelCount_address,a);
         EEPROM.write(PixelCount_address+1,b);
@@ -1888,34 +1904,46 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
         EEPROM.commit(); // actually save changes to avoid having a boot loop....  and unable to exit... 
         Debugln("WS2812 Settings Updated."); 
         }
-
-
-
-  if (animator != NULL)
-  {
-    delete animator;
-  }
 //Debugln("1");
+
+//   if (animator != NULL)
+//   {
+// Debugln("1.1");
+//     delete animator;
+// Debugln("2");
+
+//   }
+//Debugln("3");
+
   if (strip != NULL)
   {           
-//Debugln("2");
   strip->ClearTo(RgbColor(0,0,0));    // this set the strip to off before changing pixel amount...    
-//Debugln("3");
   strip->Show();  
-//Debugln("4");
   delete strip;
   
   }
+//Debugln("4");
 
-//Debugln("5");
   strip = new NeoPixelBus(count, pin);
-// Debugln("6");
-  animator = new NeoPixelAnimator(strip);
-///Debugln("7");
+//Debugln("5");
+
+    if (count > ANIMATION_LIMIT) { 
+      Enable_Animations = false; 
+      //animator = NULL; 
+      Debugln("Animations Disabled");
+    } else {
+      if (animator != NULL) delete animator; // has to be here...
+      animator = new NeoPixelAnimator(strip); //  this allows for massive strings with NO animator...
+      Enable_Animations = true; 
+      Debugln("Animations Enabled");
+
+    }
+//Debugln("6");
+
   pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
-//Debugln("8");
+
+
   if (strip->PixelCount() < 10) WS2812_Settings.Total_X = 1; // can't remember what this does...  sets x width i think... 
-//Debugln("9");
 
 }
 

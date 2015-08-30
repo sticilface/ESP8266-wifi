@@ -6,20 +6,13 @@ WiFiClient wifiClient;
  //     IPAddress testserver(192, 168, 1, 24);
 // int* testserver[4] = {192,168,1,24};
 
-
 PubSubClient mqttclient(wifiClient) ; 
-
 
 // multicast DNS responder
 //MDNSResponder mdns; // not needed anymore... still compiled though!  
 
-
-
  /// set timer....
 SimpleTimer timer;
-
-
-
   //NeoPixelBus strip = NeoPixelBus(120, 2);
 
   NeoPixelBus* strip = NULL; // dynamic
@@ -27,9 +20,10 @@ SimpleTimer timer;
   uint8_t* pixelsPOINT = NULL;
 
 
+E131 e131; // = NULL;
+
 
 WiFiUDP Udp;
-
 
 //WiFiUDP listener;
 WiFiServer TelnetServer(aport);
