@@ -152,25 +152,73 @@ const int bitaddress = 500;
 BlendMethod Blend = HSL; 
 
 enum operatingState { 
-OFF = 0, RAINBOW, COLOR, ChaseRainbow, FADE, 
-ADALIGHT, TEST, LOOPAROUND,PICKRANDOM,FADEINFADEOUT,
-COOLBLOBS,UDP,RAINBOWCYCLE,SPIRAL,SQUARES2,
-SQUARESRANDOM,TEST4,SQUARES,EQ1,RANDOM,
-RANDOMFUNC, ARTNET, RANDOM_TOP_BOTTOM, RANDOM_TOP_BOTTOM_LINEAR, SINGLE_COLOUR_FADE,
-RANDOM_COLOUR_FADE, HSICYCLE, NEWANIMATIONS, DMX
+OFF = 0,                     // 0
+COLOR,                       // 1
+RANDOM,                      // 2
+RAINBOW,                     // 3
+RAINBOWCYCLE,                // 4
+RANDOM_TOP_BOTTOM,           // 5
+RANDOM_TOP_BOTTOM_LINEAR,    // 6
+SQUARES2,                    // 7
+SQUARESRANDOM,               // 8
+ADALIGHT,                    // 9
+UDP,                         // 10
+DMX,                         // 11
+ChaseRainbow, 
+FADE, 
+TEST, 
+LOOPAROUND,
+PICKRANDOM,
+FADEINFADEOUT,
+COOLBLOBS,
+SPIRAL,
+TEST4,
+SQUARES,
+EQ1,
+RANDOMFUNC, 
+ARTNET,  
+SINGLE_COLOUR_FADE,
+RANDOM_COLOUR_FADE, 
+HSICYCLE, 
+NEWANIMATIONS, 
 };
+
+
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
 operatingState HoldingOpState = OFF; 
 static const char *MODE_STRING[] = {
-"Off", "Rainbow", "Color", "Chase-Rainbow", "Fade", 
-"AdaLight", "test", "Looparound", "Pick-Random", "Fadein-FadeOut", 
-"Cool-Blobs", "UDP", "Rainbow-Cycle","Spiral","Squares2",
-"Squares-Random","Test4","Squares","EQ1","Random-Colour", 
-"Random-Function", "Art-Net", "HSV-Top-Bottom", "Linear-Top-Bottom", "Single-Colour-Fade", 
-"Random-Colour-Fade", "HSIcycle", "New-Animations", "DMX"
+"Off", 
+"Color", 
+"Random-Colour", 
+"Rainbow", 
+"Rainbow-Cycle",
+"HSV-Top-Bottom", 
+"Linear-Top-Bottom", 
+"Squares2",
+"Squares-Random",
+"AdaLight", 
+"UDP", 
+"DMX",
+"Chase-Rainbow", 
+"Fade", 
+"test", 
+"Looparound", 
+"Pick-Random", 
+"Fadein-FadeOut", 
+"Cool-Blobs", 
+"Spiral",
+"Test4",
+"Squares",
+"EQ1",
+"Random-Function", 
+"Art-Net", 
+"Single-Colour-Fade", 
+"Random-Colour-Fade", 
+"HSIcycle", 
+"New-Animations", 
 };
-#define numberofmodes 29 /////// DONT FORGET THIS....
+#define numberofmodes 12 /////// DONT FORGET THIS....
 
 static const char *PALETTE_STRING[] = {
 "ALL", "Complementary", "Monochromatic", "Analogous", "Split-Complements", 

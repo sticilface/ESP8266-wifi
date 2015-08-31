@@ -122,13 +122,13 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
      // checks to see if it is a linear string or not... if less then it is equal to 0 ...
      
      if (total_x > square_size) { 
-           x_rand = random(0, total_x - square_size) ; 
+           x_rand = random(0, total_x - square_size + 1) ; 
      } else {
            x_rand = 0; 
      };
 
      if (total_y > square_size) {
-           y_rand = random(0, total_y - square_size) ;
+           y_rand = random(0, total_y - square_size + 1) ;
        } else {
            y_rand = 0; 
      }

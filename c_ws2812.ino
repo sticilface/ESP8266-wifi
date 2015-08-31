@@ -271,6 +271,7 @@ bool updateLEDs = false;
   if (server.hasArg("palettedrop"))   { 
       WS2812_Settings.Palette_Choice = server.arg("palettedrop").toInt(); 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+      Effect_Refresh = true; 
     }
 
 
@@ -795,6 +796,7 @@ void cache initiateWS2812 ()
 {
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
   Pixel_Update_Freq = 1 + ( pixelCount * 30 ) / 1000 ;   
+  if (Pixel_Update_Freq < 10 ) Pixel_Update_Freq = 10; 
   Debugf("Update frequency = %u\n", Pixel_Update_Freq);
   strip->Begin();
   SetRandomSeed();
