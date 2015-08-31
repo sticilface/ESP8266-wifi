@@ -6,9 +6,9 @@ void loop( void ) {
 
 if (!isOTAupdate) {
 
- 	mqttclient.loop();
+ 	  mqttclient.loop();
  	//optimistic_yield(1000);
- 	yield();
+ 	  yield();
   	
   	server.handleClient();
   	
@@ -37,11 +37,11 @@ if (!isOTAupdate) {
 			EEPROM.commit(); // takes 35msec to perform. 
 			eepromcommit_timer = 0;
 			EEPROM_commit_var = false;
-			Debugln("EEPROM written!"); 
+	//		Debugln("EEPROM written!"); 
 			}	 
 	}
 
-  };
+  }; // END of NOT OTA check!  
 
 //delay(1); /// test loop... see how it goes... 
 //loop_count++;

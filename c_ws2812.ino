@@ -138,7 +138,6 @@ if (  (millis() - update_strip_time > Pixel_Update_Freq) && ( opState != ADALIGH
   }
 
 #ifndef ESPUARTWS2812 // NOT needed if driving LEDs using the UART Serial 1.
-
     SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
 #else
     strip->Show();
@@ -211,9 +210,17 @@ if (!ani_update && strip->IsAnimating()) {
 
 //    send_mqtt_msg("effect", MODE_STRING[opState]); 
 
+//  Deal with pause... only when effect is in the run phase... 
+    if (paused && Current_Effect_State == RUN_EFFECT) {
+      Current_Effect_State = EFFECT_PAUSED ;
+      if (Enable_Animations) animator->Pause();
+    } else if (!paused && Current_Effect_State == EFFECT_PAUSED) {
+      Current_Effect_State = RUN_EFFECT ;
+      if (Enable_Animations) animator->Resume(); 
+    }
 
 
-if (paused) lasteffectupdate = millis(); 
+//lasteffectupdate = millis(); 
 
 
 } // end of ws2812 function 
@@ -234,11 +241,11 @@ bool updateLEDs = false;
  //if ((server.arg("anispeed") != String(CurrentAnimationSpeed)) && (server.arg("anispeed").length() != 0))  AnimationSpeed_command_string(server.arg("anispeed"));
  if (server.hasArg("paused")) {
       paused = (server.arg("paused")).toInt();
-    if (Enable_Animations) {  
-      if (paused) animator->Pause(); 
-      if (!paused) animator->Resume(); 
+      if (Enable_Animations) {  
+        if (paused) animator->Pause(); 
+        if (!paused) animator->Resume(); 
+        }
       }
-    }
 
  if (server.hasArg("rgbpicker"))  { 
     //WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
@@ -260,10 +267,15 @@ bool updateLEDs = false;
 //    updateLEDs = true;
 //  }
 
-  if (server.hasArg("modedrop")) 
-    {
-      WS2812_mode_string(server.arg("modedrop"));
-      }
+  if (server.hasArg("modedrop"))  WS2812_mode_string(server.arg("modedrop"));
+  if (server.hasArg("palettedrop"))   { 
+      WS2812_Settings.Palette_Choice = server.arg("palettedrop").toInt(); 
+      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+    }
+
+
+
+
   } // END of Args for web page..
       //----  having this under here works better as the page gets updated before the request data is fired back!
 
@@ -317,14 +329,38 @@ buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolo
 
  buf = " ";
 
-
-for (int k=0; k < numberofmodes; k++ ) {
+//  MODE
+for (uint8_t k=0; k < numberofmodes; k++ ) {
     if (HoldingOpState == k) { 
         selected = "' selected "; 
       } else selected = "' "; 
   buf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + MODE_STRING[k] + "</option>";
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
+  }
 
+  buf += "</select>";
+  buf += "</form>";
+
+
+    //server.sendContent(buf);
+    server.client().print(buf);
+    buf = " "; 
+
+// Palletee
+
+String content4 = F("\
+<form name=frm action='/ws2812' method='POST' style='margin: 0; padding: 0;'>\
+Select Palette <select name='palettedrop' onchange='this.form.submit();'>\
+");
+    server.client().print(content4);
+
+for (uint8_t k = 0; k < numberofpalettes; k++ ) {
+    if (WS2812_Settings.Palette_Choice == k) { 
+        selected = "' selected "; 
+      } else selected = "' "; 
+
+  buf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + PALETTE_STRING[k] + "</option>";
+   // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
   }
 
   buf += "</select>";
@@ -332,8 +368,13 @@ for (int k=0; k < numberofmodes; k++ ) {
 
 
     //server.sendContent(buf);
+
     server.client().print(buf);
+
     buf = " "; 
+
+
+
 
   //if(WiFi.status() == WL_CONNECTED) {
   String content0 = F("<p><form action='/ws2812' method='POST'\
@@ -399,18 +440,6 @@ for (int k=0; k < numberofmodes; k++ ) {
 //animator->Resume();
 }
 
-void cache AnimationSpeed_command_string (String Value) {
-
-  uint16_t newvalue = Value.toInt();
-  Debugf("New Animation speed =%u \n",newvalue);
-  CurrentAnimationSpeed = newvalue; 
-  lasteffectupdate = 0; 
-  current_loaded_preset_changed = true; 
-  LED_Settings_Changed = true; 
-  Effect_Refresh = true;                  // flag current effect that settings have changed 
-
-}
-
 
 void cache WS2812_autorestart_string(String Value) {
   
@@ -458,10 +487,9 @@ void cache WS2812_toggle_string(String Value) {
           HoldingOpState = LastOpState;
           Current_Effect_State = POST_EFFECT;
         } else {
-          //Serial.print("ON..advancing: "); 
+
           current_loaded_preset++;  // advance to next saved.... 
-         // Serial.print(current_loaded_preset);
-         // Serial.print(",");
+
           if (current_loaded_preset > 10) current_loaded_preset = 1;
 
           for (uint8_t i = 0; i < 10; i++ ) { // go through 10 saved ONLY.....
@@ -476,15 +504,8 @@ void cache WS2812_toggle_string(String Value) {
           //Serial.print("  scan end.... mode asked for = ");
           //Serial.print(current_loaded_preset);
           WS2812_preset_string(String(current_loaded_preset));
-
-
         }
-
-
-
-
-      }
-
+    }
 }
 
 
@@ -492,73 +513,55 @@ void cache WS2812_toggle_string(String Value) {
 
 void cache WS2812_preset_string(String Value) {
 
-      lasteffectupdate = 0;
-      uint8_t preset = Value.toInt();
-      //Serial.print("Preset recieved: ");
-      //Serial.print(preset);
-
-      if (preset > 10) preset = 1;
-      if (preset < 0 ) preset = 1; 
-
+        lasteffectupdate = 0;
+        uint8_t preset = Value.toInt();
+        if (preset > 10) preset = 1;
+        if (preset < 0 ) preset = 1; 
         Load_LED_Defaults (preset) ; 
-        // CurrentPreset = preset; 
         current_loaded_preset = preset;
         current_loaded_preset_changed = false; 
-
-        //Serial.print("Op State = "); 
-        //Serial.print()
         HoldingOpState =  LastOpState;
         Current_Effect_State = POST_EFFECT; 
-
-        //send_mqtt_msg("Preset", Value); 
-         send_current_settings();  // this prevents settings being sent IMMEDIATELY after boot...
-
-        //  LED_Settings_Changed = true;   // DONT do this here... as it sets preset to 0.. which u don't want to do.... 
-
+        send_current_settings();  // this prevents settings being sent IMMEDIATELY after boot...
         Save_LED_Settings(0);         // this will save the ON state to EEPROM... and the last state.... 
-
-      //Serial.print("...Loaded"); 
 }
 
 void cache send_current_settings () {
 
    if (HoldingOpState == OFF) { 
     send_mqtt_msg("mode","off");
-  //  send_mqtt_msg("effect","off");
   } else { 
     send_mqtt_msg("mode", "on");
   }
 
-    //delay(100);
     send_mqtt_msg("timer", String(WS2812_Settings.Timer));
     send_mqtt_msg("brightness", String(WS2812_Settings.Brightness));
     send_mqtt_msg("Preset", String(current_loaded_preset)); 
-    //send_mqtt_msg("animationspeed", String(CurrentAnimationSpeed));
     send_mqtt_msg("effect", MODE_STRING[HoldingOpState] ); // has to be the effect of the future.. not the current one :)
 
 }
 
 
 // THINK THIS IS REDUNDANT FUNCTION NOW... 
-void cache WS2812_mode_number(String Value) {
+// void cache WS2812_mode_number(String Value) {
 
-      lasteffectupdate = 0;
-      uint8_t chosen_mode = Value.toInt();
-      Debugln("MODE DROP recieved: " + Value);
-      opState = (operatingState)chosen_mode;
+//       lasteffectupdate = 0;
+//       uint8_t chosen_mode = Value.toInt();
+//       Debugln("MODE DROP recieved: " + Value);
+//       opState = (operatingState)chosen_mode;
 
-      if (chosen_mode != 0)  { 
-      LastOpState = (operatingState)chosen_mode;
-      LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-      }
-}
+//       if (chosen_mode != 0)  { 
+//       LastOpState = (operatingState)chosen_mode;
+//       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+//       }
+// }
 
 //  might need to add an effect function timeout thing....  to reset effect and call update with NEW dim setting... 
 
 
 void  cache  WS2812_dim_string (String Value)
 {
-      lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
+    //  lasteffectupdate = 0; // RESET EFFECT COUNTER, force refresh of effects....
  //     current_loaded_preset_changed = true; 
 
       int a = Value.toInt();
@@ -609,8 +612,8 @@ void  cache WS2812_mode_string (String Value)
 
 {
 
-  lasteffectupdate = 0 ; // RESET EFFECT COUNTER
-  if(Value == "refresh" ) return; 
+ // lasteffectupdate = 0 ; // RESET EFFECT COUNTER
+  if(Value == "refresh" ) {     Effect_Refresh = true;  return; } ; 
 
   //Random_func_timeout = 0; //RESET additionall timeout... 
   if (paused) paused = false; // this sets it back to play, if paused when a mode change occurs...
@@ -626,35 +629,37 @@ void  cache WS2812_mode_string (String Value)
   } else {
 
 
-  Value.toLowerCase();
+      Value.toLowerCase();
 
-  if (Value == "off" | Value == "OFF") { 
+  if (Value == "off") { 
       if (opState != OFF) { 
           Current_Effect_State = POST_EFFECT; //  Set this to TERMINATE current effect.... 
           HoldingOpState = OFF;           
       } 
   }
 
-  if (Value == "on" | Value == "ON") { 
+  if (Value == "on") { 
       HoldingOpState = LastOpState; 
       Current_Effect_State = POST_EFFECT; 
   } ; 
 
-  if (Value == "refresh" ) { 
-    lasteffectupdate = 0;  
-  }
+  // if (Value == "refresh" ) { 
+  //   //lasteffectupdate = 0;  
+  //   Effect_Refresh = true; 
+  //   Debugln("Effect refresh = true");
+  // }
 
   if (Value == "pause") paused = true;
   if (Value == "play") paused = false; 
 
-}
+  } // end of else not a number... .... 
 
     if(HoldingOpState == OFF) { 
       EEPROM.write(ON_OFF_State_Address,0); 
-      Debugln("ON_OFF_State_Address (write) = 0");
+      //Debugln("ON_OFF_State_Address (write) = 0");
     } else {
       EEPROM.write(ON_OFF_State_Address,1); 
-      Debugln("ON_OFF_State_Address (write) = 1");
+      //Debugln("ON_OFF_State_Address (write) = 1");
     } 
 
 
@@ -675,63 +680,13 @@ void  cache WS2812_mode_string (String Value)
 
 void cache WS2812_Set_New_Colour (String instruction) {
 
-      //opState = LastOpState = COLOR; //  this allows you to pick colour base for other MODES.... 
-      //String instruction = Value.substring(4,Value.length()+1 );
-      //Serial.println("/n RGB command recieved: " + instruction);
-      lasteffectupdate = 0; 
+    //  lasteffectupdate = 0; 
       WebRGBcolour = instruction;
       WS2812_Settings.Color = HEXtoRGB(instruction);
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-
-/*      float HUE = (HslColor(NewColour)).H;
-      float SAT = (HslColor(NewColour)).S;
-      float LIG = (HslColor(NewColour)).L;
-
-      //Debugf("HSL choice : H = %u, S = %u, L = %u ")
-      Debug("NEW HSL COLOUR : Hue = ");
-      Debug(HUE); 
-      Debug(", Sat = "); 
-      Debug(SAT); 
-      Debug(", Lig = ");       
-      Debugln(LIG); */
       Effect_Refresh = true;                  // flag current effect that settings have changed 
       send_mqtt_msg("colour", WebRGBcolour); 
 
-/*
-#ifdef HSL_FLOAT
-
-              float originalHUE = (HslColor(NewColour)).H;
-              float originalSAT = (HslColor(NewColour)).S;
-              float originalLIG = (HslColor(NewColour)).L;
-              Serial.print("HSL components (float): ");
-              Serial.print(originalHUE);
-              Serial.print(",");
-              Serial.print(originalSAT);
-              Serial.print(",");
-              Serial.println(originalLIG);
-#else
-              uint8_t originalHUE = (HslColor(NewColour)).H;
-              uint8_t originalSAT = (HslColor(NewColour)).S;
-              uint8_t originalLIG = (HslColor(NewColour)).L;
-              Serial.print("HSL components (int): ");
-              Serial.print(originalHUE);
-              Serial.print(",");
-              Serial.print(originalSAT);
-              Serial.print(",");
-              Serial.println(originalLIG);             
-
-#endif
-
-              uint8_t originalR = NewColour.R;
-              uint8_t originalG = NewColour.G;
-              uint8_t originalB = NewColour.B;
-              Serial.print("RGB components: ");
-              Serial.print(originalR);
-              Serial.print(",");
-              Serial.print(originalG);
-              Serial.print(",");
-              Serial.println(originalB);  
-*/
 
 }
 
@@ -739,63 +694,30 @@ void cache WS2812_Set_New_Colour (String instruction) {
 void cache WS2812timer_command_string (String Value)
 
 {
-Effect_Refresh = true;                  // flag current effect that settings have changed 
-lasteffectupdate = 0;
-WS2812_Settings.Timer = Value.toInt();
-send_mqtt_msg("timer", Value); 
-LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-Debugf("Timer = %u \n", WS2812_Settings.Timer);
+    Effect_Refresh = true;                  // flag current effect that settings have changed 
+  //  lasteffectupdate = 0;
+    WS2812_Settings.Timer = Value.toInt();
+    send_mqtt_msg("timer", Value); 
+    LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+    Debugf("Timer = %u \n", WS2812_Settings.Timer);
 }
-
-
-//void  WS2812_command_string (String Value) {
-//}
-/*
-
-if (Value.indexOf("rgb") >= 0) 
-{
-  opState = COLOR;
-  String instruction = Value.substring(4,Value.length()+1 );
-  Serial.println("RGB command recieved: " + instruction);
-  NewColour = HEXtoRGB(instruction);
-    for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
-      //strip->LinearFadePixelColor(1000, pixel, NewColour);
-    }
-}
-
-} */
 
 
 
 RgbColor cache dim(RgbColor original) {
 
-#ifdef GAMMA_CORRECTION
-  uint8_t modified_brightness = GAMMA_2811[WS2812_Settings.Brightness]; 
-#else
-  uint8_t modified_brightness = WS2812_Settings.Brightness ;
-#endif
+  #ifdef GAMMA_CORRECTION
+    uint8_t modified_brightness = GAMMA_2811[WS2812_Settings.Brightness]; 
+  #else
+    uint8_t modified_brightness = WS2812_Settings.Brightness ;
+  #endif
 
     HslColor originalHSL = HslColor(original); 
-    //float originalLIG = originalHSL.L;
-
-     originalHSL.L =  originalHSL.L   * ( float(modified_brightness) / 255.0 ) ; 
+    originalHSL.L =  originalHSL.L   * ( float(modified_brightness) / 255.0 ) ; 
     return RgbColor( HslColor(originalHSL.H, originalHSL.S, originalHSL.L )  );
 }
 
-// RgbColor cache dim(RgbColor original, uint8_t brightness) {
 
-
-//               float originalHUE = HslColor(original).H;
-//               float originalSAT = HslColor(original).S;
-//               float originalLIG = HslColor(original).L;
-
-
-//     float newLIG =  originalLIG   * ( (float)brightness / 255.0f ) ; 
-
-
-//  return RgbColor( HslColor(originalHUE, originalSAT, newLIG )  );
-
-// }
 
 
 
@@ -843,26 +765,25 @@ String cache RGBtoHEX (RgbColor value) {
 
 void cache Pre_effect() {
 
-Current_Effect_State = RUN_EFFECT; 
-lasteffectupdate = 0; 
-Random_func_timeout = 0; //RESET additionall timeout... 
-
+    Current_Effect_State = RUN_EFFECT; 
+   // lasteffectupdate = 0; 
+    Random_func_timeout = 0; //RESET additionall timeout...  NOT SURE IF THIS IS NEEDED... 
+   // Effect_Refresh = false; 
+    effectPosition = 0; // reset effect position... 
 }
 
 void cache Post_effect() {
 
-if (Enable_Animations) {
-  if ( animator->IsAnimating() ) {
-      for (uint16_t i = 0; i < strip->PixelCount();i++ ) {
-        animator->StopAnimation(i);
-     }
-  }
-} else strip->ClearTo(0,0,0); 
+    if (Enable_Animations) {
+      if ( animator->IsAnimating() ) {
+         for (uint16_t i = 0; i < strip->PixelCount();i++ ) {
+           animator->StopAnimation(i);
+          }
+      }
+    } else strip->ClearTo(0,0,0); 
 
-
-
-Current_Effect_State = PRE_EFFECT; 
-opState = HoldingOpState; 
+    Current_Effect_State = PRE_EFFECT; 
+    opState = HoldingOpState; 
 
 }
 
@@ -871,22 +792,13 @@ opState = HoldingOpState;
 
 
 void cache initiateWS2812 ()
-
 {
-  //opState = OFF;
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
-  Pixel_Update_Freq = 1 + ( pixelCount * 30 ) / 1000 ; 
-  
+  Pixel_Update_Freq = 1 + ( pixelCount * 30 ) / 1000 ;   
   Debugf("Update frequency = %u\n", Pixel_Update_Freq);
-  
   strip->Begin();
-
-
-  //StripOFF();
   SetRandomSeed();
   
-  //animator->Resume(); 
-
 }
 
 
@@ -983,35 +895,35 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 */
 }
 
-void cache Random_colour() {
+// void cache Random_colour() {
 
- //long Random_func_timeout = 0, Random_func_lasttime = 0; 
-static uint8_t current_r = 0;
+//  //long Random_func_timeout = 0, Random_func_lasttime = 0; 
+// static uint8_t current_r = 0;
 
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+// if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
-    if (millis() > lasteffectupdate) {
-      //Serial.print("New random choice..."); 
+//     if (millis() > lasteffectupdate) {
+//       //Serial.print("New random choice..."); 
 
-      uint16_t random_animation_speed = random(2000, 20000);
+//       uint16_t random_animation_speed = random(2000, 20000);
 
-      //RgbColor random_colour_random = RgbColor(random(255),random(255),random(255));  // generates lots of white colours... not balenced..
-      RgbColor random_colour_random = Wheel(random(255));
+//       //RgbColor random_colour_random = RgbColor(random(255),random(255),random(255));  // generates lots of white colours... not balenced..
+//       RgbColor random_colour_random = Wheel(random(255));
 
-  //    SetRGBcolour(random_colour_random,random_animation_speed);
+//   //    SetRGBcolour(random_colour_random,random_animation_speed);
 
-      //Random_func_lasttime = millis(); 
-      long Random_func_timeout = random(60000, 60000*5);
-      //Random_func_timeout = random(10000, 60000);
-      lasteffectupdate = millis() + Random_func_timeout; 
-    }
-
-
+//       //Random_func_lasttime = millis(); 
+//       long Random_func_timeout = random(60000, 60000*5);
+//       //Random_func_timeout = random(10000, 60000);
+//       lasteffectupdate = millis() + Random_func_timeout; 
+//     }
 
 
-if (Current_Effect_State == POST_EFFECT) Post_effect(); 
 
-} // end of random func
+
+// if (Current_Effect_State == POST_EFFECT) Post_effect(); 
+
+// } // end of random func
 
 
 void cache CoolBlobs() {
@@ -1908,7 +1820,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
         EEPROM.commit(); // actually save changes to avoid having a boot loop....  and unable to exit... 
         Debugln("WS2812 Settings Updated."); 
         }
-Debugln("1");
+//Debugln("1");
 
 //   if (animator != NULL)
 //   {
@@ -1926,10 +1838,10 @@ Debugln("1");
   delete strip;
   
   }
-Debugln("2");
+//Debugln("2");
 
   strip = new NeoPixelBus(count, pin);
-Debugln("3");
+//Debugln("3");
 
     if (count > ANIMATION_LIMIT) { 
       Enable_Animations = false; 
@@ -1943,7 +1855,7 @@ Debugln("3");
       Debugln("Animations Enabled");
 
     }
-Debugln("4");
+//Debugln("4");
 
   pixelsPOINT = (uint8_t*)strip->Pixels(); ///  used for direct access to pixelbus buffer...
 
@@ -2023,7 +1935,7 @@ void cache handle_lights_config() {
 bool updateLEDs = false; 
 
    if (server.args() > 1 || ( server.hasArg("preset") == false && server.args() == 1) ) { 
-      lasteffectupdate = 0; 
+   //   lasteffectupdate = 0; 
       Random_func_timeout = 0; 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
       Effect_Refresh = true;                  // flag current effect that settings have changed 
@@ -2323,9 +2235,51 @@ void cache Set_Colour_ToptoBottom() {
 }
 
 //  This function returns a random colour from palette if no index is specified!  
+//  Returns a different colour than the previous one. 
 RgbColor cache Return_Palette (RgbColor Input) {
-      uint8_t random_choice = random(1, WS2812_Settings.Palette_Number );
-      uint8_t Index; 
+
+      uint8_t random_choice; 
+      static uint8_t last_random_choice; 
+      uint8_t number_of_choices; 
+
+switch (WS2812_Settings.Palette_Choice) {
+          case ALL:                // 0 
+            number_of_choices = WS2812_Settings.Palette_Number; 
+           // return Wheel(random(255)); 
+
+            break;
+          case COMPLEMENTARY:      // 1
+            number_of_choices = 2; 
+            break;
+          case MONOCHROMATIC:     //  2
+                //Debugln("MONOCHROMATIC"); 
+            number_of_choices = 2; 
+            break;
+          case ANALOGOUS:         // 3
+            number_of_choices = WS2812_Settings.Palette_Number; 
+            break; 
+          case SPLITCOMPLEMENTS:  // 4
+            number_of_choices = 3; 
+            break;
+          case TRIADIC:           // 5
+            number_of_choices = 3; 
+          break;
+          case TETRADIC:          // 6
+            number_of_choices = 4;
+          break;
+          case MULTI:          // 7
+            number_of_choices = WS2812_Settings.Palette_Number; 
+          break;
+      }
+
+do {
+    random_choice = random(0, number_of_choices );
+  } while (random_choice == last_random_choice) ;
+  
+  last_random_choice = random_choice ; 
+
+//Debugf("Random Pallete Choice = %u \n", random_choice);
+
       Return_Palette (Input, random_choice) ;
 }
 
@@ -2345,8 +2299,12 @@ switch (WS2812_Settings.Palette_Choice) {
 
           case ALL:                // 0 
                 Index = Index % 2; 
-                if (Index == 0 ) Output = Input; 
-                if (Index == 1 ) Output = Wheel(random(255)); 
+           //     if (Index == 0 ) Output = Input; 
+             //   if (Index == 1 ) 
+         //       do { 
+                  Output = Wheel(random(255)); 
+          //      } while ( Output == Input)
+                
                 break;
 
           case COMPLEMENTARY:      // 1
@@ -2357,6 +2315,7 @@ switch (WS2812_Settings.Palette_Choice) {
 
           case MONOCHROMATIC:     //  2
                 //Debugln("MONOCHROMATIC"); 
+                Output = Input; 
                 break;
 
           case ANALOGOUS:         // 3

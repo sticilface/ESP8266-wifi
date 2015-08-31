@@ -15,7 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
 //                      SQUARES
-// 
+//  ToDo  Add in three phase effect.... IN, HOLD, OUT... use switch statement inside...animation callback!
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -300,7 +300,7 @@ void cache Effect_Top_Bottom(EffectSetting Setting, BlendMethod Method) {
   
 
       if (  
-              ( millis() - lasteffectupdate > random_time  && animator->IsAnimating() == false ) ||  ( Effect_Refresh == true )
+              ( millis() - lasteffectupdate > random_time  && animator->IsAnimating() == false ) ||  Effect_Refresh 
          ) 
 
           { // only generate new effect if NOT blending..
@@ -457,25 +457,28 @@ void cache RGBcolour () {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
 // 
-// 
+//        RAINBOW
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
  void cache rainbow() {
 
-  static int wsPoint =0;
+  //static int wsPoint =0;
 
 
   switch(Current_Effect_State) {
 
     case PRE_EFFECT:
 
+    if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
+
+    effectPosition = 0 ;  
 
       for (uint16_t n = 0; n < strip->PixelCount(); n++)
             {
               RgbColor original = strip->GetPixelColor(n);
-              RgbColor newcolor = dim(Wheel( n + wsPoint)); 
+              RgbColor newcolor = dim(Wheel( n + effectPosition++)); 
 
         AnimUpdateCallback animUpdate = [=](float progress)
         {
@@ -486,7 +489,6 @@ void cache RGBcolour () {
     }
 
     Debug("Pre effect end") ; 
-    wsPoint++;  
     Pre_effect(); 
 
     break;
@@ -495,10 +497,10 @@ void cache RGBcolour () {
       if (millis() > (lasteffectupdate) && (!animator->IsAnimating()) ){
 
         for(int i=0; i < strip->PixelCount(); i++) {
-          strip->SetPixelColor(i, dim(Wheel( i + wsPoint)));
+          strip->SetPixelColor(i, dim(Wheel( i + effectPosition)));
          }
-         wsPoint++;
-         if (wsPoint == 256) wsPoint = 0; 
+         effectPosition++;
+         if (effectPosition == 256) effectPosition = 0; 
          lasteffectupdate = millis() + WS2812_Settings.Timer ;
       }
  
@@ -519,8 +521,12 @@ void cache RGBcolour () {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void  cache Rainbowcycle() {
+
   switch(Current_Effect_State) {
     case PRE_EFFECT:
+
+        if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
+
     effectPosition = 0; 
     Pre_effect(); 
     for (uint16_t i = 0; i < pixelCount; i++)
@@ -725,10 +731,89 @@ channel_start = 1;
       timer_effect_tick_timeout = 100; // Restore limiter RAPID flow.... 
       break; 
 
-      
-} 
+      } 
 }
 
 
 
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//        Random Colour.... 
+//    ToDo... add in palletee selection... Sort out refresh of clolour...
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+void cache Random_colour() {
+
+ uint16_t  timer = map ( WS2812_Settings.Timer , 1, 2000, 1000 , 60000 );
+ RgbColor colour; 
+ static uint8_t static_colour; 
+ //static uint32_t temp_timer; 
+
+  switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+
+    if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
+
+        //colour_choice = 
+
+        //animator->FadeTo( timer, dim(Wheel(random(255)))); 
+        Debugln("Random Colour - Pre effect"); 
+        Pre_effect();
+        Effect_Refresh = true; 
+        //lasteffectupdate = millis(); 
+
+        break;
+    
+    case RUN_EFFECT:  
+  
+      if (millis() - lasteffectupdate > map ( WS2812_Settings.Timer , 1, 2000, 1000 , 60000 ) || Effect_Refresh)  {
+
+//Debugln("1");
+          if ( !animator->IsAnimating() || Effect_Refresh ) {
+
+//Debugln("2");
+              effectPosition++ ; 
+          //effectPosition = effectPosition % 10 ; 
+
+
+               if (WS2812_Settings.Random == true ) {
+                 if (effectPosition == 10 || Effect_Refresh ) { static_colour = random(255); effectPosition = 0 ; } ; 
+ //                Debugln("3.1");
+
+                 colour = Return_Palette(Wheel(static_colour)) ;
+ //                Debugln("3.2");
+               } else {
+ //                Debugln("4.1");
+                colour = Return_Palette(WS2812_Settings.Color) ;
+ //                Debugln("4.2");
+               }
+
+
+                dim(colour);
+//                Debugln("Updating effect");
+                animator->FadeTo( map ( WS2812_Settings.Timer , 1, 2000, 500 , 5000 ), colour); 
+                lasteffectupdate = millis(); 
+                Effect_Refresh = false; 
+            }
+      }
+        break;
+
+    case POST_EFFECT:
+        Post_effect(); 
+        break;
+  }
+
+}
 
