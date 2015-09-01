@@ -32,7 +32,10 @@ bool cache firstboot() {
 if (EEPROM.read(0) != flagvalue) {
  EEPROM_wipe();
  EEPROM.write(0,flagvalue);
-EEPROM_commit_var = true;
+
+ Save_All_Defaults(); // sets sensible defaults...  
+
+  EEPROM_commit_var = true;
  return true; 
 } else { return false; }
 

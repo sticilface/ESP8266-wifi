@@ -271,7 +271,7 @@ bool updateLEDs = false;
   if (server.hasArg("palettedrop"))   { 
       WS2812_Settings.Palette_Choice = server.arg("palettedrop").toInt(); 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-      Effect_Refresh = true; 
+      Effect_Refresh = true;         // refresh the LEDs... 
     }
 
 
@@ -796,7 +796,7 @@ void cache initiateWS2812 ()
 {
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
   Pixel_Update_Freq = 1 + ( pixelCount * 30 ) / 1000 ;   
-  if (Pixel_Update_Freq < 10 ) Pixel_Update_Freq = 10; 
+  //if (Pixel_Update_Freq < 10 ) Pixel_Update_Freq = 10; 
   Debugf("Update frequency = %u\n", Pixel_Update_Freq);
   strip->Begin();
   SetRandomSeed();
@@ -1248,25 +1248,76 @@ switch(Current_Effect_State) {
 
     case PRE_EFFECT:
       Pre_effect();
+
+
         for (uint8_t i = 0; i < 1; i++ ) {
        
            RgbColor originalColor = RgbColor(0,0,0); 
-           RgbColor color = RgbColor(255,0,0);
+           RgbColor color = RgbColor(WS2812_Settings.Brightness,0,0);
+           uint16_t time = WS2812_Settings.Timer; 
+
             // define the effect to apply, in this case linear blend
+
+           // calculate differential for old vs new colour... 
+            uint32_t stepsR =  time / ( color.R - originalColor.R ) ; 
+            float steps_progress = 1.0 / ( color.R - originalColor.R ) ; 
+
+            Debug("progress / step = ");
+
+            Serial.print(steps_progress); 
+            Serial.print(", ");
 
             AnimUpdateCallback animUpdate = [=](float progress)
             {
                 // progress will start at 0.0 and end at 1.0
                 RgbColor updatedColor;
-                float new_progress = progress * 2.0; 
-                if (new_progress >= 1) new_progress = (2.0 - new_progress); 
-                updatedColor = RgbColor::LinearBlend(originalColor, color, new_progress);
+                static uint16_t updatecount = 0; 
+
+                float tempprogress = progress; 
+                while (tempprogress > steps_progress) {
+                  tempprogress -= steps_progress; 
+                } ;
+
+                static uint8_t toggle = 0; 
+
+                uint8_t tempprogressINT = (tempprogress / steps_progress ) * 100 ; 
+
+                //Serial.println((uint8_t)tempprogress);
+
+                updatecount++;
+                
+                updatedColor = RgbColor::LinearBlend(originalColor, color, progress);
+
+                if (tempprogress > 33 && tempprogress <= 66 && toggle == 1) updatedColor.R += 1 ;
+                if (tempprogress > 66 && toggle >= 1) updatedColor.R += 1 ;
+
+
+                  
+                  
+                  toggle++;
+
+
+                  if (toggle == 2) toggle = 0; 
+
+                  // if (updatedColor.R == strip->GetPixelColor(0).R) {
+                  //     // if the new color = current pixel colour.... do some magic
+                  //     static bool add  = 0;
+                  //     updatedColor.R += add; 
+                  //     add = !add; 
+                  // }
+
                 strip->SetPixelColor(0, updatedColor);
+
+                if (progress == 1.0) { 
+                  Debugf("Count of aniupdate = %u\n", updatecount); 
+                  updatecount = 0;
+                }
+
             };
 
-            animator->StartAnimation(0, 5000, animUpdate);
+            animator->StartAnimation(0, time, animUpdate);
 
-}
+    }
 
     break;
     case RUN_EFFECT:  
@@ -1611,25 +1662,20 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 void cache Adalight_Flash() {
 
-    for(uint16_t i=0; i<pixelCount; i++) {
-        //animator->StopAnimation(i);
-        strip->SetPixelColor(i, RgbColor(255,0,0));
-          }
+    strip->ClearTo(RgbColor(255,0,0));
     strip->Show(); 
     delay(200);
-        for(uint16_t i=0; i<pixelCount; i++) {
-        strip->SetPixelColor(i, RgbColor(0,255,0));
-          }
-        strip->Show(); 
+    
+    strip->ClearTo(RgbColor(0,255,0));
+    strip->Show(); 
     delay(200);
-        for(uint16_t i=0; i<pixelCount; i++) {
-        strip->SetPixelColor(i, RgbColor(0,0,255));
-          }
-        strip->Show(); 
+    
+    strip->ClearTo(RgbColor(0,0,255));
+    strip->Show(); 
     delay(200);
-
-
+    
     strip->ClearTo(RgbColor(0,0,0));
+    strip->Show(); 
 
   }
 
@@ -1943,6 +1989,7 @@ bool updateLEDs = false;
       Effect_Refresh = true;                  // flag current effect that settings have changed 
       Debugln("Reset vars true"); 
       }; 
+
    if (server.hasArg("var1")) WS2812_Settings.Palette_Choice = (Palette)server.arg("var1").toInt();
    if (server.hasArg("var2")) WS2812_Settings.Palette_Range = server.arg("var2").toInt(); // colour point min
    if (server.hasArg("var3")) WS2812_Settings.Palette_Number = server.arg("var3").toInt(); // colour point max
@@ -1957,17 +2004,9 @@ bool updateLEDs = false;
    if (server.hasArg("preset")) Save_LED_Settings(server.arg("preset").toInt() );
   
    // String a = ESP.getFlashChipSizeByChipId(); 
-   if (server.arg("reset") == "true") { 
-      WS2812_Settings.Palette_Choice = ALL; 
-      WS2812_Settings.Palette_Range = 0; 
-      WS2812_Settings.Palette_Number = 0; 
-      WS2812_Settings.Random = 0; 
-      WS2812_Settings.Time_Stretch = 0; 
-      WS2812_Settings.Total_X = 0; 
-      WS2812_Settings.Effect_Count = 0; 
-      WS2812_Settings.Effect_Min_Size = 0; 
-      WS2812_Settings.Effect_Max_Size = 0; 
-      WS2812_Settings.Effect_Option = 0;};
+   if (server.arg("reset") == "true") { Set_Defaults();   EEPROM_commit_var = true; } 
+   if (server.arg("resetall") == "true") Save_All_Defaults();
+
 
   if (server.hasArg("leds")) {
     pixelCount = server.arg("leds").toInt();
@@ -1981,7 +2020,7 @@ bool updateLEDs = false;
 
 
   String content = F("\
-<!DOCTYPE HTML>\
+  <!DOCTYPE HTML>\
   <head>\
     <title>%</title>\
     <meta name='viewport' content='width=device-width, initial-scale=1'/>\
@@ -1992,7 +2031,7 @@ bool updateLEDs = false;
     </style> \
   </head>\
     <body><h1> % </h1>\
-    <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a>\
+    <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a> <a href='/lightsconfig?resetall=true'>RESET ALL</a> \
     <form name=form action='/lightsconfig' method='POST'>");
 
     buf = insertvariable ( content, String(deviceid));
@@ -2608,4 +2647,40 @@ void cache send_status () {
 }
 */
 
+void cache Save_All_Defaults() {
+
+  Set_Defaults(); 
+
+  for (uint8_t location = 1; location < 11; location++) {
+
+      uint16_t address = START_address_settings + (32 * location); 
+      uint8_t byteswritten = EEPROM_writeAnything( address, WS2812_Settings); 
+
+  }
+
+  Serial.println("Default settings saved");
+  EEPROM_commit_var = true; 
+}
+
+
+void cache Set_Defaults() {
+
+   WS2812_Settings.SavedOpState     = 0 ;
+   WS2812_Settings.Timer            = 1000 ;
+   WS2812_Settings.Animationspeed   = 0 ; 
+   WS2812_Settings.Brightness       = 255;
+   WS2812_Settings.Color            = RgbColor(255,0,0); 
+   WS2812_Settings.Palette_Choice   = 0; 
+   WS2812_Settings.Palette_Range    = 20;  
+   WS2812_Settings.Palette_Number   = 5 ;   
+   WS2812_Settings.Random           = 1 ;  
+   WS2812_Settings.Time_Stretch     = 1;   
+   WS2812_Settings.Total_X          = 1;  
+   WS2812_Settings.Effect_Count     = 1;  
+   WS2812_Settings.Effect_Min_Size  = 1; 
+   WS2812_Settings.Effect_Max_Size  = 1;  
+   WS2812_Settings.Effect_Option    = 1; 
+   WS2812_Settings.CheckSum         = 0; 
+
+}
 

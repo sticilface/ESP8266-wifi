@@ -118,7 +118,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
         //Serial.print("Colour chosen: ");
         //Serial.println(numbercalled++); 
       //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
-      if (mode == 1) square_size = random(WS2812_Settings.Effect_Min_Size  ,  WS2812_Settings.Effect_Max_Size);
+      if (mode == 1) square_size = random(WS2812_Settings.Effect_Min_Size  ,  WS2812_Settings.Effect_Max_Size + 1 );
      // checks to see if it is a linear string or not... if less then it is equal to 0 ...
      
      if (total_x > square_size) { 
@@ -478,7 +478,7 @@ void cache RGBcolour () {
       for (uint16_t n = 0; n < strip->PixelCount(); n++)
             {
               RgbColor original = strip->GetPixelColor(n);
-              RgbColor newcolor = dim(Wheel( n + effectPosition++)); 
+              RgbColor newcolor = dim(Wheel( n + effectPosition)); 
 
         AnimUpdateCallback animUpdate = [=](float progress)
         {
@@ -487,6 +487,8 @@ void cache RGBcolour () {
         };
         animator->StartAnimation(n, 2000 , animUpdate);
     }
+    
+    effectPosition++ ; 
 
     Debug("Pre effect end") ; 
     Pre_effect(); 
