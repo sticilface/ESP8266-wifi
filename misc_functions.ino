@@ -107,7 +107,16 @@ delay(5);
 
 #else 
 
-      WiFi.begin(ssid, password);
+
+
+// if(String(ssid) != WiFi.SSID()) {
+//       Debug("WiFi begin called...(");
+//      // Debug(WiFi.SSID()); 
+//      // Debugln(")");
+     
+     WiFi.begin(ssid, password);
+// } else Debugln("Already connected.."); 
+// //      WiFi.begin(ssid, password);
 #endif
 
   //WiFi.begin();
@@ -116,11 +125,11 @@ delay(5);
     delay(500);
     i++;
     Serial.print(".");
-    if (i == 100) { Serial.print("Failed"); break; } ;
+    if (i == 100) { Serial.println("Failed"); break; } ;
     }
     
 
-  }   else { Serial.print("NO SSID specified...");   }
+  }   else { Serial.println("NO SSID specified...");   }
   
   
   if(WiFi.status() != WL_CONNECTED)

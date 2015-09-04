@@ -403,6 +403,13 @@ void cache StripOFF() {
 
     case RUN_EFFECT:
 
+      if (millis() - lasteffectupdate > 30000 ){
+         strip->ClearTo(0,0,0); 
+         lasteffectupdate = millis()  ;
+      }
+
+
+
     break;
 
     case POST_EFFECT:
@@ -428,12 +435,15 @@ void cache RGBcolour () {
   switch(Current_Effect_State) {
     
     case PRE_EFFECT:
+
     Debugln("Effect set to Color"); 
+    
     Pre_effect(); 
 
-    if (Enable_Animations)  animator->FadeTo(2000, dim(WS2812_Settings.Color)); 
-      else 
+    if (Enable_Animations)  { animator->FadeTo(2000, dim(WS2812_Settings.Color)); }
+      else {
         strip->ClearTo(dim(WS2812_Settings.Color)) ; 
+      }
 
     break;
 
@@ -445,6 +455,10 @@ void cache RGBcolour () {
       Effect_Refresh = false;
     }
 
+      if (millis() - lasteffectupdate > 30000 ){
+         strip->ClearTo(dim(WS2812_Settings.Color)); 
+         lasteffectupdate = millis()  ;
+      }
 
     break;
     case POST_EFFECT:
@@ -496,14 +510,14 @@ void cache RGBcolour () {
     break;
     case RUN_EFFECT:  
 
-      if (millis() > (lasteffectupdate) && (!animator->IsAnimating()) ){
+      if (millis() - lasteffectupdate > WS2812_Settings.Timer && (!animator->IsAnimating()) ){
 
         for(int i=0; i < strip->PixelCount(); i++) {
           strip->SetPixelColor(i, dim(Wheel( i + effectPosition)));
          }
          effectPosition++;
          if (effectPosition == 256) effectPosition = 0; 
-         lasteffectupdate = millis() + WS2812_Settings.Timer ;
+         lasteffectupdate = millis()  ;
       }
  
     break;

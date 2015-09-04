@@ -443,20 +443,20 @@ void handle_misc ()
 
   buf = insertvariable (content0, String(deviceid)); 
   buf = insertvariable ( buf, version);  
-  buf = insertvariable (buf, String(compile_date));
-  buf = insertvariable (buf, String(ESP.getSdkVersion()));
+  buf = insertvariable ( buf, String(compile_date));
+  buf = insertvariable ( buf, String(ESP.getSdkVersion()));
   buf = insertvariable ( buf, String(ESP.getFreeHeap()));
   buf = insertvariable ( buf, String(ESP.getFlashChipSize()));
   buf = insertvariable ( buf, String(ESP.getFlashChipSizeByChipId()));
   buf = insertvariable ( buf, String(ESP.getFlashChipId()));
   buf = insertvariable ( buf, String(ESP.getChipId()));
-  buf = insertvariable ( buf, " " ) ; // String(ESP.getSketchSize()  ));
-  buf = insertvariable ( buf, " " ) ; // String(ESP.getFreeSketchSpace()));
+  buf = insertvariable ( buf, String(ESP.getSketchSize()  ));
+  buf = insertvariable ( buf, String(ESP.getFreeSketchSpace()));
   buf = insertvariable ( buf, String(millis()));
-  buf = insertvariable  (buf, String(Up_time));
-  buf = insertvariable  (buf, String(ESP.getVcc()));
-  buf = insertvariable (buf, String(WiFi.RSSI()));
-  buf = insertvariable (buf, String(ESP.getCpuFreqMHz())); 
+  buf = insertvariable ( buf, String(Up_time));
+  buf = insertvariable ( buf, String(ESP.getVcc()));
+  buf = insertvariable ( buf, String(WiFi.RSSI()));
+  buf = insertvariable ( buf, String(ESP.getCpuFreqMHz())); 
   //server.sendHeader("Content-Length", "1000");
   //server.setContentLength(buf.length());
 

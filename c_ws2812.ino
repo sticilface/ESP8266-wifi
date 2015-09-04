@@ -230,7 +230,7 @@ void  cache handle_WS2812 () { // handles the web commands...
 //animator->Pause();
 String paused_string, selected; 
 bool updateLEDs = false;
-
+String randomcolours = " " ; 
  // Serial.print("Current Preset = ");
  // Serial.println(CurrentPreset);
  if (server.args() > 0) {
@@ -274,6 +274,8 @@ bool updateLEDs = false;
       Effect_Refresh = true;         // refresh the LEDs... 
     }
 
+    if (server.arg("random") == "1")  WS2812_Settings.Random = 1 ; 
+    if (server.hasArg("plain"))  WS2812_Settings.Random = 0 ; 
 
 
 
@@ -303,7 +305,7 @@ String content3 = F("\
 <br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
 <br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
 <form name=frmTest action='/ws2812' method='POST'>\
-Select Mode <select name='modedrop' onchange='this.form.submit();'>\
+<br>Select Mode <select name='modedrop' onchange='this.form.submit();'>\
 ");
 
   buf = insertvariable ( content3, String(deviceid));
@@ -350,7 +352,7 @@ for (uint8_t k=0; k < numberofmodes; k++ ) {
 // Palletee
 
 String content4 = F("\
-<form name=frm action='/ws2812' method='POST' style='margin: 0; padding: 0;'>\
+<form name=frm action='/ws2812' method='POST' style ='display:inline;'>\
 Select Palette <select name='palettedrop' onchange='this.form.submit();'>\
 ");
     server.client().print(content4);
@@ -365,20 +367,30 @@ for (uint8_t k = 0; k < numberofpalettes; k++ ) {
   }
 
   buf += "</select>";
-  buf += "</form></p>";
+  buf += "</form>";
 
 
     //server.sendContent(buf);
 
     server.client().print(buf);
 
-    buf = " "; 
+    if (WS2812_Settings.Random == 1 ) randomcolours = "checked"; else randomcolours = " ";  
 
+  String content00 = F("\
+<form action='/ws2812' method = 'POST' style ='display:inline;'>\
+  <input type='checkbox' name='random' value='1' % onchange='this.form.submit();'>\
+</form>\
+"); 
+
+
+  buf = insertvariable ( content00, randomcolours);  //WebRGBcolour
+  
+  server.client().print(buf);
 
 
 
   //if(WiFi.status() == WL_CONNECTED) {
-  String content0 = F("<p><form action='/ws2812' method='POST'\
+  String content0 = F("<form action='/ws2812' method='POST'\
   <p>Color: <input class='color' name='rgbpicker' value = '%' >\
   <br>  <input type='submit' value='Submit'/>\
   </form>\
@@ -388,6 +400,9 @@ for (uint8_t k = 0; k < numberofpalettes; k++ ) {
   
     //server.sendContent(buf);
     server.client().print(buf);
+
+
+
   //}  // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
   
 
@@ -1676,6 +1691,7 @@ void cache Adalight_Flash() {
     
     strip->ClearTo(RgbColor(0,0,0));
     strip->Show(); 
+    delay(100); 
 
   }
 
@@ -1724,8 +1740,11 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
       timer_effect_tick_timeout = 0; 
       if(millis() > 60000) Adalight_Flash(); 
       state = MODE_HEADER;
-      Pre_effect();  
+      Current_Effect_State = RUN_EFFECT; 
+      //Pre_effect();  
       //Current_Effect_State = RUN_EFFECT;
+
+      break; 
 
     case MODE_HEADER:
 
@@ -1805,9 +1824,8 @@ void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk,
 #else
     strip->Show();
 #endif
-            state = MODE_HEADER;
+      state = MODE_HEADER;
 
-      
       break;
 
     case MODE_FINISH:
@@ -2031,7 +2049,7 @@ bool updateLEDs = false;
     </style> \
   </head>\
     <body><h1> % </h1>\
-    <br> <a href='/lightsconfig?reset=true'>RESET TO DEFAULTS</a> <a href='/lightsconfig?resetall=true'>RESET ALL</a> \
+    <br> <a href='/lightsconfig?reset=true'>RESET</a> | <a href='/lightsconfig?resetall=true'>RESET ALL</a> \
     <form name=form action='/lightsconfig' method='POST'>");
 
     buf = insertvariable ( content, String(deviceid));
@@ -2651,7 +2669,7 @@ void cache Save_All_Defaults() {
 
   Set_Defaults(); 
 
-  for (uint8_t location = 1; location < 11; location++) {
+  for (uint8_t location = 0; location < 11; location++) {
 
       uint16_t address = START_address_settings + (32 * location); 
       uint8_t byteswritten = EEPROM_writeAnything( address, WS2812_Settings); 
