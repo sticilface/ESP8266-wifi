@@ -272,6 +272,8 @@ String randomcolours = " " ;
       WS2812_Settings.Palette_Choice = server.arg("palettedrop").toInt(); 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
       Effect_Refresh = true;         // refresh the LEDs... 
+      current_loaded_preset_changed = 1; // so user knows settings have changed. 
+      
     }
 
     if (server.arg("random") == "1")  WS2812_Settings.Random = 1 ; 
@@ -700,7 +702,9 @@ void cache WS2812_Set_New_Colour (String instruction) {
       WebRGBcolour = instruction;
       WS2812_Settings.Color = HEXtoRGB(instruction);
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-      Effect_Refresh = true;                  // flag current effect that settings have changed 
+      Effect_Refresh = true;         // flag current effect that settings have changed 
+      current_loaded_preset_changed = 1; 
+      
       send_mqtt_msg("colour", WebRGBcolour); 
 
 
@@ -711,6 +715,8 @@ void cache WS2812timer_command_string (String Value)
 
 {
     Effect_Refresh = true;                  // flag current effect that settings have changed 
+    current_loaded_preset_changed = 1; 
+
   //  lasteffectupdate = 0;
     WS2812_Settings.Timer = Value.toInt();
     send_mqtt_msg("timer", Value); 
@@ -1960,7 +1966,7 @@ int packetSize;
               }
               Udp.flush();
               strip->Dirty(); 
-              SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+              strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
 
         }
       
@@ -2004,6 +2010,8 @@ bool updateLEDs = false;
    //   lasteffectupdate = 0; 
       Random_func_timeout = 0; 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
+      current_loaded_preset_changed = 1; 
+      
       Effect_Refresh = true;                  // flag current effect that settings have changed 
       Debugln("Reset vars true"); 
       }; 

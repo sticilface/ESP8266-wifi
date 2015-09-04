@@ -541,12 +541,15 @@ void  cache Rainbowcycle() {
   switch(Current_Effect_State) {
     case PRE_EFFECT:
 
-        if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
+     //   if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
 
     effectPosition = 0; 
     Pre_effect(); 
+
+    if (Enable_Animations) {
+    
     for (uint16_t i = 0; i < pixelCount; i++)
-            {
+    {
               RgbColor original = strip->GetPixelColor(i);
         
         AnimUpdateCallback animUpdate = [=](float progress)
@@ -559,9 +562,14 @@ void  cache Rainbowcycle() {
         lasteffectupdate = millis();  
     effectPosition++; 
     }
+   }
+
     break;
     case RUN_EFFECT:  
-    if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
+    
+    if (Enable_Animations) {
+      if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still in the warm up! 
+    }
       if (millis() - lasteffectupdate > WS2812_Settings.Timer) {      
 
            for(uint16_t i=0; i< pixelCount; i++) {
