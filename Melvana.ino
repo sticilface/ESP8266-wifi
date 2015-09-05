@@ -3,13 +3,14 @@
 
 #define DEBUG_YES
 
+//#define HEAP_TIMER
 
 //#define STAGING
 #define GAMMA_CORRECTION
 
-#define ESPUARTWS2812 // USE UART to blast them out...
+#define ESPUARTWS2812 // USE UART to drive pixels, required until bitbanging is fixed. 
 
-#define ANIMATION_LIMIT 300 
+#define ANIMATION_LIMIT 250 // limit for number of pixels where animations work.. otherwise it crashes. 
 
 #include <WifiUDP.h>
 

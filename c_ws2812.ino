@@ -43,7 +43,7 @@ switch (opState)
       Adalight();
       break;
    case TEST:
-      test();
+      LavaLamp();
       break;
    case LOOPAROUND:
       LoopAround(192, 200);
@@ -728,6 +728,9 @@ void cache WS2812timer_command_string (String Value)
 
 RgbColor cache dim(RgbColor original) {
 
+  if (WS2812_Settings.Brightness = 255) return original;
+  if (WS2812_Settings.Brightness = 0) return RgbColor(0,0,0);
+
   #ifdef GAMMA_CORRECTION
     uint8_t modified_brightness = GAMMA_2811[WS2812_Settings.Brightness]; 
   #else
@@ -816,8 +819,8 @@ void cache Post_effect() {
 void cache initiateWS2812 ()
 {
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
-  Pixel_Update_Freq = 1 + ( pixelCount * 30 ) / 1000 ;   
-  //if (Pixel_Update_Freq < 10 ) Pixel_Update_Freq = 10; 
+  Pixel_Update_Freq = 10 + ( pixelCount * 30 ) / 1000 ;   
+  if (Pixel_Update_Freq < 20 ) Pixel_Update_Freq = 20; 
   Debugf("Update frequency = %u\n", Pixel_Update_Freq);
   strip->Begin();
   SetRandomSeed();
@@ -1936,52 +1939,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
 }
 
-void cache UDPfunc () {
 
-int packetSize; 
-//static int packetno = 0; 
-
-  switch(Current_Effect_State) {
-
-    case PRE_EFFECT:
-      timer_effect_tick_timeout = 0; 
-      //Serial.println("UDP mode enabled\n"); // Send "Magic Word" string to host
-      if(millis() > 60000) Adalight_Flash(); 
-      Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, UDPlightPort); 
-      Pre_effect(); 
-
-    break; 
-
-    case RUN_EFFECT:
-
-      packetSize = Udp.parsePacket();
-
-        if  (Udp.available())  {
-          //Serial.println(packetno++);
-             for (int i = 0; i < packetSize; i = i + 3) {
-                if (i > pixelCount * 3) break;         // Stops reading if LED count is reached. 
-                    pixelsPOINT[i + 1] = Udp.read();   // direct buffer is GRB, 
-                    pixelsPOINT[i]     = Udp.read();
-                    pixelsPOINT[i + 2] = Udp.read();
-              }
-              Udp.flush();
-              strip->Dirty(); 
-              strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
-
-        }
-      
-      break;
-
-    case POST_EFFECT: 
-      //packetno = 0; 
-      Udp.stop(); 
-      Post_effect(); 
-      timer_effect_tick_timeout = 100; 
-      break; 
-
-      
-} 
-}
 
 int cache getPixelPower () {
  int brightnesstally = 0;
@@ -2104,15 +2062,15 @@ bool updateLEDs = false;
           </form>\
           <form action='/lightsconfig' method='POST'>\
           <p>LEDs: <input type='text' id='leds' name='leds' value='%' >\
-          <br>PIN: <input type='text' id='ledpin' name='ledpin' value='%' >\
           <br>  <input type='submit' value='Submit'/>\
           </form>\
           ");
+//           <br>PIN: <input type='text' id='ledpin' name='ledpin' value='%' > (PIN 2 only, UART\
 
   buf += htmlendstring; 
   buf = insertvariable ( buf, String(current_loaded_preset)); 
   buf = insertvariable ( buf, String(pixelCount)); 
-  buf = insertvariable ( buf, String(pixelPIN)); 
+  //buf = insertvariable ( buf, String(pixelPIN));  // removed until other method of driving pixels is found. 
 
 
     //server.sendContent(buf);
@@ -2291,15 +2249,9 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 */
 }
 
-void cache Set_Colour_ToptoBottom() {
+// void cache Set_Colour_ToptoBottom() {
 
-
-
-
-
-
-
-}
+// }
 
 //  This function returns a random colour from palette if no index is specified!  
 //  Returns a different colour than the previous one. 
@@ -2461,7 +2413,6 @@ RgbColor colourRGB;
 HslColor colourHSL; 
 //if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
-
 for (y = 0; y < total_y; y++) {
 
     colour_steps = float(y) / float(total_y);    // give the % complete of blend.... 
@@ -2510,17 +2461,6 @@ for (y = 0; y < total_y; y++) {
 } // END of tom_bottom_fade
 
 
-  //  case RANDOM_TOP_BOTTOM:
-  //    Effect_Top_Bottom(TWOCOLOUR,HSL);
-  //    break;
-  //  case RANDOM_TOP_BOTTOM_LINEAR:
-  //    Effect_Top_Bottom(TWOCOLOUR, RGB);
-  //    break;    
-  //  case SINGLE_COLOUR_FADE:
-  //    Effect_Top_Bottom(SINGLECOLOUR, HSL);
-  //    break;  
-  //  case RANDOM_COLOUR_FADE:
-  //    Effect_Top_Bottom(RANDOMSINGLECOLOUR,HSL);
 
 RgbColor Manipulate_Hue(RgbColor original, float amount ) {
 

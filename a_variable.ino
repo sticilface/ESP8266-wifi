@@ -297,14 +297,13 @@ Select Mode <select name='modedrop' onchange='this.form.submit();'>\
 
 struct config_t
 {
-    char ssid[BUFSIZE] ;// = "fyffest";
-    char password[BUFSIZE] ;//  = "wellcometrust";
+    char ssid[BUFSIZE] ;// = "";
+    char password[BUFSIZE] ;//  = "";
     char deviceid[BUFSIZE];// = "";
 } configuration;
 
 
    //operatingState SavedOpState;
-
 
 struct WS2812Settings_t {
    uint8_t  SavedOpState;

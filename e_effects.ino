@@ -790,44 +790,37 @@ void cache Random_colour() {
 
     if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
 
-        //colour_choice = 
-
-        //animator->FadeTo( timer, dim(Wheel(random(255)))); 
         Debugln("Random Colour - Pre effect"); 
         Pre_effect();
         Effect_Refresh = true; 
-        //lasteffectupdate = millis(); 
 
         break;
     
     case RUN_EFFECT:  
   
-      if (millis() - lasteffectupdate > map ( WS2812_Settings.Timer , 1, 2000, 1000 , 60000 ) || Effect_Refresh)  {
+      if (  millis() - lasteffectupdate >  map ( WS2812_Settings.Timer , 1, 2000, 1000 , 600000 )  || Effect_Refresh)  {
 
-//Debugln("1");
-          if ( !animator->IsAnimating() || Effect_Refresh ) {
+        if ( !animator->IsAnimating() || Effect_Refresh ) {
 
-//Debugln("2");
               effectPosition++ ; 
-          //effectPosition = effectPosition % 10 ; 
-
 
                if (WS2812_Settings.Random == true ) {
                  if (effectPosition == 10 || Effect_Refresh ) { static_colour = random(255); effectPosition = 0 ; } ; 
- //                Debugln("3.1");
+
 
                  colour = Return_Palette(Wheel(static_colour)) ;
- //                Debugln("3.2");
+
                } else {
- //                Debugln("4.1");
+
                 colour = Return_Palette(WS2812_Settings.Color) ;
- //                Debugln("4.2");
+
                }
 
-
                 dim(colour);
-//                Debugln("Updating effect");
+
                 animator->FadeTo( map ( WS2812_Settings.Timer , 1, 2000, 500 , 5000 ), colour); 
+                
+
                 lasteffectupdate = millis(); 
                 Effect_Refresh = false; 
             }
@@ -841,3 +834,204 @@ void cache Random_colour() {
 
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//        UDP   function...  
+//    
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+void cache UDPfunc () {
+
+int packetSize; 
+//static int packetno = 0; 
+
+  switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+      timer_effect_tick_timeout = 0; 
+
+      if(millis() > 60000) Adalight_Flash(); 
+      Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, UDPlightPort); 
+      Pre_effect(); 
+
+    break; 
+
+    case RUN_EFFECT:
+
+      packetSize = Udp.parsePacket();
+
+        if  (Udp.available())  {
+             for (int i = 0; i < packetSize; i = i + 3) {
+                if (i > pixelCount * 3) break;         // Stops reading if LED count is reached. 
+                    pixelsPOINT[i + 1] = Udp.read();   // direct buffer is GRB, 
+                    pixelsPOINT[i]     = Udp.read();
+                    pixelsPOINT[i + 2] = Udp.read();
+              }
+              Udp.flush();
+              strip->Dirty(); 
+              strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+
+        }
+      
+      break;
+
+    case POST_EFFECT: 
+      //packetno = 0; 
+      Udp.stop(); 
+      Post_effect(); 
+      timer_effect_tick_timeout = 100; 
+      break; 
+
+      
+} 
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//        Lava Lamp   function...  
+//    
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+void cache LavaLamp () {
+
+static uint16_t x,y, pixel;  
+static X_Y_Coordinates XY; 
+const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ; 
+uint8_t* coordinates;        // Holds LED color values (3 bytes each)
+RgbColor originalColor; 
+AnimUpdateCallback animUpdate; 
+
+  switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+
+    if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
+
+      // generate pixel... 
+
+      XY.X = random ( 0, WS2812_Settings.Total_X ); 
+      XY.Y = random ( 0, Total_y ) ; 
+      pixel = return_pixel(XY.X, XY.Y, WS2812_Settings.Total_X) - 1; 
+
+      Debugf("START (%u,%u)-> %u \n", XY.X, XY.Y, pixel); 
+
+    // coordinates = (uint8_t *)malloc(WS2812_Settings.Effect_Max_Size);
+
+    // if (coordinates) 
+    // {
+    //     memset(coordinates, 0, WS2812_Settings.Effect_Max_Size * 3);   //  x, y, pixel..... 
+    // }
+
+
+      Pre_effect(); 
+      Effect_Refresh = false; 
+    break; 
+
+    case RUN_EFFECT:
+
+        if (Effect_Refresh) Current_Effect_State = PRE_EFFECT; 
+
+        if (  millis() - lasteffectupdate >  WS2812_Settings.Timer   || Effect_Refresh)  {
+
+
+          do {
+
+            XY = return_adjacent(XY); 
+            pixel = return_pixel(XY.X, XY.Y, WS2812_Settings.Total_X) - 1;   
+          
+          } while ( animator->IsAnimating(pixel)) ; 
+
+
+
+
+        Debugf("(%u,%u)-> %u \n", XY.X, XY.Y, pixel); 
+
+        //originalColor = strip->GetPixelColor(pixel);
+        originalColor = RgbColor(0,0,0);
+
+
+        animUpdate = [=](float progress)
+        {
+         //  RgbColor updatedColor = RgbColor::LinearBlend(original, dim(WS2812_Settings.Color) ,  progress) ;
+         //   strip->SetPixelColor(pixel, updatedColor);
+
+                float new_progress = progress * 2.0; 
+                if (new_progress >= 1) new_progress = (2.0 - new_progress); 
+                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, dim(WS2812_Settings.Color), new_progress);
+                if (progress == 1.0) updatedColor = originalColor; 
+
+                strip->SetPixelColor(pixel, updatedColor);
+
+        };
+
+        animator->StartAnimation(pixel, WS2812_Settings.Timer-100 , animUpdate);
+// 
+// 
+// 
+// 
+// 
+
+        Effect_Refresh = false; 
+        lasteffectupdate = millis(); 
+        }
+
+      break;
+    case POST_EFFECT: 
+
+
+        free(coordinates);
+
+
+
+
+      Post_effect(); 
+      break; 
+
+      
+} 
+}
+
+
+
+X_Y_Coordinates return_adjacent(X_Y_Coordinates Input) {
+X_Y_Coordinates Output; 
+bool OK;
+              do {  
+                uint16_t X = Input.X;
+                uint16_t Y = Input.Y;
+                uint8_t direction = random(8); 
+                OK = false; 
+
+                if (direction == 0 || direction == 3 || direction == 5 ) X--;
+                if (direction == 0 || direction == 1 || direction == 2 ) Y++;
+                if (direction == 2 || direction == 4 || direction == 7 ) X++; 
+                if (direction == 5 || direction == 6 || direction == 7 ) Y--; 
+
+                //  direction generated...  Now check if it is valid, assigns it to output.... 
+                if (X < WS2812_Settings.Total_X && 
+                    Y < return_total_y ( WS2812_Settings.Total_X ) && 
+                    return_pixel(X, Y, WS2812_Settings.Total_X) != 0 )
+                {
+                  OK = true;
+                  Output.X = X; 
+                  Output.Y = Y;
+                }
+              
+            } while ( !OK ) ; // 
+
+return Output; 
+
+}

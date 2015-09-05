@@ -7,3 +7,8 @@ enum Palette { ALL = 0, COMPLEMENTARY, MONOCHROMATIC, ANALOGOUS, SPLITCOMPLEMENT
 enum Colour { RANDOM_COLOUR = 0, SPECIFIC_COLOUR }; 
 
 enum effectState { PRE_EFFECT = 0, RUN_EFFECT, POST_EFFECT, EFFECT_PAUSED};
+
+struct X_Y_Coordinates {
+  uint16_t X;
+  uint16_t Y;
+};

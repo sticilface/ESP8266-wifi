@@ -1,8 +1,10 @@
 void loop( void ) {
   // put your main code here, to run repeatedly:
 
-
-	//static uint32_t loop_time = 0, loop_count = 0, loop_timeout = 0, loop_cycle = 0 ; 
+#ifdef HEAP_TIMER
+  static uint32_t  loop_timeout = 0; //loop_cycle = 0 ; 
+#endif
+//loop_time = 0, loop_count = 0,
 
 if (!isOTAupdate) {
 
@@ -46,13 +48,12 @@ if (!isOTAupdate) {
 //delay(1); /// test loop... see how it goes... 
 //loop_count++;
 
-// if (millis() - loop_timeout > 500) {
-// //Serial.println(ESP.getFreeHeap());
-//  //uint32_t temp = (ESP.getCycleCount() - loop_cycle ) / loop_count ; 
-// loop_timeout = millis();
-// Debug(".");
-// };
-
+#ifdef HEAP_TIMER
+ if (millis() - loop_timeout > 500) {
+   Serial.println(ESP.getFreeHeap());
+    loop_timeout = millis();
+ };
+#endif
 
 //loop_count = loop_count / 10 ; 
 
