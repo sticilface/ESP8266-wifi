@@ -43,7 +43,8 @@ switch (opState)
       Adalight();
       break;
    case TEST:
-      LavaLamp();
+      //LavaLamp();
+      AnimatorClass();
       break;
    case LOOPAROUND:
       LoopAround(192, 200);
@@ -2649,4 +2650,45 @@ void cache Set_Defaults() {
    WS2812_Settings.CheckSum         = 0; 
 
 }
+
+// 
+//                              NEEDS WORK FOR SINGLE STRINGS...
+// 
+
+X_Y_Coordinates return_adjacent(X_Y_Coordinates Input) {
+X_Y_Coordinates Output; 
+bool OK;
+              do {  
+                uint16_t X = Input.X;
+                uint16_t Y = Input.Y;
+                uint16_t Total_Y = return_total_y ( WS2812_Settings.Total_X ); 
+                uint16_t Total_X = WS2812_Settings.Total_X; 
+                uint8_t direction = random(8); 
+                OK = false; 
+
+                if (direction == 0 || direction == 3 || direction == 5 )  (X > 0)? X-- : X = Total_X - 1  ;
+                if (direction == 0 || direction == 1 || direction == 2 )  (Y < Total_Y) ? Y++ : Y = 0 ;
+                if (direction == 2 || direction == 4 || direction == 7 )  (X < Total_X - 1) ? X++ : X = 0 ; 
+                if (direction == 5 || direction == 6 || direction == 7 )  (Y > 0) ? Y-- : Y = Total_Y ; 
+
+               // if ()
+                //  direction generated...  Now check if it is valid, assigns it to output.... 
+                if (X  <  Total_X && 
+                    Y  <=  Total_Y && 
+                    return_pixel(X, Y, Total_X) != 0 )
+                {
+                  OK = true;
+                  Output.X = X; 
+                  Output.Y = Y;
+                }
+              
+            } while ( !OK ) ; // 
+
+return Output; 
+
+}
+
+
+
+
 

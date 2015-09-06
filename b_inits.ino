@@ -13,12 +13,17 @@ PubSubClient mqttclient(wifiClient) ;
 
  /// set timer....
 SimpleTimer timer;
+
+//AnimatedObject animatedobject(strip, animator);
+
+
   //NeoPixelBus strip = NeoPixelBus(120, 2);
 
   NeoPixelBus* strip = NULL; // dynamic
   NeoPixelAnimator* animator = NULL;
   uint8_t* pixelsPOINT = NULL;
 
+AnimatedObject* animatedobject = NULL; 
 
 E131 e131; // = NULL;
 

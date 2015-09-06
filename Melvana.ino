@@ -38,7 +38,7 @@
 #include "enumerates.h"
 #include "a_0plugin_headers.h"
 #include "eeprom_writeanything.h"
-
+#include "animatorobject.h"
 
 
 #ifdef STAGING
