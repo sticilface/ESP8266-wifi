@@ -821,7 +821,7 @@ void cache initiateWS2812 ()
 {
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
   Pixel_Update_Freq = 10 + ( pixelCount * 30 ) / 1000 ;   
-  if (Pixel_Update_Freq < 20 ) Pixel_Update_Freq = 20; 
+  if (Pixel_Update_Freq < MINIMUM_REFRESH ) Pixel_Update_Freq = MINIMUM_REFRESH;  
   Debugf("Update frequency = %u\n", Pixel_Update_Freq);
   strip->Begin();
   SetRandomSeed();
@@ -2688,6 +2688,13 @@ return Output;
 
 }
 
+
+void cache initialiseAnimationObject(uint8_t n) {
+
+        if (animatedobject != NULL) delete animatedobject; //         
+        animatedobject = new AnimatedObject( strip, animator, n); //  ...  pointers to strip, animator number of objects... 
+
+}
 
 
 

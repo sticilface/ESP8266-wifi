@@ -1016,31 +1016,165 @@ uint8_t* coordinates;        // Holds LED color values (3 bytes each)
 
 
 
+// void cache AnimatorClass1 () {
+
+// //static uint32_t testimer; 
+
+//   switch(Current_Effect_State) {
+
+//     case PRE_EFFECT:
+//     {
+
+//         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
+//         if (animatedobject != NULL) delete animatedobject; // 
+        
+//         const uint8_t numberofanimations = 5; 
+//         animatedobject = new AnimatedObject( strip, animator, numberofanimations); //  ...  pointers to strip, animator number of objects... 
+
+//         static uint8_t coordinate_array[numberofanimations * 2];  // create array to hold the x,y 
+
+
+//     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
+
+//             RgbColor newcolor = RgbColor(0,0,0);
+
+//             if (i == 0) newcolor = RgbColor(255,0,0);
+//             if (i == 1) newcolor = RgbColor(0,255,0);
+//             if (i == 2) newcolor = RgbColor (0,0,255);
+//             if (i > 2 ) newcolor = Wheel(random(255));
+
+//             //RgbColor newcolor = Wheel(random(255));
+
+
+//             uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
+//             uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
+
+//             coordinate_array[i * 2] = x; 
+//             coordinate_array[(i * 2) + 1] = y; 
+
+          
+//             Debugf("Start Pixels %u = (%u,%u) \n", i, x,y );
+
+//           ObjectCallback ObjectUpdate = [i, newcolor, &coordinate_array ](uint8_t &x_t, uint8_t &y_t)
+//             {
+
+//                   X_Y_Coordinates XY;       
+//                   uint16_t pixel; 
+//                   bool OK = false; 
+//                   uint8_t counter = 0; 
+
+//                   XY.X = coordinate_array[  i*2      ];
+//                   XY.Y = coordinate_array[ (i*2) + 1 ];
+
+//                   do {
+//                       counter++;
+//                       X_Y_Coordinates returned_XY = return_adjacent(XY); 
+//                       pixel = return_pixel(returned_XY.X, returned_XY.Y, WS2812_Settings.Total_X) - 1;   
+
+//                       if (!animator->IsAnimating(pixel)) {
+//                           OK = true; 
+//                           coordinate_array[  i*2      ]  = XY.X = returned_XY.X;
+//                           coordinate_array[ (i*2) + 1 ]  = XY.Y = returned_XY.Y; 
+//                           }
+
+//                       if (counter == 5) break; // bail out if it has not found a suitable pixel!  
+//                       } while (!OK) ; 
+
+
+//                   if (OK) {
+//          //Debugf("%u (%u,%u)-> %u | ", i, XY.X, XY.Y, pixel); 
+//                   RgbColor originalColor = RgbColor(0,0,0);
+//          //RgbColor newcolor = Wheel( effectPosition++ % 255 );  //   WS2812_Settings.Color; 
+
+//                             AnimUpdateCallback animUpdate = [newcolor,originalColor,pixel](float progress)
+//                               {
+//                                RgbColor updatedColor; 
+//                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(originalColor, newcolor, progress * 2.0f);
+//                                if (progress > 0.5) updatedColor = RgbColor::LinearBlend(newcolor, originalColor, (progress * 2.0f) - 1.0f );
+//                                strip->SetPixelColor(pixel, updatedColor);
+//                               };
+
+//                   animator->StartAnimation(pixel, WS2812_Settings.Timer * WS2812_Settings.Effect_Option , animUpdate);
+
+//                   };
+
+//              };
+
+//             uint8_t slot = animatedobject->Add(ObjectUpdate, x, y);
+//             Debugf("Started sequence %u \n", slot); 
+//           }; // end of multiple effect count generations... 
+
+//             Pre_effect(); 
+//             lasteffectupdate = millis(); 
+          
+//     }
+
+//     break; 
+
+//     case RUN_EFFECT:
+//       {
+//         static bool triggered = false; 
+     
+//          if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
+
+//           animatedobject->UpdateAll();
+
+//           //Debugln(); 
+//           lasteffectupdate = millis(); 
+//           Effect_Refresh = false; 
+//         }
+
+//       } // end of switch scope
+//       break;
+//     case POST_EFFECT: 
+
+//       delete animatedobject; 
+//       animatedobject = NULL; 
+      
+//       Post_effect(); 
+//       break; 
+
+      
+// } 
+// }
+
 void cache AnimatorClass () {
 
-static uint32_t testimer; 
+//static uint32_t testimer; 
+
+    // struct AnimationVars
+    // {
+    //     uint8_t _x = 0;
+    //     uint8_t _y = 0;
+    //     uint16_t _effectPosition = 0; 
+
+    // };
+
+    // AnimationVars* _vars;
+
+
+
 
   switch(Current_Effect_State) {
 
     case PRE_EFFECT:
     {
+      timer_effect_tick_timeout = 10; 
 
         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-        if (animatedobject != NULL) delete animatedobject; // ...
-        const uint8_t numberofanimations = 5; 
-        animatedobject = new AnimatedObject( strip, animator, numberofanimations); //  ...  pointers to strip, animator number of objects... 
-
-        static uint8_t coordinate_array[numberofanimations * 2];  // create array to hold the x,y 
+     
+        initialiseAnimationObject(WS2812_Settings.Effect_Count);  // initialise animation object with correct number of objects. 
+       
 
 
     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
 
-            RgbColor newcolor = RgbColor(0,0,0);
+            // RgbColor newcolor = RgbColor(0,0,0);
 
-            if (i == 0) newcolor = RgbColor(255,0,0);
-            if (i == 1) newcolor = RgbColor(0,255,0);
-            if (i == 2) newcolor = RgbColor (0,0,255);
-            if (i > 2 ) newcolor = Wheel(random(255));
+            // if (i == 0) newcolor = RgbColor(255,0,0);
+            // if (i == 1) newcolor = RgbColor(0,255,0);
+            // if (i == 2) newcolor = RgbColor (0,0,255);
+            // if (i > 2 ) newcolor = Wheel(random(255));
 
             //RgbColor newcolor = Wheel(random(255));
 
@@ -1048,95 +1182,89 @@ static uint32_t testimer;
             uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
             uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
 
-            coordinate_array[i * 2] = x; 
-            coordinate_array[(i * 2) + 1] = y; 
+           // coordinate_array[i * 2] = x; 
+           // coordinate_array[(i * 2) + 1] = y; 
 
           
             Debugf("Start Pixels %u = (%u,%u) \n", i, x,y );
 
-          ObjectCallback ObjectUpdate = [i,newcolor,&coordinate_array]()
+          ObjectCallback ObjectUpdate = [i](uint8_t &x_t, uint8_t &y_t, uint32_t &effectvar) //  this callback passess on the x,y by reference so that you can amend them in this function
             {
 
-           X_Y_Coordinates XY; 
-          //static bool triggered = false; 
-          static uint16_t X = 0, Y = 0; 
-                        
-          uint16_t pixel; 
-          bool OK = false; 
-          uint8_t counter = 0; 
+                  X_Y_Coordinates XY;       
+                  uint16_t pixel; 
+                  bool OK = false; 
+                  uint8_t counter = 0; 
 
-          // if (!triggered) {
-          //   X = x;
-          //   Y = y; 
-          //   triggered = true; 
-          // }     
+                  XY.X = x_t ; //coordinate_array[  i*2      ];
+                  XY.Y = y_t ; // coordinate_array[ (i*2) + 1 ];
 
-          XY.X = coordinate_array[  i*2      ];
-          XY.Y = coordinate_array[ (i*2) + 1];
+                  do {
+                      counter++;
+                      X_Y_Coordinates returned_XY = return_adjacent(XY); 
+                      pixel = return_pixel(returned_XY.X, returned_XY.Y, WS2812_Settings.Total_X) - 1;   
 
-           do {
-            counter++;
+                      if (!animator->IsAnimating(pixel)) {
+                          OK = true; 
+                          //coordinate_array[  i*2      ]  = XY.X = returned_XY.X;
+                          //coordinate_array[ (i*2) + 1 ]  = XY.Y = returned_XY.Y; 
 
-            X_Y_Coordinates returned_XY = return_adjacent(XY); 
-            
-            pixel = return_pixel(returned_XY.X, returned_XY.Y, WS2812_Settings.Total_X) - 1;   
+                          x_t = returned_XY.X;
+                          y_t = returned_XY.Y;
 
-            if (!animator->IsAnimating(pixel)) {
-              OK = true; 
-              //XY = returned_XY; 
-              coordinate_array[  i*2      ] = XY.X = returned_XY.X;
-              coordinate_array[ (i*2) + 1]  = XY.Y = returned_XY.Y; 
-            }
-            if (counter == 5) break; 
-          } while (!OK) ; 
+                          }
+
+                      if (counter == 2) break; // bail out if it has not found a suitable pixel!  
+                      } while (!OK) ; 
 
 
-         if (OK) {
+                  if (OK) {
+//Debugf("%u (%u,%u)-> %u | ", i, XY.X, XY.Y, pixel); 
+//                    effectvar = effectvar++ % 255;
 
-         Debugf("%u (%u,%u)-> %u | ", i, XY.X, XY.Y, pixel); 
+                    RgbColor originalColor = RgbColor(0,0,0);
 
-         RgbColor originalColor = RgbColor(0,0,0);
-         //RgbColor newcolor = Wheel( effectPosition++ % 255 );  //   WS2812_Settings.Color; 
+                    RgbColor newcolor = Wheel(effectvar++ % 255);  //   WS2812_Settings.Color; 
 
-            AnimUpdateCallback animUpdate = [newcolor,originalColor](float progress)
-            {
+                            AnimUpdateCallback animUpdate = [newcolor,originalColor,pixel](float progress)
+                              {
+                               RgbColor updatedColor; 
+                               if (progress < 0.5) updatedColor = RgbColor::LinearBlend(originalColor, newcolor, progress * 2.0f);
+                               if (progress > 0.5) updatedColor = RgbColor::LinearBlend(newcolor, originalColor, (progress * 2.0f) - 1.0f );
+                               strip->SetPixelColor(pixel, updatedColor);
+                              };
 
-                  float new_progress = progress * 2.0; 
-                  if (new_progress >= 1) new_progress = (2.0 - new_progress); 
-                  RgbColor updatedColor = RgbColor::LinearBlend(originalColor, newcolor, new_progress);
-                   if (progress == 1.0) updatedColor = originalColor; 
-                  strip->SetPixelColor(pixel, updatedColor);
+                  animator->StartAnimation(pixel, WS2812_Settings.Timer * WS2812_Settings.Effect_Option , animUpdate);
+
                   };
 
-            animator->StartAnimation(pixel, WS2812_Settings.Timer * WS2812_Settings.Effect_Option , animUpdate);
-
              };
 
-             };
-
-            uint8_t slot = animatedobject->Add(ObjectUpdate);
-
-            Debugf("Started sequence %u \n", slot); 
-
+            animatedobject->Add(ObjectUpdate, x, y, random(255));
+            
+            //Debugf("Started sequence %u \n", slot); 
           }; // end of multiple effect count generations... 
 
-
             Pre_effect(); 
-            testimer = millis(); 
+            lasteffectupdate = millis(); 
           
-
     }
 
     break; 
 
     case RUN_EFFECT:
       {
-        static bool triggered = false; 
-     
+        //static uint8_t n = 0; 
          if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
 
-          animatedobject->UpdateAll();
-          Debugln(); 
+          //animatedobject->UpdateAll();  // update all effects at once... 
+
+          animatedobject->UpdateAsync();
+          //n++; 
+
+          //if (n == WS2812_Settings.Effect_Count) n = 0; 
+
+          //Debugln(); 
           lasteffectupdate = millis(); 
           Effect_Refresh = false; 
         }
@@ -1145,9 +1273,10 @@ static uint32_t testimer;
       break;
     case POST_EFFECT: 
 
+      timer_effect_tick_timeout = 100; 
       delete animatedobject; 
       animatedobject = NULL; 
-      
+      Debugln("End of Effect"); 
       Post_effect(); 
       break; 
 
@@ -1155,86 +1284,84 @@ static uint32_t testimer;
 } 
 }
 
+// void cache AnimatorClass2 () {
+
+// static uint32_t testimer; 
+
+//   switch(Current_Effect_State) {
+
+//     case PRE_EFFECT:
+//     {
+
+//         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
+//         if (animatedobject != NULL) delete animatedobject; // ...
+//         animatedobject = new AnimatedObject( strip, animator, 5); //  ...  pointers to strip, animator number of objects... 
 
 
-void cache AnimatorClass2 () {
+//     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
 
-static uint32_t testimer; 
+//             RgbColor newcolor = Wheel(random(255));
 
-  switch(Current_Effect_State) {
-
-    case PRE_EFFECT:
-    {
-
-        if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-        if (animatedobject != NULL) delete animatedobject; // ...
-        animatedobject = new AnimatedObject( strip, animator, 5); //  ...  pointers to strip, animator number of objects... 
-
-
-    for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
-
-            RgbColor newcolor = Wheel(random(255));
-
-            uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
-            uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
+//             uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
+//             uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
           
-            Debugf("Start Pixels %u = (%u,%u) \n", i, x, y );
+//             Debugf("Start Pixels %u = (%u,%u) \n", i, x, y );
 
-             ObjectCallback ObjectUpdate = [x,y,i]()
-                {
-                  static bool triggered = false; //  = x; 
-                  static uint16_t X = 0, Y = 0; 
+//              ObjectCallback ObjectUpdate = [x,y,i]()
+//                 {
+//                   static bool triggered = false; //  = x; 
+//                   static uint16_t X = 0, Y = 0; 
 
-                  if (!triggered) { 
-                    X = x;
-                    Y = y; 
-                    triggered = true; 
-                  }
+//                   if (!triggered) { 
+//                     X = x;
+//                     Y = y; 
+//                     triggered = true; 
+//                   }
                   
-                  X++;
-                  Y++; 
+//                   X++;
+//                   Y++; 
 
-                  Debugf("%u Callback (%u,%u) \n", i, X, Y ); 
+//                   Debugf("%u Callback (%u,%u) \n", i, X, Y ); 
           
 
-                 };
+//                  };
 
-            uint8_t slot = animatedobject->Add(ObjectUpdate);
+//             uint8_t slot = animatedobject->Add(ObjectUpdate);
 
-            Debugf("Started sequence %u \n", slot); 
+//             Debugf("Started sequence %u \n", slot); 
 
-          }; // end of multiple effect count generations... 
+//           }; // end of multiple effect count generations... 
 
 
-            Pre_effect(); 
-            testimer = millis(); 
+//             Pre_effect(); 
+//             testimer = millis(); 
           
 
-    }
+//     }
 
-    break; 
+//     break; 
 
-    case RUN_EFFECT:
-      {
-        static bool triggered = false; 
+//     case RUN_EFFECT:
+//       {
+//         static bool triggered = false; 
      
-         if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
+//          if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
 
-          animatedobject->UpdateAll();
-          lasteffectupdate = millis(); 
-          Effect_Refresh = false; 
-        }
+//           animatedobject->UpdateAll();
+//           lasteffectupdate = millis(); 
+//           Effect_Refresh = false; 
+//         }
 
-      } // end of switch scope
-      break;
-    case POST_EFFECT: 
+//       } // end of switch scope
+//       break;
+//     case POST_EFFECT: 
 
-      delete animatedobject; 
-      animatedobject = NULL; 
+//       delete animatedobject; 
+//       animatedobject = NULL; 
       
-      Post_effect(); 
-      break; 
+//       Post_effect(); 
+//       break; 
 
       
-} 
-}
+// } 
+// }
