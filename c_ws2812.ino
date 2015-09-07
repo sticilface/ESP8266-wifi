@@ -2655,12 +2655,12 @@ void cache Set_Defaults() {
 //                              NEEDS WORK FOR SINGLE STRINGS...
 // 
 
-X_Y_Coordinates return_adjacent(X_Y_Coordinates Input) {
-X_Y_Coordinates Output; 
+XY return_adjacent(XY Input) {
+XY Output; 
 bool OK;
               do {  
-                uint16_t X = Input.X;
-                uint16_t Y = Input.Y;
+                uint16_t X = Input.x;
+                uint16_t Y = Input.y;
                 uint16_t Total_Y = return_total_y ( WS2812_Settings.Total_X ); 
                 uint16_t Total_X = WS2812_Settings.Total_X; 
                 uint8_t direction = random(8); 
@@ -2678,8 +2678,8 @@ bool OK;
                     return_pixel(X, Y, Total_X) != 0 )
                 {
                   OK = true;
-                  Output.X = X; 
-                  Output.Y = Y;
+                  Output.x = X; 
+                  Output.y = Y;
                 }
               
             } while ( !OK ) ; // 
@@ -2694,6 +2694,15 @@ void cache initialiseAnimationObject(uint8_t n) {
         if (animatedobject != NULL) delete animatedobject; //         
         animatedobject = new AnimatedObject( strip, animator, n); //  ...  pointers to strip, animator number of objects... 
 
+}
+
+XY cache toXY(uint8_t x, uint8_t y ) {
+
+    XY grid;
+    grid.x = x;
+    grid.y = y;
+
+  return grid; 
 }
 
 

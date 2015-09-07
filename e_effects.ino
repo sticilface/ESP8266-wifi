@@ -908,9 +908,9 @@ int packetSize;
 void cache LavaLamp () {
 
 uint16_t x,y, pixel;  
-static X_Y_Coordinates XY; 
+static XY coordinates; 
 const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ; 
-uint8_t* coordinates;        // Holds LED color values (3 bytes each)
+//uint8_t* coordinates;        // Holds LED color values (3 bytes each)
 
   switch(Current_Effect_State) {
 
@@ -920,11 +920,11 @@ uint8_t* coordinates;        // Holds LED color values (3 bytes each)
 
       // generate pixel... 
 
-      XY.X = random ( 0, WS2812_Settings.Total_X ); 
-      XY.Y = random ( 0, Total_y ) ; 
-      pixel = return_pixel(XY.X, XY.Y, WS2812_Settings.Total_X) - 1; 
+      coordinates.x = random ( 0, WS2812_Settings.Total_X ); 
+      coordinates.y = random ( 0, Total_y ) ; 
+      pixel = return_pixel(coordinates.x, coordinates.y, WS2812_Settings.Total_X) - 1; 
 
-      Debugf("START (%u,%u)-> %u \n", XY.X, XY.Y, pixel); 
+      Debugf("START (%u,%u)-> %u \n", coordinates.x, coordinates.y, pixel); 
 
     // coordinates = (uint8_t *)malloc(WS2812_Settings.Effect_Max_Size);
 
@@ -951,13 +951,13 @@ uint8_t* coordinates;        // Holds LED color values (3 bytes each)
           do {
             counter++;
 
-            X_Y_Coordinates returned_XY = return_adjacent(XY); 
+            XY returned_XY = return_adjacent(coordinates); 
             
-            pixel = return_pixel(returned_XY.X, returned_XY.Y, WS2812_Settings.Total_X) - 1;   
+            pixel = return_pixel(returned_XY.x, returned_XY.y, WS2812_Settings.Total_X) - 1;   
             Debug("."); 
             if (!animator->IsAnimating(pixel)) {
               OK = true; 
-              XY = returned_XY; 
+              coordinates = returned_XY; 
               Debugln("");
             }
             if (counter == 5) break; 
@@ -966,7 +966,7 @@ uint8_t* coordinates;        // Holds LED color values (3 bytes each)
 
         if (OK) {
 
-        Debugf("(%u,%u)-> %u", XY.X, XY.Y, pixel); 
+        Debugf("(%u,%u)-> %u", coordinates.x, coordinates.y, pixel); 
 
         //originalColor = strip->GetPixelColor(pixel);
         RgbColor originalColor = RgbColor(0,0,0);
@@ -1002,7 +1002,6 @@ uint8_t* coordinates;        // Holds LED color values (3 bytes each)
     case POST_EFFECT: 
 
 
-        free(coordinates);
 
 
 
@@ -1140,6 +1139,18 @@ uint8_t* coordinates;        // Holds LED color values (3 bytes each)
 
 void cache AnimatorClass () {
 
+    struct AnimationVars
+    {
+        uint8_t x = 0;
+        uint8_t y = 0;
+        uint16_t pos = 0; 
+        RgbColor colour = RgbColor(0,0,0);
+        XY coordinates = toXY(0,0); 
+
+    };
+
+    static AnimationVars* _vars;
+
   switch(Current_Effect_State) {
 
     case PRE_EFFECT:
@@ -1149,8 +1160,14 @@ void cache AnimatorClass () {
      
         initialiseAnimationObject(WS2812_Settings.Effect_Count);  // initialise animation object with correct number of animations. 
        
+        _vars = new AnimationVars[WS2812_Settings.Effect_Count];  // memory for all the animated object properties... 
+
+
+
     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
 
+          AnimationVars* pVars;
+          pVars = &_vars[i]; 
 
           //  Colours set here to be "read only"
             // RgbColor newcolor = RgbColor(0,0,0);
@@ -1162,31 +1179,32 @@ void cache AnimatorClass () {
 
             //RgbColor newcolor = Wheel(random(255));
 
+          uint8_t x,y; 
 
-            uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
-            uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
+            pVars->coordinates.x = random ( 0, WS2812_Settings.Total_X ); 
+            pVars->coordinates.y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
           
             //Debugf("Start Pixels %u = (%u,%u) \n", i, x, y );
 
-          ObjectCallback ObjectUpdate = [i](uint8_t &x_t, uint8_t &y_t, uint32_t &effectvar) //  this callback passess on the x,y by reference so that you can amend them in this function
+          ObjectCallback ObjectUpdate = [pVars](uint8_t &x_t, uint8_t &y_t, uint32_t &effectvar) //  this callback passess on the x,y by reference so that you can amend them in this function
             {
 
-                  X_Y_Coordinates XY;       
+                  //X_Y_Coordinates XY;       
                   uint16_t pixel; 
                   bool OK = false; 
                   uint8_t counter = 0; 
 
-                  XY.X = x_t ; 
-                  XY.Y = y_t ; 
+                  //XY.X = x_t ; 
+                  //XY.Y = y_t ; 
 
                   do {
                       counter++;
-                      X_Y_Coordinates returned_XY = return_adjacent(XY); 
-                      pixel = return_pixel(returned_XY.X, returned_XY.Y, WS2812_Settings.Total_X) - 1;   
+                      XY returned_XY = return_adjacent(pVars->coordinates); 
+                      pixel = return_pixel(returned_XY.x, returned_XY.y, WS2812_Settings.Total_X) - 1;   
 
                       if (!animator->IsAnimating(pixel)) {
-                          x_t = returned_XY.X;
-                          y_t = returned_XY.Y;
+                          pVars->coordinates = returned_XY;
+                          //pVars->coordinates.y = returned_XY.y;
                           OK = true; 
                           }
 
@@ -1263,6 +1281,13 @@ void cache AnimatorClass () {
       timer_effect_tick_timeout = 100; 
       delete animatedobject; 
       animatedobject = NULL; 
+
+        if (_vars)
+    {
+        delete[] _vars;
+        _vars = NULL;
+    }
+
       Debugln("End of Effect"); 
       Post_effect(); 
       break; 
