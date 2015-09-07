@@ -65,7 +65,6 @@ void AnimatedObject::Stop(uint8_t n) {
 } 
 
 void AnimatedObject::UpdateAll() {
-			//Serial.print("Update Called: ");
             ObjectContext* pObject;
 			if (!_ActiveObjectsCount) return; 
 
@@ -73,41 +72,10 @@ void AnimatedObject::UpdateAll() {
 				    pObject = &_objects[n]; 
 					if (pObject->isRunning) pObject->fnUpdate(pObject->x, pObject->y, pObject->effectvar);
 			}
-
 			
-			//Serial.println(); 
-
 }
 
-// void AnimatedObject::UpdateOne(uint8_t n) {
-// 		//static uint8_t n = 0;
-// //		if (!_ActiveObjectsCount) return; 
-// 		// uint8_t test = 0; 
-// 		// ObjectContext* pObject;
 
-// 		// do { 
-// 		// 	test = n; 
-// 		// 	pObject = &_objects[n++]; 
-// 		// } while (!pObject->isRunning && n < _ObjectCount) ; 
-
-// 		// if (n == _ObjectCount) n = 0; 
-
-// 		ObjectContext* pObject;
-
-// 		pObject = &_objects[n];
-
-// 		if (pObject->isRunning) { 
-// 			pObject->fnUpdate(pObject->x, pObject->y, pObject->effectvar);
-// 			//Serial.printf("%u,",n);
-// 		}
-
-
-// 	//	if (n++ == _ObjectCount) n = 0; 
-
-// 	//	Serial.print("Updated: ");
-// 	//	Serial.print(test);
-
-// }
 
 void AnimatedObject::UpdateAsync() {
 		static uint8_t n = 0; 
