@@ -1138,19 +1138,23 @@ const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ;
 // }
 
 void cache AnimatorClass () {
-//typedef std::function<void()> TestCallback;
+typedef std::function<void()> TestCallback;
 
     struct AnimationVars
     {
         uint16_t position = 0; 
         RgbColor colour = RgbColor(0,0,0);
         XY coordinates = toXY(0,0); 
-        //TestCallback = ObjUpdate; 
+        TestCallback ObjUpdate = NULL; 
 
     };
 
     static AnimationVars* _vars = NULL;
     static uint8_t animationCount; 
+    static uint32_t counter, effect_timer; 
+    static uint8_t static_colour; 
+    static uint8_t old_R, old_G, old_B; 
+
 
   switch(Current_Effect_State) {
 
@@ -1160,7 +1164,7 @@ void cache AnimatorClass () {
         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
         animator->FadeTo(500, RgbColor(0,0,0));
         animationCount = WS2812_Settings.Effect_Count; 
-        initialiseAnimationObject(animationCount);  // initialise animation object with correct number of animations. 
+   //     initialiseAnimationObject(animationCount);  // initialise animation object with correct number of animations. 
        
        if (_vars != NULL) delete[] _vars; 
 
@@ -1172,11 +1176,15 @@ void cache AnimatorClass () {
 
             AnimationVars* pVars;
             pVars = &_vars[i]; 
+
             pVars->coordinates.x = random ( 0, WS2812_Settings.Total_X ); 
             pVars->coordinates.y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
-            pVars->position = random(255); 
 
-          ObjectCallback ObjectUpdate = [pVars]() //  lamda func passes READ only pointer to the stuct containing the animation vars.. these can be written to in animation...
+          if (WS2812_Settings.Effect_Option == 1) pVars->position = random(255); 
+
+
+            TestCallback ObjectUpdate = [pVars]()
+  //        ObjectCallback ObjectUpdate = [pVars]() //  lamda func passes READ only pointer to the stuct containing the animation vars.. these can be written to in animation...
             {
 
                   uint16_t pixel; 
@@ -1203,20 +1211,20 @@ void cache AnimatorClass () {
                                RgbColor 
                                 updatedColor, 
                                 originalColor = RgbColor(0,0,0), 
-                                newcolor = newcolor = pVars->colour ; 
+                                newcolor = pVars->colour ; 
                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(originalColor, newcolor, progress * 2.0f);
                                if (progress > 0.5) updatedColor = RgbColor::LinearBlend(newcolor, originalColor, (progress * 2.0f) - 1.0f );
                                strip->SetPixelColor(pixel, updatedColor);
                               };
                          
-                        animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255,100,20000 ) , animUpdate);
+                        animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255, WS2812_Settings.Timer * 2 ,20000 ) , animUpdate);
 
                   };
 
              };
 
-            animatedobject->Add(ObjectUpdate);
-            
+            //animatedobject->Add(ObjectUpdate);
+            pVars->ObjUpdate = ObjectUpdate; 
              
           }; // end of multiple effect count generations... 
 
@@ -1230,21 +1238,57 @@ void cache AnimatorClass () {
     case RUN_EFFECT:
       {
         //static uint8_t n = 0; 
-        if (Effect_Refresh) Current_Effect_State = PRE_EFFECT; 
-         if (  millis() - lasteffectupdate >  WS2812_Settings.Timer )  {
+        if (animationCount != WS2812_Settings.Effect_Count) Current_Effect_State = PRE_EFFECT; // reboot only if no animations changed
+         if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
 
             AnimationVars* pVars;
 
 // Update colours of the effects... 
+              counter++; // for blending between colour changes
 
             for (uint8_t i = 0; i < animationCount; i++) {
               pVars = &_vars[i]; 
-              pVars->colour = Wheel(pVars->position++ % 255);
+
+              if (WS2812_Settings.Effect_Option == 1)  {
+                pVars->colour = Wheel(pVars->position++ % 255);  
+                } else {
+                 // pVars->colour = Return_Palette 
+
+                      if (WS2812_Settings.Random == true ) {
+                          if (millis() - effect_timer > map (WS2812_Settings.Timer,0,255,1000,60000) ) { 
+                                  static_colour = random(255); 
+                                  effect_timer = millis() ; 
+                                  old_R = pVars->colour.R; 
+                                  old_G = pVars->colour.G;
+                                  old_B = pVars->colour.B;
+                                  counter = 0; 
+                                }  
+                             float _progress =  float (millis() - effect_timer ) / float( 2000 ) ; // WS2812_Settings.Timer * 10 ) ; 
+                               //pVars->colour = Return_Palette(Wheel(static_colour), i) ; // need to implement some blend method here... it jumps...
+                             RgbColor newcolor = Return_Palette(Wheel(static_colour), i) ; 
+                             //float _progress = 2000.0f / float(counter);
+                             if (_progress > 1) _progress = 1; 
+                             pVars->colour = RgbColor::LinearBlend(RgbColor (old_R,old_G,old_B) , newcolor, _progress); 
+
+                        } else {
+                                  pVars->colour = Return_Palette(WS2812_Settings.Color, i) ;
+                        }
+                }
+
+              pVars->ObjUpdate();   
+            
             }
           
+
+                                  // RgbColor newcolor = Return_Palette(Wheel(static_colour), i) ; 
+                                  // float progress = 1.0f / float(counter);
+                                  // pVars->colour = RgbColor::LinearBlend(oldcolour, newcolor, progress); 
+
+
+
 // update position of the effects.. 
 
-          animatedobject->UpdateAll();  // update all effects at once... 
+ //         animatedobject->UpdateAll();  // update all effects at once... 
 
 //          animatedobject->UpdateAsync(); // update one effect then return... 
 
@@ -1257,8 +1301,8 @@ void cache AnimatorClass () {
     case POST_EFFECT: 
 
       timer_effect_tick_timeout = 100; 
-      delete animatedobject; 
-      animatedobject = NULL; 
+   //   delete animatedobject; 
+   //   animatedobject = NULL; 
 
         if (_vars)
     {

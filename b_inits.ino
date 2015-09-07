@@ -23,7 +23,7 @@ SimpleTimer timer;
   NeoPixelAnimator* animator = NULL;
   uint8_t* pixelsPOINT = NULL;
 
-AnimatedObject* animatedobject = NULL; 
+//AnimatedObject* animatedobject = NULL;   All moved to dynamic functions... better that way.. 
 
 E131 e131; // = NULL;
 

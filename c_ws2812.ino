@@ -277,8 +277,8 @@ String randomcolours = " " ;
       
     }
 
-    if (server.arg("random") == "1")  WS2812_Settings.Random = 1 ; 
-    if (server.hasArg("plain"))  WS2812_Settings.Random = 0 ; 
+    if (server.arg("random") == "1")  { WS2812_Settings.Random = 1 ; LED_Settings_Changed = true; } ;
+    if (server.hasArg("plain"))  { WS2812_Settings.Random = 0 ; LED_Settings_Changed = true; } ; 
 
 
 
@@ -2095,9 +2095,9 @@ uint16_t cache return_pixel(uint16_t x, uint16_t y, uint16_t total_in_x) {
 
 
 uint16_t cache return_total_y(uint16_t total_in_x) {
- uint16_t y = pixelCount / total_in_x; 
- uint8_t remainder = pixelCount % total_in_x;
- if (remainder > 0) { y++; } 
+  uint16_t y = pixelCount / total_in_x; 
+  uint8_t remainder = pixelCount % total_in_x;
+  if (remainder > 0) { y++; } 
   return y;
 };
 
@@ -2655,15 +2655,16 @@ void cache Set_Defaults() {
 //                              NEEDS WORK FOR SINGLE STRINGS...
 // 
 
-XY return_adjacent(XY Input) {
+XY return_adjacent(XY &Input) {
 XY Output; 
 bool OK;
+const uint16_t Total_Y = return_total_y ( WS2812_Settings.Total_X ); 
+const uint16_t Total_X = WS2812_Settings.Total_X; 
+
               do {  
                 uint16_t X = Input.x;
                 uint16_t Y = Input.y;
-                uint16_t Total_Y = return_total_y ( WS2812_Settings.Total_X ); 
-                uint16_t Total_X = WS2812_Settings.Total_X; 
-                uint8_t direction = random(8); 
+                const uint8_t direction = random(8); 
                 OK = false; 
 
                 if (direction == 0 || direction == 3 || direction == 5 )  (X > 0)? X-- : X = Total_X - 1  ;
@@ -2688,13 +2689,13 @@ return Output;
 
 }
 
+// no longer needed... 
+// void cache initialiseAnimationObject(uint8_t n) {
 
-void cache initialiseAnimationObject(uint8_t n) {
+//         if (animatedobject != NULL) delete animatedobject; //         
+//         animatedobject = new AnimatedObject( strip, animator, n); //  ...  pointers to strip, animator number of objects... 
 
-        if (animatedobject != NULL) delete animatedobject; //         
-        animatedobject = new AnimatedObject( strip, animator, n); //  ...  pointers to strip, animator number of objects... 
-
-}
+// }
 
 XY cache toXY(uint8_t x, uint8_t y ) {
 
