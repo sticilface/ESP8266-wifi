@@ -1141,15 +1141,13 @@ void cache AnimatorClass () {
 
     struct AnimationVars
     {
-        uint8_t x = 0;
-        uint8_t y = 0;
-        uint16_t pos = 0; 
+        uint16_t position = 0; 
         RgbColor colour = RgbColor(0,0,0);
         XY coordinates = toXY(0,0); 
 
     };
 
-    static AnimationVars* _vars;
+    static AnimationVars* _vars = NULL;
 
   switch(Current_Effect_State) {
 
@@ -1160,42 +1158,26 @@ void cache AnimatorClass () {
      
         initialiseAnimationObject(WS2812_Settings.Effect_Count);  // initialise animation object with correct number of animations. 
        
+       if (_vars != NULL) delete[] _vars; 
+
         _vars = new AnimationVars[WS2812_Settings.Effect_Count];  // memory for all the animated object properties... 
 
 
 
     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
 
-          AnimationVars* pVars;
-          pVars = &_vars[i]; 
-
-          //  Colours set here to be "read only"
-            // RgbColor newcolor = RgbColor(0,0,0);
-
-            // if (i == 0) newcolor = RgbColor(255,0,0);
-            // if (i == 1) newcolor = RgbColor(0,255,0);
-            // if (i == 2) newcolor = RgbColor (0,0,255);
-            // if (i > 2 ) newcolor = Wheel(random(255));
-
-            //RgbColor newcolor = Wheel(random(255));
-
-          uint8_t x,y; 
-
+            AnimationVars* pVars;
+            pVars = &_vars[i]; 
             pVars->coordinates.x = random ( 0, WS2812_Settings.Total_X ); 
             pVars->coordinates.y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
-          
-            //Debugf("Start Pixels %u = (%u,%u) \n", i, x, y );
+            pVars->position = random(255); 
 
-          ObjectCallback ObjectUpdate = [pVars](uint8_t &x_t, uint8_t &y_t, uint32_t &effectvar) //  this callback passess on the x,y by reference so that you can amend them in this function
+          ObjectCallback ObjectUpdate = [pVars]() //  lamda func passes READ only pointer to the stuct containing the animation vars.. these can be written to in animation...
             {
 
-                  //X_Y_Coordinates XY;       
                   uint16_t pixel; 
                   bool OK = false; 
                   uint8_t counter = 0; 
-
-                  //XY.X = x_t ; 
-                  //XY.Y = y_t ; 
 
                   do {
                       counter++;
@@ -1204,12 +1186,10 @@ void cache AnimatorClass () {
 
                       if (!animator->IsAnimating(pixel)) {
                           pVars->coordinates = returned_XY;
-                          //pVars->coordinates.y = returned_XY.y;
                           OK = true; 
                           }
 
-                      if (counter == 2) break; // bail out if it has not found a suitable pixel!  
-                      } while (!OK) ; 
+                      } while (!OK && counter < 5) ; 
 
 
                   if (OK) {
@@ -1217,18 +1197,11 @@ void cache AnimatorClass () {
                     RgbColor newcolor = RgbColor(0,0,0); 
                     RgbColor originalColor = RgbColor(0,0,0);
 
- //                       if (WS2812_Settings.Effect_Option == 1) {
-                            newcolor = Wheel(effectvar++ % 255);  //   WS2812_Settings.Color; 
- //                         } else {
-
-
-                         //  if (WS2812_Settings.Random == true ) {
-                         //        if (effectvar)
-                         //        newcolor = Return_Palette(WS2812_Settings.Color);
-                         //      } else {
-                         //        newcolor = Return_Palette(WS2812_Settings.Color, effectvar) ;                            
-                         //      }
-                         // }
+                        if (WS2812_Settings.Effect_Option == 1) {
+                            newcolor = Wheel(pVars->position++ % 255);  //   WS2812_Settings.Color; 
+                          } else {
+                            newcolor = pVars->colour; 
+                          }
 
                             AnimUpdateCallback animUpdate = [newcolor,originalColor,pixel](float progress)
                               {
@@ -1238,14 +1211,13 @@ void cache AnimatorClass () {
                                strip->SetPixelColor(pixel, updatedColor);
                               };
                          
-
                   animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255,100,20000 ) , animUpdate);
 
                   };
 
              };
 
-            animatedobject->Add(ObjectUpdate, x, y, random(255));
+            animatedobject->Add(ObjectUpdate);
             
             //Debugf("Started sequence %u \n", slot); 
           }; // end of multiple effect count generations... 
@@ -1264,12 +1236,8 @@ void cache AnimatorClass () {
 
           //animatedobject->UpdateAll();  // update all effects at once... 
 
-          animatedobject->UpdateAsync();
-          //n++; 
+          animatedobject->UpdateAsync(); // update one effect then return... 
 
-          //if (n == WS2812_Settings.Effect_Count) n = 0; 
-
-          //Debugln(); 
           lasteffectupdate = millis(); 
           Effect_Refresh = false; 
         }

@@ -10,7 +10,9 @@
 class NeoPixelBus;
 class NeoPixelAnimator;
 
-typedef std::function<void(uint8_t &x, uint8_t &y, uint32_t &effectvar)> ObjectCallback;
+//typedef std::function<void(uint8_t &x, uint8_t &y, uint32_t &effectvar)> ObjectCallback;
+typedef std::function<void()> ObjectCallback;
+
 
 class AnimatedObject {
 public:
@@ -18,7 +20,9 @@ public:
     AnimatedObject(NeoPixelBus* bus, NeoPixelAnimator* animator, uint8_t n);
     ~AnimatedObject();
     void Begin(); 
-    bool Add(ObjectCallback Objectupdate, uint8_t x, uint8_t y, uint32_t effectvar); 
+    //bool Add(ObjectCallback Objectupdate, uint8_t x, uint8_t y, uint32_t effectvar); 
+    bool Add(ObjectCallback Objectupdate); 
+
     void Stop(uint8_t n); 
     uint8_t Status() {
   		return (_ObjectCount);
