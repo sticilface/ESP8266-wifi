@@ -1138,16 +1138,19 @@ const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ;
 // }
 
 void cache AnimatorClass () {
+//typedef std::function<void()> TestCallback;
 
     struct AnimationVars
     {
         uint16_t position = 0; 
         RgbColor colour = RgbColor(0,0,0);
         XY coordinates = toXY(0,0); 
+        //TestCallback = ObjUpdate; 
 
     };
 
     static AnimationVars* _vars = NULL;
+    static uint8_t animationCount; 
 
   switch(Current_Effect_State) {
 
@@ -1155,16 +1158,17 @@ void cache AnimatorClass () {
     {
         timer_effect_tick_timeout = 10;  // make the loop hit this faster to update things
         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-     
-        initialiseAnimationObject(WS2812_Settings.Effect_Count);  // initialise animation object with correct number of animations. 
+        animator->FadeTo(500, RgbColor(0,0,0));
+        animationCount = WS2812_Settings.Effect_Count; 
+        initialiseAnimationObject(animationCount);  // initialise animation object with correct number of animations. 
        
        if (_vars != NULL) delete[] _vars; 
 
-        _vars = new AnimationVars[WS2812_Settings.Effect_Count];  // memory for all the animated object properties... 
+        _vars = new AnimationVars[animationCount];  // memory for all the animated object properties... 
 
 
 
-    for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
+    for (uint8_t i = 0; i < animationCount; i++ ) {
 
             AnimationVars* pVars;
             pVars = &_vars[i]; 
@@ -1189,29 +1193,23 @@ void cache AnimatorClass () {
                           OK = true; 
                           }
 
-                      } while (!OK && counter < 5) ; 
+                      } while (!OK && counter < 10) ; 
 
 
                   if (OK) {
 
-                    RgbColor newcolor = RgbColor(0,0,0); 
-                    RgbColor originalColor = RgbColor(0,0,0);
-
-                        if (WS2812_Settings.Effect_Option == 1) {
-                            newcolor = Wheel(pVars->position++ % 255);  //   WS2812_Settings.Color; 
-                          } else {
-                            newcolor = pVars->colour; 
-                          }
-
-                            AnimUpdateCallback animUpdate = [newcolor,originalColor,pixel](float progress)
+                            AnimUpdateCallback animUpdate = [pVars,pixel](float progress)
                               {
-                               RgbColor updatedColor; 
+                               RgbColor 
+                                updatedColor, 
+                                originalColor = RgbColor(0,0,0), 
+                                newcolor = newcolor = pVars->colour ; 
                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(originalColor, newcolor, progress * 2.0f);
                                if (progress > 0.5) updatedColor = RgbColor::LinearBlend(newcolor, originalColor, (progress * 2.0f) - 1.0f );
                                strip->SetPixelColor(pixel, updatedColor);
                               };
                          
-                  animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255,100,20000 ) , animUpdate);
+                        animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255,100,20000 ) , animUpdate);
 
                   };
 
@@ -1219,7 +1217,7 @@ void cache AnimatorClass () {
 
             animatedobject->Add(ObjectUpdate);
             
-            //Debugf("Started sequence %u \n", slot); 
+             
           }; // end of multiple effect count generations... 
 
             Pre_effect(); 
@@ -1232,11 +1230,23 @@ void cache AnimatorClass () {
     case RUN_EFFECT:
       {
         //static uint8_t n = 0; 
-         if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
+        if (Effect_Refresh) Current_Effect_State = PRE_EFFECT; 
+         if (  millis() - lasteffectupdate >  WS2812_Settings.Timer )  {
 
-          //animatedobject->UpdateAll();  // update all effects at once... 
+            AnimationVars* pVars;
 
-          animatedobject->UpdateAsync(); // update one effect then return... 
+// Update colours of the effects... 
+
+            for (uint8_t i = 0; i < animationCount; i++) {
+              pVars = &_vars[i]; 
+              pVars->colour = Wheel(pVars->position++ % 255);
+            }
+          
+// update position of the effects.. 
+
+          animatedobject->UpdateAll();  // update all effects at once... 
+
+//          animatedobject->UpdateAsync(); // update one effect then return... 
 
           lasteffectupdate = millis(); 
           Effect_Refresh = false; 

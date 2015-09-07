@@ -46,17 +46,17 @@ uint8_t _ActiveObjectsCount;
     struct ObjectContext
     {
         ObjectContext() :
-            x(0),
-            y(0),
+   //         x(0),
+   //         y(0),
             isRunning(false),
-            effectvar(0), 
+   //         effectvar(0), 
             fnUpdate(NULL)
         {}
 
-        uint8_t x;
-        uint8_t y;
+ //       uint8_t x;
+ //       uint8_t y;
         bool isRunning; 
-        uint32_t effectvar; 
+ //       uint32_t effectvar; 
         ObjectCallback fnUpdate;
 
     };
