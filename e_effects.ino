@@ -1160,7 +1160,7 @@ typedef std::function<void()> TestCallback;
 
     case PRE_EFFECT:
     {
-        timer_effect_tick_timeout = 10;  // make the loop hit this faster to update things
+        //timer_effect_tick_timeout = 10;  // make the loop hit this faster to update things
         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
         animator->FadeTo(500, RgbColor(0,0,0));
         animationCount = WS2812_Settings.Effect_Count; 
@@ -1244,7 +1244,7 @@ typedef std::function<void()> TestCallback;
             AnimationVars* pVars;
 
 // Update colours of the effects... 
-              counter++; // for blending between colour changes
+              //counter++; // for blending between colour changes
 
             for (uint8_t i = 0; i < animationCount; i++) {
               pVars = &_vars[i]; 
@@ -1253,7 +1253,7 @@ typedef std::function<void()> TestCallback;
                 pVars->colour = Wheel(pVars->position++ % 255);  
                 } else {
                  // pVars->colour = Return_Palette 
-
+                  static bool trigger = false; 
                       if (WS2812_Settings.Random == true ) {
                           if (millis() - effect_timer > map (WS2812_Settings.Timer,0,255,1000,60000) ) { 
                                   static_colour = random(255); 
@@ -1261,15 +1261,18 @@ typedef std::function<void()> TestCallback;
                                   old_R = pVars->colour.R; 
                                   old_G = pVars->colour.G;
                                   old_B = pVars->colour.B;
-                                  counter = 0; 
+                                  //counter = 0; 
+                                  trigger = false; 
                                 }  
                              float _progress =  float (millis() - effect_timer ) / float( 2000 ) ; // WS2812_Settings.Timer * 10 ) ; 
                                //pVars->colour = Return_Palette(Wheel(static_colour), i) ; // need to implement some blend method here... it jumps...
                              RgbColor newcolor = Return_Palette(Wheel(static_colour), i) ; 
                              //float _progress = 2000.0f / float(counter);
-                             if (_progress > 1) _progress = 1; 
-                             pVars->colour = RgbColor::LinearBlend(RgbColor (old_R,old_G,old_B) , newcolor, _progress); 
-
+                             if (_progress < 1) { 
+                             pVars->colour = HslColor::LinearBlend(RgbColor (old_R,old_G,old_B) , newcolor, _progress); 
+                              } else {
+                                pVars->colour = newcolor; 
+                              }
                         } else {
                                   pVars->colour = Return_Palette(WS2812_Settings.Color, i) ;
                         }
