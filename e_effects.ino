@@ -1160,15 +1160,14 @@ typedef std::function<void()> TestCallback;
 
     case PRE_EFFECT:
     {
-        //timer_effect_tick_timeout = 10;  // make the loop hit this faster to update things
+        timer_effect_tick_timeout = 30;  // make the loop hit this faster to update colours..
         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-        animator->FadeTo(500, RgbColor(0,0,0));
-        animationCount = WS2812_Settings.Effect_Count; 
+        animator->FadeTo(500, RgbColor(0,0,0)); // fade out current effect
+        animationCount = WS2812_Settings.Effect_Count;  // assign this variable as requires re-initilisation of effect. 
    //     initialiseAnimationObject(animationCount);  // initialise animation object with correct number of animations. 
        
        if (_vars != NULL) delete[] _vars; 
-
-        _vars = new AnimationVars[animationCount];  // memory for all the animated object properties... 
+      _vars = new AnimationVars[animationCount];  // memory for all the animated object properties... 
 
 
 
@@ -1237,14 +1236,23 @@ typedef std::function<void()> TestCallback;
 
     case RUN_EFFECT:
       {
-        //static uint8_t n = 0; 
+        AnimationVars* pVars;
+
         if (animationCount != WS2812_Settings.Effect_Count) Current_Effect_State = PRE_EFFECT; // reboot only if no animations changed
          if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
 
-            AnimationVars* pVars;
 
-// Update colours of the effects... 
-              //counter++; // for blending between colour changes
+            // update POSITION...
+            for (uint8_t i = 0; i < animationCount; i++) {
+              pVars = &_vars[i]; 
+              pVars->ObjUpdate();   
+            }
+
+          lasteffectupdate = millis(); 
+          Effect_Refresh = false; 
+        }
+
+          // colour update OUTSIDE of movement update... 
 
             for (uint8_t i = 0; i < animationCount; i++) {
               pVars = &_vars[i]; 
@@ -1269,36 +1277,15 @@ typedef std::function<void()> TestCallback;
                              RgbColor newcolor = Return_Palette(Wheel(static_colour), i) ; 
                              //float _progress = 2000.0f / float(counter);
                              if (_progress < 1) { 
-                             pVars->colour = HslColor::LinearBlend(RgbColor (old_R,old_G,old_B) , newcolor, _progress); 
+                             pVars->colour = HsbColor::LinearBlend(RgbColor (old_R,old_G,old_B) , newcolor, _progress); 
                               } else {
                                 pVars->colour = newcolor; 
                               }
                         } else {
-                                  pVars->colour = Return_Palette(WS2812_Settings.Color, i) ;
+                                pVars->colour = Return_Palette(WS2812_Settings.Color, i) ;
                         }
-                }
-
-              pVars->ObjUpdate();   
-            
+                }            
             }
-          
-
-                                  // RgbColor newcolor = Return_Palette(Wheel(static_colour), i) ; 
-                                  // float progress = 1.0f / float(counter);
-                                  // pVars->colour = RgbColor::LinearBlend(oldcolour, newcolor, progress); 
-
-
-
-// update position of the effects.. 
-
- //         animatedobject->UpdateAll();  // update all effects at once... 
-
-//          animatedobject->UpdateAsync(); // update one effect then return... 
-
-          lasteffectupdate = millis(); 
-          Effect_Refresh = false; 
-        }
-
       } // end of switch scope
       break;
     case POST_EFFECT: 
