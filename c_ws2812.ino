@@ -42,10 +42,12 @@ switch (opState)
    case ADALIGHT:
       Adalight();
       break;
-   case TEST:
+   case SNAKES:
       //LavaLamp();
-      AnimatorClass();
+      Snakes(0);
       break;
+   case SNAKES_OVERLAP:
+      Snakes(1); // no checking of pixel animation state... 
    case LOOPAROUND:
       LoopAround(192, 200);
       break;
@@ -729,8 +731,8 @@ void cache WS2812timer_command_string (String Value)
 
 RgbColor cache dim(RgbColor original) {
 
-  if (WS2812_Settings.Brightness = 255) return original;
-  if (WS2812_Settings.Brightness = 0) return RgbColor(0,0,0);
+  if (WS2812_Settings.Brightness == 255) return original;
+  if (WS2812_Settings.Brightness == 0) return RgbColor(0,0,0);
 
   #ifdef GAMMA_CORRECTION
     uint8_t modified_brightness = GAMMA_2811[WS2812_Settings.Brightness]; 
@@ -739,8 +741,12 @@ RgbColor cache dim(RgbColor original) {
   #endif
 
     HslColor originalHSL = HslColor(original); 
+
     originalHSL.L =  originalHSL.L   * ( float(modified_brightness) / 255.0 ) ; 
+    
     return RgbColor( HslColor(originalHSL.H, originalHSL.S, originalHSL.L )  );
+
+
 }
 
 
@@ -2087,9 +2093,9 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 
 
-uint16_t cache return_pixel(uint16_t x, uint16_t y, uint16_t total_in_x) {
-  uint16_t a = (total_in_x * y) + x + 1;  // the added 1 is to allow a void pixel to equal 0. 
-  if ( a > strip->PixelCount() + 1 ) return 0;   // need the one otherwise it will stop one short of the end..
+int16_t cache return_pixel(uint16_t x, uint16_t y, uint16_t total_in_x) {
+  uint16_t a = (total_in_x * y) + x ;  // the added 1 is to allow a void pixel to equal 0. 
+  if ( a > strip->PixelCount()  ) return -1;   // need the one otherwise it will stop one short of the end..
   return a; 
 }
 
@@ -2103,18 +2109,18 @@ uint16_t cache return_total_y(uint16_t total_in_x) {
 
 
 //  Returns a pixel number... starting in bottom left...
-uint16_t cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_y , uint16_t desired_pixel, uint8_t grid_size, uint16_t total_in_x) {
+int16_t cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_y , uint16_t desired_pixel, uint8_t grid_size, uint16_t total_in_x) {
 
-  uint16_t pixel, total_y; 
-  uint16_t pixel_x, pixel_y;
+  int16_t pixel ; 
+  uint16_t pixel_x, pixel_y, total_y;
   uint8_t row, row_left  ;
   row = desired_pixel / grid_size;  //     which row in square
   row_left = desired_pixel % grid_size; // how many pixels are left to go in the row.
   pixel_y = first_pixel_y + row;   //      where y pixel is on whole grid
   pixel_x = first_pixel_x + row_left;  //  where x pixel is on whole grid
 
-  if (pixel_y >= return_total_y(total_in_x)) return  0 ; 
-  if (pixel_x >= total_in_x ) return 0 ; 
+  if (pixel_y >= return_total_y(total_in_x)) return  -1 ; 
+  if (pixel_x >= total_in_x ) return -1 ; 
 
   pixel = return_pixel(pixel_x, pixel_y, total_in_x);
 
@@ -2318,11 +2324,11 @@ RgbColor Output = RgbColor(0,0,0);
 switch (WS2812_Settings.Palette_Choice) {
 
           case ALL:                // 0 
-                Index = Index % 2; 
+                Index = Index % 255; 
            //     if (Index == 0 ) Output = Input; 
              //   if (Index == 1 ) 
          //       do { 
-                  Output = Wheel(random(255)); 
+                  Output = Wheel(Index); 
           //      } while ( Output == Input)
                 
                 break;
@@ -2431,11 +2437,11 @@ for (y = 0; y < total_y; y++) {
 
     for( x = 0; x < count_x; x++) {
 
-        uint16_t pixel = return_pixel(x, y, count_x);  // which pixel  
+        int16_t pixel = return_pixel(x, y, count_x);  // which pixel  
 
 
-        if (pixel > 0) { // is the pixel valid
-            pixel -= 1;    // return pixel to true pixel
+        if (pixel > -1) { // is the pixel valid
+         //   pixel -= 1;    // return pixel to true pixel
 
 //        Debugf("%3u ",pixel);
 
@@ -2674,9 +2680,9 @@ const uint16_t Total_X = WS2812_Settings.Total_X;
 
                // if ()
                 //  direction generated...  Now check if it is valid, assigns it to output.... 
-                if (X  <  Total_X && 
-                    Y  <  Total_Y && 
-                    return_pixel(X, Y, Total_X) != 0 )
+                if ( X  <  Total_X && 
+                     Y  <  Total_Y && 
+                    return_pixel(X, Y, Total_X) > -1 )
                 {
                   OK = true;
                   Output.x = X; 

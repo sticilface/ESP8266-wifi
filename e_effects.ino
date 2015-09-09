@@ -32,7 +32,7 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   uint8_t  Palette_Range = WS2812_Settings.Palette_Range; 
   uint8_t  Number_of_colours = WS2812_Settings.Palette_Number; 
   uint8_t  dimoffset ; 
-  uint16_t pixel; // has to carry negative value now. 
+  int16_t pixel; // has to carry negative value now. 
   uint32_t timeforsequence; 
   bool     coordinates_OK = false;
   uint16_t x_rand,y_rand;
@@ -66,17 +66,19 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
      // animator->FadeTo(1000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
     // }
 
-      for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
-      RgbColor originalColor = strip->GetPixelColor(pixel); 
-      AnimUpdateCallback animUpdate = [=](float progress)
-            {
-                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, RgbColor(0,0,0), progress);
-                strip->SetPixelColor(pixel, updatedColor);
-            };
+      animator->FadeTo(1000,RgbColor(0,0,0)); 
 
-            animator->StartAnimation(pixel, 1000 , animUpdate); // might change this to be a random variant...
+      // for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
+      // RgbColor originalColor = strip->GetPixelColor(pixel); 
+      // AnimUpdateCallback animUpdate = [=](float progress)
+      //       {
+      //           RgbColor updatedColor = RgbColor::LinearBlend(originalColor, RgbColor(0,0,0), progress);
+      //           strip->SetPixelColor(pixel, updatedColor);
+      //       };
 
-        }
+      //       animator->StartAnimation(pixel, 1000 , animUpdate); // might change this to be a random variant...
+
+      //   }
 
        
        lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 1, 2000);
@@ -139,8 +141,8 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
           pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
 
-          if (pixel > 0) { 
-                if (animator->IsAnimating(pixel - 1)) { coordinates_OK = false ;  break; }; 
+          if (pixel > -1) { 
+                if (animator->IsAnimating(pixel)) { coordinates_OK = false ;  break; }; 
                           }
             if (sq_pixel == (square_size * square_size) - 1 ) { coordinates_OK = true ; }; 
           }
@@ -223,8 +225,8 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
             if (sq_pixel == 0) effectPosition++; // adds to running count. 
 
-            if (pixel > 0) {
-                pixel -= 1;   //*****       SUBTRACT ONE TO GET TRUE PIXEL       **** 
+            if (pixel > -1) {
+                //pixel -= 1;   //*****       SUBTRACT ONE TO GET TRUE PIXEL       **** 
 
                 RgbColor originalColor = strip->GetPixelColor( pixel  ); // subtract one... to get true pixel... 
           
@@ -907,7 +909,8 @@ int packetSize;
 
 void cache LavaLamp () {
 
-uint16_t x,y, pixel;  
+uint16_t x,y;
+int16_t pixel;  
 static XY coordinates; 
 const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ; 
 //uint8_t* coordinates;        // Holds LED color values (3 bytes each)
@@ -922,7 +925,7 @@ const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ;
 
       coordinates.x = random ( 0, WS2812_Settings.Total_X ); 
       coordinates.y = random ( 0, Total_y ) ; 
-      pixel = return_pixel(coordinates.x, coordinates.y, WS2812_Settings.Total_X) - 1; 
+      pixel = return_pixel(coordinates.x, coordinates.y, WS2812_Settings.Total_X); 
 
       Debugf("START (%u,%u)-> %u \n", coordinates.x, coordinates.y, pixel); 
 
@@ -953,9 +956,9 @@ const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ;
 
             XY returned_XY = return_adjacent(coordinates); 
             
-            pixel = return_pixel(returned_XY.x, returned_XY.y, WS2812_Settings.Total_X) - 1;   
+            pixel = return_pixel(returned_XY.x, returned_XY.y, WS2812_Settings.Total_X);   
             Debug("."); 
-            if (!animator->IsAnimating(pixel)) {
+            if (pixel > -1 && !animator->IsAnimating(pixel)) {
               OK = true; 
               coordinates = returned_XY; 
               Debugln("");
@@ -1137,15 +1140,15 @@ const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ;
 // } 
 // }
 
-void cache AnimatorClass () {
-typedef std::function<void()> TestCallback;
+void cache Snakes (bool overlap) {
+typedef std::function<void()> AniObjectCallback;
 
     struct AnimationVars
     {
         uint16_t position = 0; 
         RgbColor colour = RgbColor(0,0,0);
         XY coordinates = toXY(0,0); 
-        TestCallback ObjUpdate = NULL; 
+        AniObjectCallback ObjUpdate = NULL; 
 
     };
 
@@ -1166,10 +1169,8 @@ typedef std::function<void()> TestCallback;
         animationCount = WS2812_Settings.Effect_Count;  // assign this variable as requires re-initilisation of effect. 
    //     initialiseAnimationObject(animationCount);  // initialise animation object with correct number of animations. 
        
-       if (_vars != NULL) delete[] _vars; 
-      _vars = new AnimationVars[animationCount];  // memory for all the animated object properties... 
-
-
+        if (_vars != NULL) delete[] _vars; 
+        _vars = new AnimationVars[animationCount];  // memory for all the animated object properties... 
 
     for (uint8_t i = 0; i < animationCount; i++ ) {
 
@@ -1182,41 +1183,41 @@ typedef std::function<void()> TestCallback;
           if (WS2812_Settings.Effect_Option == 1) pVars->position = random(255); 
 
 
-            TestCallback ObjectUpdate = [pVars]()
+            AniObjectCallback ObjectUpdate = [pVars,overlap]()
   //        ObjectCallback ObjectUpdate = [pVars]() //  lamda func passes READ only pointer to the stuct containing the animation vars.. these can be written to in animation...
             {
 
-                  uint16_t pixel; 
+                  int16_t pixel; 
                   bool OK = false; 
                   uint8_t counter = 0; 
-
                   do {
                       counter++;
                       XY returned_XY = return_adjacent(pVars->coordinates); 
-                      pixel = return_pixel(returned_XY.x, returned_XY.y, WS2812_Settings.Total_X) - 1;   
+                      pixel = return_pixel(returned_XY.x, returned_XY.y, WS2812_Settings.Total_X);   
 
-                      if (!animator->IsAnimating(pixel)) {
+                      if (pixel > -1 &&  !animator->IsAnimating(pixel) ) {
                           pVars->coordinates = returned_XY;
                           OK = true; 
                           }
+
+                      // allows overlap bailout, but only after trying not to.   
+                      if (pixel > -1 && counter > 9 && overlap) {
+                          pVars->coordinates = returned_XY;
+                          OK = true;                      
+                      }
 
                       } while (!OK && counter < 10) ; 
 
 
                   if (OK) {
-
                             AnimUpdateCallback animUpdate = [pVars,pixel](float progress)
                               {
-                               RgbColor 
-                                updatedColor, 
-                                originalColor = RgbColor(0,0,0), 
-                                newcolor = pVars->colour ; 
-                               if (progress < 0.5) updatedColor = RgbColor::LinearBlend(originalColor, newcolor, progress * 2.0f);
-                               if (progress > 0.5) updatedColor = RgbColor::LinearBlend(newcolor, originalColor, (progress * 2.0f) - 1.0f );
-                               strip->SetPixelColor(pixel, updatedColor);
+                                RgbColor updatedColor;
+                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(strip->GetPixelColor(pixel), pVars->colour,  progress * 2.0f);
+                                if (progress > 0.5) updatedColor = RgbColor::LinearBlend(pVars->colour, RgbColor(0,0,0) , (progress * 2.0f) - 1.0f );
+                                strip->SetPixelColor(pixel, updatedColor);
                               };
-                         
-                        animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255, WS2812_Settings.Timer * 2 ,20000 ) , animUpdate);
+                            animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255, WS2812_Settings.Timer * 2 ,20000 ) , animUpdate);
 
                   };
 
@@ -1245,15 +1246,23 @@ typedef std::function<void()> TestCallback;
             // update POSITION...
             for (uint8_t i = 0; i < animationCount; i++) {
               pVars = &_vars[i]; 
-              pVars->ObjUpdate();   
+              pVars->ObjUpdate();   // update position of effect... 
             }
 
           lasteffectupdate = millis(); 
           Effect_Refresh = false; 
         }
 
+        yield();
           // colour update OUTSIDE of movement update... 
 
+
+//  This needs to be rewritten....  for each animation... at the moment the loop is in the wrong order, and it only triggers ONCE
+
+        ///   time...
+                // for loop.... setting for each effect... ..
+
+        
             for (uint8_t i = 0; i < animationCount; i++) {
               pVars = &_vars[i]; 
 
@@ -1263,7 +1272,7 @@ typedef std::function<void()> TestCallback;
                  // pVars->colour = Return_Palette 
                   static bool trigger = false; 
                       if (WS2812_Settings.Random == true ) {
-                          if (millis() - effect_timer > map (WS2812_Settings.Timer,0,255,1000,60000) ) { 
+                          if (millis() - effect_timer > map (WS2812_Settings.Timer, 0, 255, 1000, 60000) ) { 
                                   static_colour = random(255); 
                                   effect_timer = millis() ; 
                                   old_R = pVars->colour.R; 
@@ -1277,7 +1286,7 @@ typedef std::function<void()> TestCallback;
                              RgbColor newcolor = Return_Palette(Wheel(static_colour), i) ; 
                              //float _progress = 2000.0f / float(counter);
                              if (_progress < 1) { 
-                             pVars->colour = HsbColor::LinearBlend(RgbColor (old_R,old_G,old_B) , newcolor, _progress); 
+                             pVars->colour = HsbColor::LinearBlend( RgbColor (pVars->colour.R,pVars->colour.G,pVars->colour.B) , newcolor, _progress); 
                               } else {
                                 pVars->colour = newcolor; 
                               }

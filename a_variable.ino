@@ -164,7 +164,8 @@ SQUARESRANDOM,               // 8
 ADALIGHT,                    // 9
 UDP,                         // 10
 DMX,                         // 11
-TEST,                        // 12
+SNAKES,                      // 12
+SNAKES_OVERLAP,               // 13 
 ChaseRainbow, 
 FADE, 
 LOOPAROUND,
@@ -200,7 +201,8 @@ static const char *MODE_STRING[] = {
 "AdaLight", 
 "UDP", 
 "DMX",
-"test", 
+"Snakes", 
+"Snakes-overlap",
 "Chase-Rainbow", 
 "Fade", 
 "Looparound", 
@@ -218,7 +220,7 @@ static const char *MODE_STRING[] = {
 "HSIcycle", 
 "New-Animations", 
 };
-#define numberofmodes 13 /////// DONT FORGET THIS....
+#define numberofmodes 14 /////// DONT FORGET THIS....
 
 static const char *PALETTE_STRING[] = {
 "ALL", "Complementary", "Monochromatic", "Analogous", "Split-Complements", 
