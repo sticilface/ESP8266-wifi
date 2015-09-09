@@ -1149,7 +1149,7 @@ typedef std::function<void()> AniObjectCallback;
         RgbColor colour = RgbColor(0,0,0);
         XY coordinates = toXY(0,0); 
         AniObjectCallback ObjUpdate = NULL; 
-
+        RgbColor oldcolourx = RgbColor(0,0,0);         
     };
 
     static AnimationVars* _vars = NULL;
@@ -1208,16 +1208,16 @@ typedef std::function<void()> AniObjectCallback;
 
                       } while (!OK && counter < 10) ; 
 
-
                   if (OK) {
-                            AnimUpdateCallback animUpdate = [pVars,pixel](float progress)
+                            RgbColor temptestOLD = strip->GetPixelColor(pixel); 
+                            AnimUpdateCallback animUpdate = [pVars,pixel,temptestOLD](float progress)
                               {
                                 RgbColor updatedColor;
-                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(strip->GetPixelColor(pixel), pVars->colour,  progress * 2.0f);
+                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(temptestOLD, pVars->colour,  progress * 2.0f);
                                 if (progress > 0.5) updatedColor = RgbColor::LinearBlend(pVars->colour, RgbColor(0,0,0) , (progress * 2.0f) - 1.0f );
                                 strip->SetPixelColor(pixel, updatedColor);
                               };
-                            animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255, WS2812_Settings.Timer * 2 ,20000 ) , animUpdate);
+                            animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255, WS2812_Settings.Timer * 2 , 20000 ) , animUpdate);
 
                   };
 
@@ -1275,9 +1275,8 @@ typedef std::function<void()> AniObjectCallback;
                           if (millis() - effect_timer > map (WS2812_Settings.Timer, 0, 255, 1000, 60000) ) { 
                                   static_colour = random(255); 
                                   effect_timer = millis() ; 
-                                  old_R = pVars->colour.R; 
-                                  old_G = pVars->colour.G;
-                                  old_B = pVars->colour.B;
+                                  pVars->oldcolourx = pVars->colour; 
+
                                   //counter = 0; 
                                   trigger = false; 
                                 }  
@@ -1286,7 +1285,7 @@ typedef std::function<void()> AniObjectCallback;
                              RgbColor newcolor = Return_Palette(Wheel(static_colour), i) ; 
                              //float _progress = 2000.0f / float(counter);
                              if (_progress < 1) { 
-                             pVars->colour = HsbColor::LinearBlend( RgbColor (pVars->colour.R,pVars->colour.G,pVars->colour.B) , newcolor, _progress); 
+                             pVars->colour = HslColor::LinearBlend(  pVars->oldcolourx , newcolor, _progress); 
                               } else {
                                 pVars->colour = newcolor; 
                               }
