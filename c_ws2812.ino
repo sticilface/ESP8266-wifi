@@ -2386,6 +2386,16 @@ switch (WS2812_Settings.Palette_Choice) {
 
           break;
 
+          case WHEEL:          // 8
+                Index = Index % 255;  
+
+                Output = Wheel(Index);
+
+          break;
+
+
+
+
       }
       //yield();
       return Output; 

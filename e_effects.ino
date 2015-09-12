@@ -1149,7 +1149,10 @@ typedef std::function<void()> AniObjectCallback;
         RgbColor colour = RgbColor(0,0,0);
         XY coordinates = toXY(0,0); 
         AniObjectCallback ObjUpdate = NULL; 
-        RgbColor oldcolourx = RgbColor(0,0,0);         
+        RgbColor oldcolour = RgbColor(0,0,0); 
+        RgbColor newcolour = RgbColor(0,0,0); 
+
+        bool effectchanged = false; 
     };
 
     static AnimationVars* _vars = NULL;
@@ -1158,6 +1161,7 @@ typedef std::function<void()> AniObjectCallback;
     static uint8_t static_colour; 
     static uint8_t old_R, old_G, old_B; 
 
+    static bool triggered; 
 
   switch(Current_Effect_State) {
 
@@ -1180,7 +1184,7 @@ typedef std::function<void()> AniObjectCallback;
             pVars->coordinates.x = random ( 0, WS2812_Settings.Total_X ); 
             pVars->coordinates.y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
 
-          if (WS2812_Settings.Effect_Option == 1) pVars->position = random(255); 
+          if (WS2812_Settings.Palette_Choice == WHEEL) pVars->position = random(255); 
 
 
             AniObjectCallback ObjectUpdate = [pVars,overlap]()
@@ -1208,15 +1212,20 @@ typedef std::function<void()> AniObjectCallback;
 
                       } while (!OK && counter < 10) ; 
 
+                      RgbColor Fixed_Colour = pVars->colour; 
+
+
                   if (OK) {
                             RgbColor temptestOLD = strip->GetPixelColor(pixel); 
-                            AnimUpdateCallback animUpdate = [pVars,pixel,temptestOLD](float progress)
+                            AnimUpdateCallback animUpdate = [pVars,pixel,temptestOLD, Fixed_Colour](float progress)
                               {
-                                RgbColor updatedColor;
-                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(temptestOLD, pVars->colour,  progress * 2.0f);
-                                if (progress > 0.5) updatedColor = RgbColor::LinearBlend(pVars->colour, RgbColor(0,0,0) , (progress * 2.0f) - 1.0f );
+                                RgbColor updatedColor, NewColour;
+                                (WS2812_Settings.Effect_Option == 0) ? NewColour = pVars->colour : NewColour = Fixed_Colour; 
+                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(temptestOLD, NewColour,  progress * 2.0f);
+                                if (progress > 0.5) updatedColor = RgbColor::LinearBlend(NewColour, RgbColor(0,0,0) , (progress * 2.0f) - 1.0f );
                                 strip->SetPixelColor(pixel, updatedColor);
                               };
+
                             animator->StartAnimation(pixel, map( WS2812_Settings.Effect_Max_Size,0,255, WS2812_Settings.Timer * 2 , 20000 ) , animUpdate);
 
                   };
@@ -1229,8 +1238,9 @@ typedef std::function<void()> AniObjectCallback;
           }; // end of multiple effect count generations... 
 
             Pre_effect(); 
-            lasteffectupdate = millis(); 
-          
+            lasteffectupdate = millis();
+            effect_timer = 0;  
+            triggered = false;
     }
 
     break; 
@@ -1240,60 +1250,120 @@ typedef std::function<void()> AniObjectCallback;
         AnimationVars* pVars;
 
         if (animationCount != WS2812_Settings.Effect_Count) Current_Effect_State = PRE_EFFECT; // reboot only if no animations changed
-         if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
+        
 
 
+
+
+
+ // set new colours       
+
+static bool Effect_Refresh_colour, Effect_Refresh_position; 
+
+if (Effect_Refresh) { 
+  Effect_Refresh_position = true;
+  Effect_Refresh_colour = true; 
+  Effect_Refresh = false; 
+}
+
+if (!triggered || Effect_Refresh_colour) {
+
+
+
+        if (WS2812_Settings.Palette_Choice == WHEEL)  {
+
+            for (uint8_t i = 0; i < animationCount; i++) {
+              pVars = &_vars[i]; 
+              
+              pVars->colour = dim(Wheel(pVars->position++ % 255) );  
+              pVars->effectchanged = false; 
+            }
+
+          }  else  { //if (WS2812_Settings.Effect_Option == 0) {
+              
+              const uint32_t new_colour_time = map (WS2812_Settings.Timer, 0, 255, 20000, 300000) ; 
+              
+              if (WS2812_Settings.Random == true ) {
+
+                      if (millis() - effect_timer > new_colour_time  || Effect_Refresh_colour ) { 
+                              static_colour = random(255); 
+                              for (uint8_t i = 0; i < animationCount; i++) {
+                                      pVars = &_vars[i]; 
+                                      pVars->oldcolour = pVars->colour; 
+                                      pVars->newcolour = dim(Return_Palette(Wheel(static_colour), i) ) ; 
+                                      pVars->effectchanged = true; 
+                              }
+                       effect_timer = millis() ;
+                      }
+              } else if (WS2812_Settings.Random == false ) {
+
+                              for (uint8_t i = 0; i < animationCount; i++) {
+                                      pVars = &_vars[i]; 
+                                      pVars->oldcolour = pVars->colour; 
+                                      pVars->newcolour = dim(Return_Palette(WS2812_Settings.Color, i) ); 
+                                      pVars->effectchanged = true; 
+                              }
+              effect_timer = millis() ;            
+              triggered = true; 
+              }
+
+          }
+    Effect_Refresh_colour = false; 
+}
+//  Update the blending colours for each effect outside of the  other loops
+
+
+        for (uint8_t i = 0; i < animationCount; i++) {
+
+          pVars = &_vars[i]; 
+          if (pVars->effectchanged == true) {
+
+                const uint32_t transitiontime2 = 5000; // map (WS2812_Settings.Timer, 0, 255, 20000, 300000) ; 
+                const uint32_t _time = (millis() - effect_timer); 
+                float _delta = float (_time) /  float(transitiontime2)  ; // WS2812_Settings.Timer * 10 ) ; 
+                
+                if (_delta < 1.0) {
+                  pVars->colour = HslColor::LinearBlend(  pVars->oldcolour , pVars->newcolour, _delta); 
+                } else {
+                  pVars->colour = pVars->newcolour;
+                }
+
+                if (_delta > 1) {  
+                    pVars->effectchanged = false; 
+                  }
+
+            }      
+
+        }     
+
+
+    
+// push effects out... 
+
+    if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh_position)  {
             // update POSITION...
             for (uint8_t i = 0; i < animationCount; i++) {
               pVars = &_vars[i]; 
-              pVars->ObjUpdate();   // update position of effect... 
+              pVars->ObjUpdate();   //
             }
 
           lasteffectupdate = millis(); 
-          Effect_Refresh = false; 
+          Effect_Refresh_position = false; 
         }
 
-        yield();
-          // colour update OUTSIDE of movement update... 
 
 
-//  This needs to be rewritten....  for each animation... at the moment the loop is in the wrong order, and it only triggers ONCE
 
-        ///   time...
-                // for loop.... setting for each effect... ..
 
-        
-            for (uint8_t i = 0; i < animationCount; i++) {
-              pVars = &_vars[i]; 
 
-              if (WS2812_Settings.Effect_Option == 1)  {
-                pVars->colour = Wheel(pVars->position++ % 255);  
-                } else {
-                 // pVars->colour = Return_Palette 
-                  static bool trigger = false; 
-                      if (WS2812_Settings.Random == true ) {
-                          if (millis() - effect_timer > map (WS2812_Settings.Timer, 0, 255, 1000, 60000) ) { 
-                                  static_colour = random(255); 
-                                  effect_timer = millis() ; 
-                                  pVars->oldcolourx = pVars->colour; 
 
-                                  //counter = 0; 
-                                  trigger = false; 
-                                }  
-                             float _progress =  float (millis() - effect_timer ) / float( 2000 ) ; // WS2812_Settings.Timer * 10 ) ; 
-                               //pVars->colour = Return_Palette(Wheel(static_colour), i) ; // need to implement some blend method here... it jumps...
-                             RgbColor newcolor = Return_Palette(Wheel(static_colour), i) ; 
-                             //float _progress = 2000.0f / float(counter);
-                             if (_progress < 1) { 
-                             pVars->colour = HslColor::LinearBlend(  pVars->oldcolourx , newcolor, _progress); 
-                              } else {
-                                pVars->colour = newcolor; 
-                              }
-                        } else {
-                                pVars->colour = Return_Palette(WS2812_Settings.Color, i) ;
-                        }
-                }            
-            }
+
+
+
+
+
+
+            //}
       } // end of switch scope
       break;
     case POST_EFFECT: 

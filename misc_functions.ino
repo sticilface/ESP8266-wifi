@@ -47,8 +47,7 @@ if (EEPROM.read(0) != flagvalue) {
 {
   
   Serial.println();  
-  //clearbufchar();
-    //EepromUtil::eeprom_read_string(deviceidAddress, , BUFSIZE);
+
     if(deviceid[0] == 0 || EEPROM.read(0) != flagvalue) 
     {
       
@@ -87,11 +86,11 @@ void  restartNetworking()
 
   LoadParams();
   getdeviceID();
-  //Serial.println();
 
 
   if (wifimode == 1) WiFi.mode(WIFI_STA);
-delay(5); 
+   
+   delay(5); 
 
 
   if (EEPROM.read(ssidAddressbyte) == flagvalue) {
@@ -119,7 +118,6 @@ delay(5);
 // //      WiFi.begin(ssid, password);
 #endif
 
-  //WiFi.begin();
     int i = 0;
     while (WiFi.status() != WL_CONNECTED ) {
     delay(500);
@@ -129,7 +127,7 @@ delay(5);
     }
     
 
-  }   else { Serial.println("NO SSID specified...");   }
+  }  else { Serial.println("NO SSID specified...");   }
   
   
   if(WiFi.status() != WL_CONNECTED)
@@ -170,7 +168,6 @@ delay(5);
 
 void cache deactivateAP()
 {
-  //Serial.println("Deactivate AP Called");
 
 if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
 

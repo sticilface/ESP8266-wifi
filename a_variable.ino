@@ -224,9 +224,9 @@ static const char *MODE_STRING[] = {
 
 static const char *PALETTE_STRING[] = {
 "ALL", "Complementary", "Monochromatic", "Analogous", "Split-Complements", 
-"Triadic", "Tetradic", "Even-Spread"
+"Triadic", "Tetradic", "Even-Spread", "Wheel"
 };
-#define numberofpalettes 8 /////// DONT FORGET THIS....
+#define numberofpalettes 9 /////// DONT FORGET THIS....
 
 
 

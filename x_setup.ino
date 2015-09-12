@@ -46,33 +46,13 @@ Serial.print("\n\n");
 #endif
 
 
- 
-  //delay(10); //ivan said not needed anymore
-  
-  //Serial.println();
 
-
-  //Serial.print("Wiped = ");
-  //Serial.print(wiped);
-  //Serial.print("   FIRST BIT = ");
-  //Serial.write(EEPROM.read(0));
-  //Serial.println();
 
   if (wiped) Debugln("FIRST BOOT EEPROM WIPED"); 
 
   Serial.println("Welcome to Andrew Melvin's ESP Software");
-  //Serial.println("OTA enabled");
   Serial.print("Compile Time: ");
   Serial.println(compile_date);
-  // Debug("Sketch size: ");
-  // Debugln(ESP.getSketchSize());
-  // Debug("Free size: ");
-  // Debugln(ESP.getFreeSketchSpace());
-  
-  
-  
-  // Serial.print("Emergency Byte Value: ");
-  // Serial.write(EEPROM.read(APbyte));
   Serial.println();
   
   if (EEPROM.read(APbyte) == flagvalue) 
@@ -93,93 +73,40 @@ Serial.print("\n\n");
 
   scannetworks();
 
-  //delay(2000);
-
-  //wifimode = 1;
- //Serial.print("Current wifi mode is : ");
- //Serial.println(WiFi.mode());
-
-  //LoadParams();
-
-
   restartNetworking();
-
-/*
-WiFi.begin ( ssid, password );
-
-
-  Serial.println ( "" );
-
-  // Wait for connection
-  while ( WiFi.status() != WL_CONNECTED ) {
-    delay ( 500 );
-    Serial.print ( "." );
-  }
-
-  Serial.println ( "" );
-  Serial.print ( "Connected to " );
-  Serial.println ( ssid );
-  Serial.print ( "IP address: " );
-  Serial.println ( WiFi.localIP() );
-*/
-
-
-
-//    TAKE OUT MDNS... buggy....
-/*
-if (wifimode == 1) {
-  
-   if (!mdns.begin(deviceid, WiFi.localIP())) {
-    Serial.print("Error setting up MDNS responder!....(");
-    
-    while(1) { 
-      delay(1000);
-    }
-}
-
-
-  
-  Serial.println("mDNS responder started.");
-
-    }
-
-*/ 
 
     Serial.print("Device name: ");
     Serial.println(deviceid);
-  //Serial.println(".local)");
   
   
   ///// ----- Set up MQTT ------ //////
   if (MQTT_enabled) initiatemqqt (); 
 
-  //Debugln("1");
 
   ///// ---- WEB SERVER ------/////
   
-  //if (wifimode == 2)  { server.on("/", handle_wifi); } else { server.on("/", handle_root); }
 
-  server.on("/", handle_root);
-  
+  server.on("/", handle_root);  
   server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);
   server.on("/mqtt", handle_mqtt);
   server.on("/ota", OTAreset);
-  server.on("/jscolor.js", []() { server.send_P ( 200, "text/plain", PAGE_JSCOLOUR ); } );
+  server.on("/misc", handle_misc);
+
+  //server.on("/jscolor.js", []() { server.send_P ( 200, "text/plain", PAGE_JSCOLOUR ); } );
 
     /* JavaScript and Stylesheets */
-    server.on ("/style.css", []() { server.send_P(200, "text/plain", PAGE_STYLE_CSS); });
-    server.on ("/microajax.js", []() { server.send_P(200, "text/plain", PAGE_MICROAJAX_JS); });
+   // server.on ("/style.css", []() { server.send_P(200, "text/plain", PAGE_STYLE_CSS); });
+   // server.on ("/microajax.js", []() { server.send_P(200, "text/plain", PAGE_MICROAJAX_JS); });
 
 
-    server.on ("/test", []() { server.send_P(200, "text/html", PAGE_ROOT); });
+   // server.on ("/test", []() { server.send_P(200, "text/html", PAGE_ROOT); });
 
-    server.on("/rootvals", send_root_vals_html);
+   // server.on("/rootvals", send_root_vals_html);
 
 
   //server.on("/test", handle_test);
 
-  server.on("/misc", handle_misc);
   //server.on("/power", handle_power); 
 
   //server.serveStatic("/", SPIFFS, "/");
@@ -190,31 +117,15 @@ if (wifimode == 1) {
   buf.reserve(2048);
   
   //httpupdate();  // definately NOT working yet
-  
-
-  // Start the server 
-
-  //Udp.begin(localPort);
-
-  //Udp.beginMulticast(WiFi.localIP(), multicast_ip_addr, localPort); 
-
-  //Udp.beginMulticast(multicast_ip_addr, WiFi.localIP() , localPort); 
 
 
-  server.begin();
 
-  //Serial.println("HTTP server started");
+    server.begin();
   
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
 
-    //timer.setInterval(300000, OTAreset2); // this resets the UDP every 5 min....
- 
-  //  timer.setInterval(Uptimer_timeout, uptime);
-  //Serial.println("Timers set up");
 
- //  OTA updater...
- // listener.begin(8266);
   
 if(WiFi.waitForConnectResult() == WL_CONNECTED){
 
@@ -230,23 +141,10 @@ if(WiFi.waitForConnectResult() == WL_CONNECTED){
   }
 
 
-#ifdef HSL_FLOAT
-
-Serial.println("HSL Floats ENABLED - to get rid of this..."); 
-
-#endif
-
- 
 
 
-  
   setup_Plugin ();
 
-  //Serial.println("Plugins started");
-    //timer.setInterval(32,ws2812_animating);
-
- //Serial.print("Current wifi mode is : ");
- //Serial.println(wifimode);
 
 
 }
