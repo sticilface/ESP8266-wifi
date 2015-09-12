@@ -50,7 +50,7 @@ Select from the CONFIG hyperlink.  These are all in the range 0 - 255.  Not all 
 
 Squares - Random squares or strips when used with a linear strip.  Control size using effect size, number of squares with effect count.  Squares random is the same effect but with random sizes of square set by the min and max effect size. 
 
-Snakes - This effect is rather cool, and very flexible :)  pixels move around leaving a tail.  size of tail is set with the effect size.  Again, the number of effects can be changed.  Play around with it. 
+Snakes - This effect is rather cool, and very flexible :)  pixels move around leaving a tail.  size of tail is set with the effect size.  Again, the number of effects can be changed.  Play around with it. Snakes overlap relaxes the rules about overwriting an animating pixel so you get a slightly different effect. These effects can produce plasma type effects, very lava lamp like. 
 
 
 
