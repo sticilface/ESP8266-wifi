@@ -35,16 +35,16 @@ MQTT commands.
 These follow the devicename/command/set in general and once values have been set the value is sent out using devicename/command. 
 
 * devicename/brightness/set  - brightness (0 - 255) 
- devicename/timer/set       - timer (0 - 255)
- devicename/effect/set      - sets the effect, use name of effect
- devicename/mode/set        - on / off / 1 - 10 for presets
-devicename/toggle/set      - toggle (Turns it on if off, and cycle through the saved effects)  
-devicename/loadpreset/set  - loads saved preset
-devicename/savepreset/set  - saves preset
-devicename/autorestart/set - on / off (Turns autorestart on/off so ESP restarts whatever it was doing before)
-devicename/colour/set or /color/set sets colour. 
+* devicename/timer/set       - timer (0 - 255)
+* devicename/effect/set      - sets the effect, use name of effect
+* devicename/mode/set        - on / off / 1 - 10 for presets
+* devicename/toggle/set      - toggle (Turns it on if off, and cycle through the saved effects)  
+* devicename/loadpreset/set  - loads saved preset
+* devicename/savepreset/set  - saves preset
+* devicename/autorestart/set - on / off (Turns autorestart on/off so ESP restarts whatever it was doing before)
+* devicename/colour/set or /color/set sets colour. 
 
-Effect options. 
+#### Effect options. 
 
 Select from the CONFIG hyperlink.  These are all in the range 0 - 255.  Not all of them have functions for all the effects.  Set the number of pixels here at the bottom. Just experiment with the settings.  The important setting here is the Total X option that specifies how many pixels are in the x for grids.  Currently only works for zig-zag orientation. 
 
