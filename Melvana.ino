@@ -1,7 +1,7 @@
 #define HSL_FLOAT
 #define MDNSSERVICE
 
-#define DEBUG_YES
+//#define DEBUG_YES
 
 //#define HEAP_TIMER
 

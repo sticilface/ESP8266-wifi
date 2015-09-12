@@ -10,7 +10,7 @@ const char compile_date[] = __DATE__ " " __TIME__;
 String buf; // use for HTTP 
 
 char ssid[BUFSIZE] ;
-char password[BUFSIZE] ;/
+char password[BUFSIZE] ;
 
 
 
