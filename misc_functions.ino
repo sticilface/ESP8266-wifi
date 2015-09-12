@@ -102,7 +102,6 @@ void  restartNetworking()
       //Serial.print(")");
 #ifdef WIFIOVERRIDE 
 
-      WiFi.begin("fyffest", "wellcometrust");
 
 #else 
 

@@ -9,11 +9,10 @@ const String version =  "WS2812-OTA";
 const char compile_date[] = __DATE__ " " __TIME__;
 String buf; // use for HTTP 
 
-char ssid[BUFSIZE] ;// = "fyffest";
-char password[BUFSIZE] ;//  = "wellcometrust";
+char ssid[BUFSIZE] ;
+char password[BUFSIZE] ;/
 
-//const char *ssidb = "fyffest";
-//const char *passwordb = "wellcometrust";
+
 
 char deviceid[BUFSIZE];// = "";
 //String deviceid;
