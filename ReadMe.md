@@ -1,8 +1,8 @@
-ESP8266 Arduino Sketch for WS2812 Control
+# ESP8266 Arduino Sketch for WS2812 Control
 
 
-Credits to Makuna for Neopixelbus
-Credits to Forineye for E131
+*Credits to Makuna for Neopixelbus
+*Credits to Forineye for E131
 
 
 
@@ -34,10 +34,10 @@ MQTT commands.
 
 These follow the devicename/command/set in general and once values have been set the value is sent out using devicename/command. 
 
-devicename/brightness/set  - brightness (0 - 255)
-devicename/timer/set       - timer (0 - 255)
-devicename/effect/set      - sets the effect, use name of effect
-devicename/mode/set        - on / off / 1 - 10 for presets
+* devicename/brightness/set  - brightness (0 - 255) 
+ devicename/timer/set       - timer (0 - 255)
+ devicename/effect/set      - sets the effect, use name of effect
+ devicename/mode/set        - on / off / 1 - 10 for presets
 devicename/toggle/set      - toggle (Turns it on if off, and cycle through the saved effects)  
 devicename/loadpreset/set  - loads saved preset
 devicename/savepreset/set  - saves preset
