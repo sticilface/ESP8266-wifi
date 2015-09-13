@@ -6,9 +6,8 @@
 
 To compile this project requries 
 
-1) https://github.com/Makuna/NeoPixelBus/tree/UartDriven
-
-2) https://github.com/forkineye/E131
+1) https://github.com/Makuna/NeoPixelBus/tree/UartDriven <br>
+2) https://github.com/forkineye/E131 <br>
 
 
 This is one of my first sketches, it is rough around the edges but seems to work well enough.   Features include:
@@ -61,15 +60,15 @@ Snakes - This effect is rather cool, and very flexible :)  pixels move around le
 
 These are a bit work in progress and not all effects use them in the same way.  In general, by picking a palette the effects and colours that are created are based on that palette.  Exlaining these is quite complicated, see here http://www.tigercolor.com/color-lab/color-theory/color-harmonies.htm for better examples.  In general the palette range box in CONFIG gives the spread of the palette, and the number of colours gives the number of colours for that palette.  This applies only for even-spread palette.  complementary always has 2 colours, triadic has 3 etc, Tetradic has 4 ... 
 
-*ALL = All colours, so this essentially means random colours
-*Complementary = Two colours, on opposite sides of the HSL colour wheel
-*Monochromatic = NOT WORKING YET
-*Analogous = Three colours, original plus two to the right.  The spread is given by the (palette range) option in CONFIG where the amount  is 10 / range.  So if you enter 50 in the palette range box you will get three colours spread over 0.2 in HSL colour space. 
-*Split-Complements = 3 colours. 
-*Triadic = 3 colours. 
-*Tetradic = 4 colours
-*Even-Spread = Takes the number of colours in palette and spread them around the HSL colours space
-*Wheel = Not really working properly
+* ALL = All colours, so this essentially means random colours
+* Complementary = Two colours, on opposite sides of the HSL colour wheel
+* Monochromatic = NOT WORKING YET
+* Analogous = Three colours, original plus two to the right.  The spread is given by the (palette range) option in CONFIG where the amount  is 10 / range.  So if you enter 50 in the palette range box you will get three colours spread over 0.2 in HSL colour space. 
+* Split-Complements = 3 colours. 
+* Triadic = 3 colours. 
+* Tetradic = 4 colours
+* Even-Spread = Takes the number of colours in palette and spread them around the HSL colours space
+* Wheel = Not really working properly
 
 
 
