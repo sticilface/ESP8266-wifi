@@ -5,7 +5,9 @@
 *Credits to Forineye for E131
 
 To compile this project requries 
+
 1) https://github.com/Makuna/NeoPixelBus/tree/UartDriven
+
 2) https://github.com/forkineye/E131
 
 
