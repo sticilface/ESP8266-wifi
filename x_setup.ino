@@ -1,98 +1,150 @@
 
-void setup() {
+void setup( void ) {
   // put your setup code here, to run once:
-  
-  Serial.begin(115200);
-  Serial.setDebugOutput(true);
-  Serial.setDebugOutput(false);
-  delay(10);
-  Serial.println();
-  Serial.println("Welcome to Andrew Melvin's ESP Software");
-  
+
+  //WiFi.disconnect();
+
   EEPROM.begin(512);
   
+  //SPIFFS.begin();
+
+
+ bool wiped = firstboot(); 
+
+  //long serialspeed = 0;
+
+  currentspeed = EEPROM.read(SERIALspeedbyte);
+
+  if (currentspeed == 0 || currentspeed > numberofbaudrates + 1)  {
+    currentspeed = 2; 
+    EEPROM.write(SERIALspeedbyte, currentspeed);
+    EEPROM_commit_var = true;
+  }; 
+
+
+    serialspeed = baudrates[currentspeed - 1] ; 
+
   
-  // Serial.print("Emergency Byte Value: ");
-  // Serial.write(EEPROM.read(APbyte));
+
+    //currentspeed = 2;
+/*
+  for (int i = 0; i //< numberofbaudrates; i++) {
+    if(currentspeed  i) serialspeed = baudrates[i];
+  }
+*/
+  //serialspeed = 115200;
+
+  Serial.begin(serialspeed); // 921600 460800 115200
+  //Serial.begin(2000000); // 921600 460800 115200
+Serial.print("\n\n");
+
+#ifdef DEBUG_YES
+  Serial.setDebugOutput(true);
+  Debugln("*****    DEBUG_YES defined *****");
+#else
+  Serial.setDebugOutput(false);
+#endif
+
+
+
+
+  if (wiped) Debugln("FIRST BOOT EEPROM WIPED"); 
+
+  Serial.println("Welcome to Andrew Melvin's ESP Software");
+  Serial.print("Compile Time: ");
+  Serial.println(compile_date);
   Serial.println();
   
   if (EEPROM.read(APbyte) == flagvalue) 
     {
-  WiFi.mode(WIFI_AP_STA);
-  wifimode = 2;
-  Serial.println("EMERGENCY ACCESS MODE ENABLED");
-  AP_STA_timer = millis();
-  Serial.print("Start time: ");
-  Serial.print(AP_STA_timer /1000);
-  Serial.print(" Wifi Mode: ");
-  Serial.println(wifimode);
+      WiFi.mode(WIFI_AP_STA);
+      wifimode = 2;
+      Debugln("AP MODE");
+      AP_STA_timer = millis();
 
-    } else
-    {
+    } else {
+
     WiFi.mode(WIFI_STA);
-    Serial.println("NORMAL ACCESS MODE ENABLED");
+    Debugln("NORMAL MODE");
     wifimode = 1;
     } 
 
+    
+
   scannetworks();
-  delay(100);
-  wifimode = 1;
- //Serial.print("Current wifi mode is : ");
- //Serial.println(WiFi.mode());
-
-  LoadParams();
-
 
   restartNetworking();
+
+    Serial.print("Device name: ");
+    Serial.println(deviceid);
   
-   if (!mdns.begin(deviceid, WiFi.localIP())) {
-    Serial.print("Error setting up MDNS responder!....(");
-    
-    while(1) { 
-      delay(1000);
-    }
-  }
-  Serial.print("mDNS responder started.........(");
-  Serial.print(deviceid);
-  Serial.println(".local)");
   
   ///// ----- Set up MQTT ------ //////
-  if (MQTT_enabled) {
-    Serial.println("MQTT_enable var is true");
-                initiatemqqt ();
-// - Send  first round of messages on boot
+  if (MQTT_enabled) initiatemqqt (); 
 
-  
-  } else {
 
-    Serial.println("MQTT_enable var is false");
-
-  }
   ///// ---- WEB SERVER ------/////
-  server.on("/", handle_root);
+  
+
+  server.on("/", handle_root);  
   server.on("/wifi", handle_wifi);
   server.on("/bytedump",handle_bytedump);
   server.on("/mqtt", handle_mqtt);
-  server.on("/io", handle_io);
-  server.on("/test", handle_test);
-
-  server.on("/humidity", handle_humidity);
+  server.on("/ota", OTAreset);
   server.on("/misc", handle_misc);
-  //server.on("/ws2812", handle_WS2812);
 
-  //server.on("/temperature", handle_temperature);
+  //server.on("/jscolor.js", []() { server.send_P ( 200, "text/plain", PAGE_JSCOLOUR ); } );
 
-  // Start the server 
-  server.begin();
-  Serial.println("HTTP server started");
+    /* JavaScript and Stylesheets */
+   // server.on ("/style.css", []() { server.send_P(200, "text/plain", PAGE_STYLE_CSS); });
+   // server.on ("/microajax.js", []() { server.send_P(200, "text/plain", PAGE_MICROAJAX_JS); });
 
+
+   // server.on ("/test", []() { server.send_P(200, "text/html", PAGE_ROOT); });
+
+   // server.on("/rootvals", send_root_vals_html);
+
+
+  //server.on("/test", handle_test);
+
+  //server.on("/power", handle_power); 
+
+  //server.serveStatic("/", SPIFFS, "/");
+
+
+
+
+  buf.reserve(2048);
+  
+  //httpupdate();  // definately NOT working yet
+
+
+
+    server.begin();
+  
     timer.setInterval(APtimeout, deactivateAP);
     timer.setInterval(MQTTtimeout, initiatemqqt);
-    timer.setInterval(Uptimer_timeout, uptime);
+
 
   
+if(WiFi.waitForConnectResult() == WL_CONNECTED){
+
+#ifdef MDNSSERVICE  
+    MDNS.begin(deviceid);
+    MDNS.addService("arduino", "tcp", aport);
+    MDNS.addService("http", "tcp", 80);
+#endif
+    OTA.begin(aport);
+    TelnetServer.begin();
+    TelnetServer.setNoDelay(true);
+
+  }
+
+
+
+
   setup_Plugin ();
 
-//initiateWS2812();
+
 
 }

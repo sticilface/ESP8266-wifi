@@ -1,4 +1,4 @@
-String macToStr(const uint8_t* mac)
+String cache macToStr(const uint8_t* mac)
 {
   String result;
   for (int i = 0; i < 2; ++i) {
@@ -9,14 +9,14 @@ String macToStr(const uint8_t* mac)
   return result;
 }
 
-void clearbufchar()
+void cache clearbufchar()
 {
  for (int i = 0; i < BUFSIZE; i++) {
     bufchar[i] = 0;
   }
 }
 
-void updateIPaddress()
+void cache updateIPaddress()
 {
   LocalIP = "";
   IPAddress myaddr = WiFi.localIP();
@@ -27,79 +27,146 @@ void updateIPaddress()
   }
 }
 
- void getdeviceID()
+bool cache firstboot() {
+
+if (EEPROM.read(0) != flagvalue) {
+ EEPROM_wipe();
+ EEPROM.write(0,flagvalue);
+
+ Save_All_Defaults(); // sets sensible defaults...  
+
+  EEPROM_commit_var = true;
+ return true; 
+} else { return false; }
+
+
+
+}
+
+ void cache getdeviceID()
 {
   
   Serial.println();  
-  //clearbufchar();
-    //EepromUtil::eeprom_read_string(deviceidAddress, , BUFSIZE);
-    if(deviceid[0] == 0 || EEPROM.read(0) == 21) 
+
+    if(deviceid[0] == 0 || EEPROM.read(0) != flagvalue) 
     {
       
-      clientName = "esp-";
-      uint8_t mac[6];// = {12,34,56,78,89,34 };
-      WiFi.macAddress(mac);
+      //clientName = "esp-";
+      //uint8_t mac[6];// = {12,34,56,78,89,34 };
+      //WiFi.macAddress(mac);
       
-      clientName += macToStr(mac);
-      clientName.toCharArray(deviceid, BUFSIZE);      
+      //clientName += macToStr(mac);
+      (getdeviceID_MAC()).toCharArray(deviceid, BUFSIZE);      
+
       Serial.print("No Device name in EEPROM.....Creating Device Name: ");
+
       Serial.println(deviceid);
       //Serial.println();
       } 
 } 
 
 
+String cache getdeviceID_MAC () {
+      
+      clientName = "esp-";
+      uint8_t mac[6];// = {12,34,56,78,89,34 };
+      WiFi.macAddress(mac);
+      clientName += macToStr(mac);
+      return clientName;
+}
 
 
-void restartNetworking() 
+
+void  restartNetworking() 
 {
+  
   networkrestart = false;
   AP_STA_timer = millis();
   APtimeout_done = false;
+
   LoadParams();
   getdeviceID();
-  //Serial.println();
-  if(EEPROM.read(ssidAddressbyte) == flagvalue) {
+
+
+  if (wifimode == 1) WiFi.mode(WIFI_STA);
+   
+   delay(5); 
+
+
+  if (EEPROM.read(ssidAddressbyte) == flagvalue) {
     
-  Serial.print("Joining Wifi Network");
-  WiFi.begin(ssid, password);
+      //Serial.print("Joining Wifi Network (");
+      //Serial.print(ssid);
+      //Serial.print(",");
+      //Serial.print(password);
+      //Serial.print(")");
+#ifdef WIFIOVERRIDE 
+
+
+#else 
+
+
+
+// if(String(ssid) != WiFi.SSID()) {
+//       Debug("WiFi begin called...(");
+//      // Debug(WiFi.SSID()); 
+//      // Debugln(")");
+     
+     WiFi.begin(ssid, password);
+// } else Debugln("Already connected.."); 
+// //      WiFi.begin(ssid, password);
+#endif
+
     int i = 0;
-    while (WiFi.status() != WL_CONNECTED && i < 40) {
+    while (WiFi.status() != WL_CONNECTED ) {
     delay(500);
     i++;
     Serial.print(".");
-    if (i == 39) Serial.print("Failed");
+    if (i == 100) { Serial.println("Failed"); break; } ;
     }
     
-  } else 
-  { Serial.print("NO SSID specified...");
-  }
+
+  }  else { Serial.println("NO SSID specified...");   }
+  
   
   if(WiFi.status() != WL_CONNECTED)
   {
-   Serial.println();
+    //Serial.println();
+    //Serial.print("Setting up Access Point....");
+    //WiFi.mode(WIFI_AP_STA);
+    wifimode = 2;
+    //AP_STA_timer = millis();
+    //WiFi.softAP(deviceid);
+    //WiFi.softAP((char*)(getdeviceID_MAC()).c_str(), "melvana");
+    //Serial.println((char*)(getdeviceID_MAC()).c_str());
+  } else  {
+    Serial.println("");
+    Serial.print("Connected to ");
+    Serial.println(ssid);
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP()); 
+  }
+
+  if (wifimode == 2 ) {
+    //Serial.println();
     Serial.print("Setting up Access Point....");
-   WiFi.mode(WIFI_AP_STA);
-   wifimode = 2;
-   AP_STA_timer = millis();
-   WiFi.softAP(deviceid);
-   Serial.println(deviceid);
-  } else 
-  {
-  Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP()); 
+    WiFi.mode(WIFI_AP_STA);
+    delay(5); 
+    AP_STA_timer = millis();
+    //WiFi.softAP(deviceid);
+    WiFi.softAP((char*)(getdeviceID_MAC()).c_str(), "melvana");
+    Serial.println((char*)(getdeviceID_MAC()).c_str());
+
+
   }
   
   updateIPaddress();
+  
   }
 
 
-void deactivateAP()
+void cache deactivateAP()
 {
-  //Serial.println("Deactivate AP Called");
 
 if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
 
@@ -112,7 +179,7 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
      if (EEPROM.read(APbyte) == flagvalue) 
      {
        EEPROM.write(APbyte,0);
-       EEPROM.commit();
+       EEPROM_commit_var = true;
        Serial.println("Removed");
      } else
      {
@@ -130,16 +197,18 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
           }
 } 
 
- void scannetworks()
+
+ void cache scannetworks()
 {
   Serial.println("Scanning for Networks");
   wifinetworksfound = WiFi.scanNetworks();
+
 } 
 
 
 
 
-double os_atof(const char* s)
+double cache os_atof(const char* s)
 {
 	double rez = 0, fact = 1;
 	while (*s && (*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n'))
@@ -170,17 +239,10 @@ double os_atof(const char* s)
 	return rez * fact;
 }
 
-void New_random_function ()
-
-{
-  
-  
-  
-  
-}
 
 
-void Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
+
+void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
 
 {
 
@@ -195,14 +257,17 @@ void Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
                 WipeString += "?";
               }
 
-              EepromUtil::eeprom_write_string(writeaddress, &WipeString[0]);
-              if (EepromUtil::eeprom_write_string(writeaddress, NewValue)) 
-                  { 
-                    Serial.print(" ..success...");                               
-                  }
-                    else {
-                    Serial.print(" ..fail..");
-                  }
+              eeprom_write_string(writeaddress, &WipeString[0]);
+              eeprom_write_string(writeaddress, NewValue);
+
+
+              //if (EepromUtil::eeprom_write_string(writeaddress, NewValue)) 
+              //    { 
+              //      Serial.print(" ..success...");                               
+              //    }
+              //      else {
+              //      Serial.print(" ..fail..");
+              //    }
               
               if(EEPROM.read(writeaddressbyte) != flagvalue)   //  Check if check bit has been written...
                   {
@@ -210,24 +275,234 @@ void Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
                     EEPROM.write(writeaddressbyte, flagvalue);
                    } else Serial.println();
               
-               EEPROM.commit();
+               EEPROM_commit_var = true;
 }
 
 
-void flip ()
+
+void cache uptime ()
 
 {
+   // send_mqtt_msg("Uptime", String(millis()/60000));
+  long time = millis(); 
+ // int sec = millis() / 1000;
+ // int min = sec / 60;
+ // int hr = min / 60;
+ // char Up_time[20]; 
+ // snprintf ( Up_time, 20, "%02d:%02d:%02d", hr, min % 60, sec % 60 );
 
-  int state = digitalRead(RelayPin3);  // get the current state of GPIO1 pin
-  digitalWrite(RelayPin3, !state);  
-  Serial.println("RELAY PIN CHANGED TO" + String(!state));
+  Serial.print("MODE = (");
+  Serial.print(opState);
+Serial.print(",");
+Serial.print(Current_Effect_State);
+Serial.print(") ");
+
+ Serial.print(" HEAP = ");
+  Serial.print(ESP.getFreeHeap());
+  //Serial.print();
+  Serial.print(" ");
+  if (animator->IsAnimating()) { 
+    Serial.print("* (");
+  } else {
+    Serial.print("- (");
+  }
+  Serial.print(time);
+  Serial.print(" - ");
+  Serial.print(lasteffectupdate);
+  Serial.print(" > ");
+  Serial.print(WS2812_Settings.Timer);
+  Serial.print(") ("); 
+  if  ( (millis() - lasteffectupdate > WS2812_Settings.Timer) || (lasteffectupdate == 0 ) )  {
+    Serial.print("Update available");
+  } else {
+    Serial.print("waiting");
+  } ;
+  Serial.println(")");
+}
+
+//This function will write a 4 byte (32bit) long to the eeprom at
+//the specified address to adress + 3.
+void cache EEPROMWritelong(int address, long value)
+      {
+      //Decomposition from a long to 4 bytes by using bitshift.
+      //One = Most significant -> Four = Least significant byte
+      byte four = (value & 0xFF);
+      byte three = ((value >> 8) & 0xFF);
+      byte two = ((value >> 16) & 0xFF);
+      byte one = ((value >> 24) & 0xFF);
+
+      //Write the 4 bytes into the eeprom memory.
+      EEPROM.write(address, four);
+      EEPROM.write(address + 1, three);
+      EEPROM.write(address + 2, two);
+      EEPROM.write(address + 3, one);
+      }
+
+long cache EEPROMReadlong(long address)
+      {
+      //Read the 4 bytes from the eeprom memory.
+      long four = EEPROM.read(address);
+      long three = EEPROM.read(address + 1);
+      long two = EEPROM.read(address + 2);
+      long one = EEPROM.read(address + 3);
+
+      //Return the recomposed long by using bitshift.
+      return ((four << 0) & 0xFF) + ((three << 8) & 0xFFFF) + ((two << 16) & 0xFFFFFF) + ((one << 24) & 0xFFFFFFFF);
+      }
+
+
+void OTA_UPDATE() {
+
+  if (OTA.parsePacket()) {
+
+    IPAddress remote = OTA.remoteIP();
+
+   //int packetSize; 
+   char packetBuffer[100];
+   //char cmd[20], port[20], size[20]; 
+
+   OTA.read(packetBuffer, 100); 
+   //Serial.print("packetBuffer = ");
+   //Serial.print(packetBuffer);
+
+//int spaceindex = String(packetBuffer).indexOf(" ") ;
+
+//Serial.printf(" Space index = %u \n", spaceindex); 
+
+String packetString = String(packetBuffer); 
+
+
+int cmd = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+
+packetString = packetString.substring(packetString.indexOf(' ')+1, packetString.length() );
+
+int port = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+
+packetString = packetString.substring(packetString.indexOf(' ')+1, packetString.length() );
+
+int size = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+
+//Serial.printf("CMD = %s, PORT = %s, SIZE = %s \n", cmd, port, size); 
+
+Debugf("CMD = %u, PORT = %u, SIZE = %u \n", cmd, port, size); 
+
+//Serial.print("CMD = ");
+//Serial.println(cmd);
+//Serial.print("PORT = ");
+//Serial.println(port);
+//Serial.print("SIZE = ");
+//Serial.println(size);
+
+if (cmd == 99 && port == 0 && size == 0) ESP.restart(); 
+
+if (cmd == 100 && port == 1 && size == 1) { 
+  for (int i = START_address_settings; i < 512; i++) EEPROM.write(i,0);
+  EEPROM.commit(); 
+  delay(2);
+  ESP.restart();
+}
+
+
+if ( port > 0 && size > 0) {
+
+
+  Debugln("VALID PACKET PROCEED");
+
+    WS2812_mode_string("off"); // switch off the lights!  
+
+    //send_mqtt_msg("Status", "Device Updating");
+
+    //delay(2);
+
+    Serial.print("Update Start: ip:");
+    Serial.print(remote);
+    Debugf(", port:%d, size:%d", port, size);
+    Serial.println(); 
+    uint32_t startTime = millis();
+
+
+    WiFiUDP::stopAll();
+
+    if(!Update.begin(size)){
+      Serial.println("Update Begin Error");
+      OTA.begin(aport); // resume listenting.. 
+      return;
+    }
+
+    WiFiClient client;
+    if (client.connect(remote, port)) {
+
+      uint32_t written;
+      while(!Update.isFinished()){
+        written = Update.write(client);
+        if(written > 0) client.print(written, DEC);
+      }
+      Serial.setDebugOutput(false);
+
+      if(Update.end()){
+        client.println("OK");
+        Serial.printf("Update Success: %u\nRebooting...\n", millis() - startTime);
+        ESP.restart();
+      } else {
+        Update.printError(client);
+        Update.printError(Serial);
+        OTA.begin(aport); // resume listening
+      }
+    } else {
+      Serial.printf("Connect Failed: %u\n", millis() - startTime);
+      OTA.begin(aport); // resume listening
+    }
+} else { 
+  Serial.print("INVALID PACKET... CRASH PREVENTED...."); 
+  OTA.flush();
+}
+    
+  
+}
 
 }
 
-void uptime ()
+void cache OTAreset2() {
+  int sec = millis() / 1000;
+  int min = sec / 60;
+  int hr = min / 60;
+    
+  char Up_time[20]; 
+  Debugf ("%02d:%02d:%02d\n", hr, min % 60, sec % 60 );
 
-{
-    send_mqtt_msg("Uptime", String(millis()/60000));
+    //  OTA.stop();
+    //  OTA.begin(aport); // resume listenting.. 
+}
+
+void cache OTAreset() {
+    
+
+    WiFiUDP::stopAll();
+    //delay(5);
+    OTA.begin(aport); // resume listenting.. 
+    Debugln("OTA UDP restarted"); 
+    server.send(200, "text", "DONE");
 
 
 }
+
+
+String cache insertvariable(String Source , String insert) {
+
+//int position = Source.indexOf("%");
+String one, two; 
+one = Source.substring(0,Source.indexOf('%') );
+two = Source.substring(Source.indexOf('%') + 1 , Source.length());
+
+return (one + insert + two); 
+}
+
+
+void test123 (){
+
+XY_t test;
+
+
+
+}
+

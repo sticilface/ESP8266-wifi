@@ -9,14 +9,7 @@
 - Add pin selects for functions... ie.. dht on pin X, humidity on pin Y..
 
 
+INSTRUCTIONS
 
-
-
-
-
-
-
-
-
-
+- 
 */
