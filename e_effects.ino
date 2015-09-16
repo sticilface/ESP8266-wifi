@@ -1199,10 +1199,18 @@ typedef std::function<void()> AniObjectCallback;
                       XY returned_XY = return_adjacent(pVars->coordinates); 
                       pixel = return_pixel(returned_XY.x, returned_XY.y, WS2812_Settings.Total_X);   
 
+                      // true checking 
                       if (pixel > -1 &&  !animator->IsAnimating(pixel) ) {
                           pVars->coordinates = returned_XY;
                           OK = true; 
                           }
+
+                      // // skip animating effects. 
+                      // if (pixel > -1 &&  !animator->IsAnimating(pixel) && WS2812_Settings.Effect_Option && counter > 2 ) {
+                      //     pVars->coordinates = returned_XY;
+                      //     //OK = true; 
+                      //     counter = 0; 
+                      //     }
 
                       // allows overlap bailout, but only after trying not to.   
                       if (pixel > -1 && counter > 9 && overlap) {
@@ -1216,6 +1224,7 @@ typedef std::function<void()> AniObjectCallback;
 
 
                   if (OK) {
+
                             RgbColor temptestOLD = strip->GetPixelColor(pixel); 
                             AnimUpdateCallback animUpdate = [pVars,pixel,temptestOLD, Fixed_Colour](float progress)
                               {
@@ -1251,11 +1260,6 @@ typedef std::function<void()> AniObjectCallback;
 
         if (animationCount != WS2812_Settings.Effect_Count) Current_Effect_State = PRE_EFFECT; // reboot only if no animations changed
         
-
-
-
-
-
  // set new colours       
 
 static bool Effect_Refresh_colour, Effect_Refresh_position; 
@@ -1268,13 +1272,10 @@ if (Effect_Refresh) {
 
 if (!triggered || Effect_Refresh_colour) {
 
-
-
         if (WS2812_Settings.Palette_Choice == WHEEL)  {
 
             for (uint8_t i = 0; i < animationCount; i++) {
               pVars = &_vars[i]; 
-              
               pVars->colour = dim(Wheel(pVars->position++ % 255) );  
               pVars->effectchanged = false; 
             }
@@ -1310,8 +1311,9 @@ if (!triggered || Effect_Refresh_colour) {
           }
     Effect_Refresh_colour = false; 
 }
-//  Update the blending colours for each effect outside of the  other loops
 
+
+//  Update the blending colours for each effect outside of the  other loops
 
         for (uint8_t i = 0; i < animationCount; i++) {
 
@@ -1351,18 +1353,6 @@ if (!triggered || Effect_Refresh_colour) {
           Effect_Refresh_position = false; 
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
             //}
       } // end of switch scope
       break;
@@ -1385,6 +1375,89 @@ if (!triggered || Effect_Refresh_colour) {
       
 } 
 }
+
+
+
+void cache Strobe () {
+  
+static uint16_t old_update_freq; 
+static bool effect_state = false; 
+
+  switch(Current_Effect_State) {
+
+    case PRE_EFFECT:
+    {
+           timer_effect_tick_timeout = 0; 
+           old_update_freq = Pixel_Update_Freq; 
+           Pixel_Update_Freq = 2 + ( pixelCount * 30 ) / 1000 ;   
+           Pre_effect(); 
+          lasteffectupdate = 0; 
+    }
+
+    break; 
+
+    case RUN_EFFECT:
+      {
+
+        uint16_t freq = map (WS2812_Settings.Timer, 0, 255, 50, 100);
+
+    if ( millis() - lasteffectupdate >  freq )  {
+      effect_state = !effect_state; 
+      if (effect_state) strip->ClearTo(WS2812_Settings.Color); else 
+          strip->ClearTo(RgbColor(0,0,0));
+          lasteffectupdate = millis(); 
+          strip->Show(); 
+      }
+
+
+
+      } // end of switch scope
+      break;
+    case POST_EFFECT: 
+           timer_effect_tick_timeout = 100; 
+           Pixel_Update_Freq = old_update_freq; 
+      Post_effect(); 
+      break; 
+
+      
+} 
+}
+
+////////////////////////////////////
+
+// void cache Empty () {
+
+
+//   switch(Current_Effect_State) {
+
+//     case PRE_EFFECT:
+//     {
+
+//             Pre_effect(); 
+          
+
+//     }
+
+//     break; 
+
+//     case RUN_EFFECT:
+//       {
+
+
+//       } // end of switch scope
+//       break;
+//     case POST_EFFECT: 
+
+//       Post_effect(); 
+//       break; 
+
+      
+// } 
+// }
+
+
+
+//////////////////////
 
 // void cache AnimatorClass2 () {
 

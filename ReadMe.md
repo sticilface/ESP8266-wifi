@@ -4,13 +4,13 @@
 *Credits to Makuna for Neopixelbus
 *Credits to Forineye for E131
 
-<<<<<<< HEAD
-=======
+
 To compile this project requries 
 
 1) https://github.com/Makuna/NeoPixelBus/tree/UartDriven <br>
 2) https://github.com/forkineye/E131 <br>
->>>>>>> public
+3) PubSubClient https://github.com/Imroy/pubsubclient <br>
+
 
 
 This is one of my first sketches, it is rough around the edges but seems to work well enough.   Features include:
@@ -59,8 +59,7 @@ Squares - Random squares or strips when used with a linear strip.  Control size 
 
 Snakes - This effect is rather cool, and very flexible :)  pixels move around leaving a tail.  size of tail is set with the effect size.  Again, the number of effects can be changed.  Play around with it. Snakes overlap relaxes the rules about overwriting an animating pixel so you get a slightly different effect. These effects can produce plasma type effects, very lava lamp like. 
 
-<<<<<<< HEAD
-=======
+
 #### Palettes
 
 These are a bit work in progress and not all effects use them in the same way.  In general, by picking a palette the effects and colours that are created are based on that palette.  Exlaining these is quite complicated, see here http://www.tigercolor.com/color-lab/color-theory/color-harmonies.htm for better examples.  In general the palette range box in CONFIG gives the spread of the palette, and the number of colours gives the number of colours for that palette.  This applies only for even-spread palette.  complementary always has 2 colours, triadic has 3 etc, Tetradic has 4 ... 
@@ -74,7 +73,6 @@ These are a bit work in progress and not all effects use them in the same way.  
 * Tetradic = 4 colours
 * Even-Spread = Takes the number of colours in palette and spread them around the HSL colours space
 * Wheel = Not really working properly
->>>>>>> public
 
 
 
