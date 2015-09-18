@@ -2660,17 +2660,33 @@ void cache Set_Defaults() {
 //                              NEEDS WORK FOR SINGLE STRINGS...
 // 
 
-XY return_adjacent(XY &Input) {
-XY Output; 
+
+XY return_adjacent(const XY &Input) {
 bool OK;
-const uint16_t Total_Y = return_total_y ( WS2812_Settings.Total_X ); 
+XY Output; 
 const uint16_t Total_X = WS2812_Settings.Total_X; 
 
             do {  
+              const uint8_t direction = random(8); 
+              OK = false; 
+              Output = return_adjacent(Input,direction);
+              if ( return_pixel(Output.x, Output.y, Total_X) < 0 ) OK = true; 
+            } while (!OK);
+
+}
+
+
+XY return_adjacent(const XY &Input, const uint8_t direction) {
+XY Output; 
+//bool OK;
+const uint16_t Total_Y = return_total_y ( WS2812_Settings.Total_X ); 
+const uint16_t Total_X = WS2812_Settings.Total_X; 
+
+          //  do {  
                 uint16_t X = Input.x;
                 uint16_t Y = Input.y;
-                const uint8_t direction = random(8); 
-                OK = false; 
+           //     const uint8_t direction = random(8); 
+           //     OK = false; 
 
                 if (direction == 0 || direction == 3 || direction == 5 )  (X > 0)? X-- : X = Total_X - 1  ;
                 if (direction == 0 || direction == 1 || direction == 2 )  (Y < Total_Y - 1) ? Y++ : Y = 0 ;
@@ -2679,16 +2695,16 @@ const uint16_t Total_X = WS2812_Settings.Total_X;
 
                // if ()
                 //  direction generated...  Now check if it is valid, assigns it to output.... 
-                if ( X  <  Total_X && 
-                     Y  <  Total_Y && 
-                    return_pixel(X, Y, Total_X) > -1 )
-                {
-                  OK = true;
+           //     if ( X  <  Total_X && 
+           //          Y  <  Total_Y && 
+           //         return_pixel(X, Y, Total_X) > -1 )
+           //     {
+           //       OK = true;
                   Output.x = X; 
                   Output.y = Y;
-                }
+           //     }
               
-            } while ( !OK ) ; // 
+        //    } while ( !OK ) ; // 
 
 return Output; 
 
