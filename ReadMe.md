@@ -8,8 +8,11 @@
 To compile this project requries 
 
 1) https://github.com/Makuna/NeoPixelBus/tree/UartDriven <br>
+	Must git checkout UartDriven 
 2) https://github.com/forkineye/E131 <br>
 3) PubSubClient https://github.com/Imroy/pubsubclient <br>
+4) Simple Timer https://github.com/infomaniac50/SimpleTimer <br>
+
 
 
 
