@@ -1,11 +1,16 @@
 #define HSL_FLOAT
 #define MDNSSERVICE
 
+
+// ---------------------------   ODD Defines for Debuging ----------------------------
 //#define DEBUG_YES
-
 //#define HEAP_TIMER
-
 //#define STAGING
+//#define WIP // This is work in progress... so probably will break things...
+
+// ----------------------------------------------------------------------------------- 
+
+
 #define GAMMA_CORRECTION
 
 #define ESPUARTWS2812 // USE UART to drive pixels, required until bitbanging is fixed. 
