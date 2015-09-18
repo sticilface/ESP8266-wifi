@@ -13,8 +13,8 @@ enum effectState { PRE_EFFECT = 0, RUN_EFFECT, POST_EFFECT, EFFECT_PAUSED};
 
 struct XY {
 
-  //XY(uint8_t x, uint8_t y) : x(x), y(y) {};
-  //XY(){};
+//  XY(uint8_t x, uint8_t y) : x(x), y(y) {};
+//  XY(): x(0), y(0) {};
   uint8_t x;
   uint8_t y;
 
@@ -26,6 +26,17 @@ struct XY_t {
 
   XY_t(uint8_t x, uint8_t y) : x(x), y(y) {}
   XY_t(){} 
+
+  bool operator==(const XY_t& c2) const {
+    const XY_t& c1=(*this);
+    return c1.x == c2.x && c1.y == c2.y;
+  }
+
+  bool operator!=(const XY_t& c2) const {
+    const XY_t& c1=(*this);
+    return c1.x != c2.x || c1.y != c2.y;
+  }
+
 };
 
 

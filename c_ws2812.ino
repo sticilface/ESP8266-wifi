@@ -48,8 +48,8 @@ switch (opState)
       break;
    case SNAKES_OVERLAP:
       Snakes(1); // no checking of pixel animation state... 
-   case LOOPAROUND:
-      LoopAround(192, 200);
+   case STROBE:
+      Strobe();
       break;
    case PICKRANDOM:
       PickRandom(128);
@@ -140,24 +140,13 @@ if (  (millis() - update_strip_time > Pixel_Update_Freq) && ( opState != ADALIGH
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
   }
 
-#ifndef ESPUARTWS2812 // NOT needed if driving LEDs using the UART Serial 1.
-    SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
-#else
-    strip->Show();
-#endif
+    strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+
     //  one LED takes 30uS of nointeruppts, 100 takes 3ms. 
     update_strip_time = millis();
   
   } 
 
-#ifndef ESPUARTWS2812 // NOT needed if driving LEDs using the UART Serial 1.
-
-  if (SendFail) {
-    send_fail_count++; 
-    SendFail = strip->Show(); // is this a retry, so that if it is called too soon.. it will still try again
-  }
-
-#endif
 
 
   if (millis() - timer_PixelPower > 10000) { // was 10 seconds
@@ -2722,6 +2711,54 @@ XY cache toXY(uint8_t x, uint8_t y ) {
   return grid; 
 }
 
+void test123b () {
+//RgbColor constant(100,100,100); 
+HslColor constantHSL(0,0,0.40); 
 
+RgbColor constant = RgbColor(102,102,102); // constantHSL; 
+
+//RgbColor constant = HslColor(0,0,0.392); 
+//HslColor constantHSL = HslColor(constant);
+
+
+    Serial.print("[RGB] : ");
+    Serial.print(constant.R);
+    Serial.print(", ");
+    Serial.print(constant.G);
+    Serial.print(", ");
+    Serial.println(constant.B);
+    Serial.print("[HSL] : ");
+
+    Serial.print( HslColor(constant).H,5 );
+    Serial.print(", ");
+    Serial.print( HslColor(constant).S,5 );
+    Serial.print(", ");
+    Serial.println( HslColor(constant).L,5 );
+    Serial.print("[HSB] : ");
+
+    Serial.print( HsbColor(constant).H,5 );
+    Serial.print(", ");
+    Serial.print( HsbColor(constant).S,5 );
+    Serial.print(", ");
+    Serial.println( HsbColor(constant).B,5 );
+    //Serial.print(" = ");
+
+RgbColor a(255,1,0),b(255,0,0); 
+HsbColor c(0.5,0.011,0),d(0.5,0,0);
+HslColor e(0.5,1,0),f(0.5,0,0);
+
+if (a == b) Serial.println("a == b");
+if (a != b) Serial.println("a != b");
+
+if (c == d) Serial.println("c == d");
+if (c != d) Serial.println("c != d");
+
+if (e == f) Serial.println("e == f");
+if (e != f) Serial.println("e != f");
+
+if (constantHSL == constant) Serial.println("Cross comparison works");
+
+
+}
 
 

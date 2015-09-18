@@ -38,7 +38,7 @@ WiFiUDP OTA;
 
 // web pages....
 
-#include "page_jscolour.h"
-#include "page_microajax.js.h"
-#include "page_root.h"
-#include "page_style.css.h"
+// #include "page_jscolour.h"
+// #include "page_microajax.js.h"
+// #include "page_root.h"
+// #include "page_style.css.h"

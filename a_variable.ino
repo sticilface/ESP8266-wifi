@@ -165,6 +165,7 @@ UDP,                         // 10
 DMX,                         // 11
 SNAKES,                      // 12
 SNAKES_OVERLAP,               // 13 
+STROBE, 
 ChaseRainbow, 
 FADE, 
 LOOPAROUND,
@@ -202,7 +203,7 @@ static const char *MODE_STRING[] = {
 "DMX",
 "Snakes", 
 "Snakes-overlap",
-"Chase-Rainbow", 
+"Strobe", 
 "Fade", 
 "Looparound", 
 "Pick-Random", 
@@ -219,7 +220,7 @@ static const char *MODE_STRING[] = {
 "HSIcycle", 
 "New-Animations", 
 };
-#define numberofmodes 14 /////// DONT FORGET THIS....
+#define numberofmodes 15 /////// DONT FORGET THIS....
 
 static const char *PALETTE_STRING[] = {
 "ALL", "Complementary", "Monochromatic", "Analogous", "Split-Complements", 
