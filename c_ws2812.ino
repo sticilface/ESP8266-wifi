@@ -2711,6 +2711,8 @@ XY cache toXY(uint8_t x, uint8_t y ) {
   return grid; 
 }
 
+#ifdef WIP
+
 void test123b () {
 //RgbColor constant(100,100,100); 
 HslColor constantHSL(0,0,0.40); 
@@ -2761,4 +2763,5 @@ if (constantHSL == constant) Serial.println("Cross comparison works");
 
 }
 
+#endif
 
