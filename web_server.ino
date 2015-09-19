@@ -158,28 +158,18 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   //bool mqttconnected = mqttclient.connected();
   
 
-  buf = F("\
-<!DOCTYPE HTML>\
-  <head>\
-    <title>Wifi Configuration</title>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'/>\
-    <meta http-equiv='Pragma' content='no-cache'>\
-    <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
-    <style>\
-       body {background-color: #E6E6FA;}\
-    </style> \
-  </head>\
-    <body><h1>Wifi Config</h1>");
-  buf += "<p>Current IP address is: <a href='http://" + LocalIP + "'>" + LocalIP + "</a>"; // <a href="http://www.w3schools.com">Visit W3Schools.com!</a>
-  buf += "<br>Current SSID is: " + String(ssid);
-  buf += "<br>Current MQTT Server is: " + mqttserver_string + "..." + ((mqttclient.connected())?"Connected":"Disconnected");
-  buf += "<br>Current device name is: <a href='http://" + String(deviceid) + ".local'>" + String(deviceid) + ".local</a>";
-  buf += F("<br><form action='/wifi' method='POST'>");
-  buf += F("New Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>");
-  buf += F("MQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>");
 
-  //buf += "<input type='radio' name='state' value='1' checked>On<input type='radio' name='state' value='0'>Off<\p>"; 
-  buf += "\n\n<p>Please Select Wifi Network...</p>";
+
+
+   buf = insertvariable ( FPSTR(webpage_handlewifi_1) , LocalIP ); 
+   buf = insertvariable ( buf, LocalIP ); 
+   buf = insertvariable ( buf, String(ssid) ); 
+   buf = insertvariable ( buf, mqttserver_string ); 
+   if (mqttclient.connected()) buf = insertvariable ( buf, "Connected" ) ; else buf = insertvariable ( buf, "Disconnected" ) ; 
+   buf = insertvariable ( buf,   String(deviceid) ); 
+   buf = insertvariable ( buf,   String(deviceid) ); 
+
+
 
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
 
@@ -203,16 +193,8 @@ void ICACHE_FLASH_ATTR handle_wifi() {
     }
   buf += "<input type='radio' name='ssid' value='" + String(WiFi.SSID(i)) + "'" + checked + ">" + String(WiFi.SSID(i)) + "(" + String(WiFi.RSSI(i)) + ") <br/>";
   }
-  
-  //buf += "\n\nSSID: <input type='text' id='ssid' name='ssid' value=''><br/>";
-  buf += F("Password: <input type='text' name='password' value=''><br/></p>");
-  //buf += "<input type='submit' value='Submit'></form>"; 
-  buf += F("<input type='submit' name='reboot' value='Reboot!'/>");
-  buf += F("  <input type='submit' name ='scan' value='Scan'/>");   
-    // working buf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-  buf += F("  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>") ;
-  buf += F("  <input type='submit' value='Submit'/>") ; 
-  buf += F("</form></p>"); 
+
+  buf += FPSTR(webpage_handlewifi_2); 
 
   buf += htmlendstring; 
 
@@ -418,30 +400,30 @@ void handle_misc ()
   snprintf ( Up_time, 20, "%02d:%02d:%02d", hr, min % 60, sec % 60 );
 
 
-  String content0 = F("\
-  <!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name='viewport' content='initial-scale=1'><title> % ESP Melvide</title></head><body><h1> Misc Functions</h1>\
-  <p> Version = % \
-  <br> Compile Time = % \
-  <br> SDK Version = % \
-  <br> Heap Size = % \
-  <br> Flash Size = % \
-  <br> Flash Size by ID = % \
-  <br> Flash ID = % \
-  <br> Chip ID = % \
-  <br> Sketch Size = % \
-  <br> Free Space = % \
-  <br> Millis = % \
-  <br> Up Time = % \
-  <br> VCC = % \
-  <br> RSSI = % \
-  <br> CPU freq = % \
-  <p><form action='/misc' method='POST'>\
-  <p> Select Speed <select name='serial' onchange='this.form.submit();'>\
-  ");
+  // String content0 = F("\
+  // <!DOCTYPE HTML>\n<html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name='viewport' content='initial-scale=1'><title> % ESP Melvide</title></head><body><h1> Misc Functions</h1>\
+  // <p> Version = % \
+  // <br> Compile Time = % \
+  // <br> SDK Version = % \
+  // <br> Heap Size = % \
+  // <br> Flash Size = % \
+  // <br> Flash Size by ID = % \
+  // <br> Flash ID = % \
+  // <br> Chip ID = % \
+  // <br> Sketch Size = % \
+  // <br> Free Space = % \
+  // <br> Millis = % \
+  // <br> Up Time = % \
+  // <br> VCC = % \
+  // <br> RSSI = % \
+  // <br> CPU freq = % \
+  // <p><form action='/misc' method='POST'>\
+  // <p> Select Speed <select name='serial' onchange='this.form.submit();'>\
+  // ");
 
 
 
-  buf = insertvariable (content0, String(deviceid)); 
+  buf = insertvariable (FPSTR(webpage_misc_1), String(deviceid)); 
   buf = insertvariable ( buf, version);  
   buf = insertvariable ( buf, String(compile_date));
   buf = insertvariable ( buf, String(ESP.getSdkVersion()));
@@ -478,14 +460,9 @@ void handle_misc ()
 
   server.sendContent(buf);
 
-  String content1 = F("\
-  </select>\
-  </form></p>\
-  <p><a href='/bytedump'> EEPROM DUMP </a>\
-  <br><a href='/misc?eeprom=bytedump'> EEPROM DUMP BYTES </a>\
-  <br><a href='/misc?eeprom=wipe'> EEPROM FORMAT </a>"); 
+
     
-  server.sendContent(content1);
+  server.sendContent(FPSTR(webpage_misc_2));
 
   //buf = htmlendstring; 
 

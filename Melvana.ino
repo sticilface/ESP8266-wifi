@@ -44,6 +44,7 @@
 #include "enumerates.h"
 #include "a_0plugin_headers.h"
 #include "eeprom_writeanything.h"
+#include "F_Strings.h"
 
 
 #ifdef STAGING
