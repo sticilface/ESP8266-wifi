@@ -230,42 +230,42 @@ void cache handle_mqtt() {
   String MQTT_enabled_checked_yes;
   String MQTT_enabled_checked_no;
 
-  String form_Uptime_enabled_yes = F("checked") ;
-  String form_Uptime_enabled_no = F(" ");
+  String form_Uptime_enabled_yes = "checked" ;
+  String form_Uptime_enabled_no = " ";
 
   int mqttconnected = mqttclient.connected();
 
   if (MQTT_enabled == true) {
 
-  MQTT_enabled_checked_yes = F("checked") ;
-  MQTT_enabled_checked_no = F(" ");
+  MQTT_enabled_checked_yes = "checked" ;
+  MQTT_enabled_checked_no = " ";
   }
   else {
-  MQTT_enabled_checked_yes = F(" ") ;
-  MQTT_enabled_checked_no = F("checked");
+  MQTT_enabled_checked_yes = " " ;
+  MQTT_enabled_checked_no = "checked";
    }
 
   //int MQTT_enabled_checked = MQTT_enabled;
   
-  String content = F("\
-<!DOCTYPE HTML>\
-  <head>\
-    <title> % </title>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'/>\
-    <meta http-equiv='Pragma' content='no-cache'>\
-    <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
-    <style>\
-       body {background-color: #E6E6FA;}\
-    </style> \
-  </head>\
-      <body><h1> % </h1>\
-      <title>MQTT Configuration</title></head><body><h1>MQTT Config</h1>\
-      <form action='/mqtt' method='POST'> ENABLED:\
-      <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='NO' % > NO \
-      <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='YES' %> YES \
-      </form>");
+//   String content = F("\
+// <!DOCTYPE HTML>\
+//   <head>\
+//     <title> % </title>\
+//     <meta name='viewport' content='width=device-width, initial-scale=1'/>\
+//     <meta http-equiv='Pragma' content='no-cache'>\
+//     <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
+//     <style>\
+//        body {background-color: #E6E6FA;}\
+//     </style> \
+//   </head>\
+//       <body><h1> % </h1>\
+//       <title>MQTT Configuration</title></head><body><h1>MQTT Config</h1>\
+//       <form action='/mqtt' method='POST'> ENABLED:\
+//       <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='NO' % > NO \
+//       <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='YES' %> YES \
+//       </form>");
 
-  buf = insertvariable ( content, String(deviceid));
+  buf = insertvariable ( FPSTR(webpage_mqtt_1) , String(deviceid));
   buf = insertvariable ( buf, String(deviceid));
   buf = insertvariable ( buf,  MQTT_enabled_checked_no);
   buf = insertvariable ( buf,  MQTT_enabled_checked_yes);
@@ -277,7 +277,7 @@ void cache handle_mqtt() {
 
     //server.sendContent(buf);
     server.client().print(buf); 
-   buf = F(" ");
+   buf = " ";
 // 1 = String(mqttserver_string)
 
  if(MQTT_enabled) {
@@ -289,16 +289,16 @@ void cache handle_mqtt() {
     server.client().print(buf); 
 
 
-  content = F("<br>Current device name is: <a href='http://%.local'>%</a>\
-  <br><form action='/mqtt' method='POST'>\
-  New Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>\
-  MQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>\
-  Enable Uptime <input type='radio' name='form_Uptime_enabled' value='NO' %> NO <input type='radio' name='form_Uptime_enabled' value='YES' %> YES\
-  <p><input type='submit' name='reboot' value='Reboot!'/>\
-  <input type='submit' value='Submit'/>\
-  </form></p>"); 
+  // content = F("<br>Current device name is: <a href='http://%.local'>%</a>\
+  // <br><form action='/mqtt' method='POST'>\
+  // New Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>\
+  // MQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>\
+  // Enable Uptime <input type='radio' name='form_Uptime_enabled' value='NO' %> NO <input type='radio' name='form_Uptime_enabled' value='YES' %> YES\
+  // <p><input type='submit' name='reboot' value='Reboot!'/>\
+  // <input type='submit' value='Submit'/>\
+  // </form></p>"); 
 
-  buf = insertvariable ( content, String(deviceid));
+  buf = insertvariable ( FPSTR(webpage_mqtt_2), String(deviceid));
   buf = insertvariable ( buf, String(deviceid));
   buf = insertvariable ( buf, form_Uptime_enabled_no);
   buf = insertvariable ( buf, form_Uptime_enabled_yes);

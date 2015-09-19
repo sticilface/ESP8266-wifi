@@ -277,36 +277,36 @@ String randomcolours = " " ;
       //----  having this under here works better as the page gets updated before the request data is fired back!
 
       if (paused) { 
-        paused_string = F("<a href='/ws2812?paused=0'>PLAY</a> ") ; 
+        paused_string = "<a href='/ws2812?paused=0'>PLAY</a> " ; 
       } else {
-        paused_string = F("<a href='/ws2812?paused=1'>PAUSE</a>") ; 
+        paused_string = "<a href='/ws2812?paused=1'>PAUSE</a>" ; 
       }
 //<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
 
-String content3 = F("\
-<!DOCTYPE HTML>\
-  <head>\
-    <title>%</title>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'/>\
-    <meta http-equiv='Pragma' content='no-cache'>\
-    <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
-    <style>\
-       body {background-color: #E6E6FA;}\
-    </style> \
-  </head>\
-<body><h1> % </h1>\
-%\
-<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
-<br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
-<form name=frmTest action='/ws2812' method='POST'>\
-<br>Select Mode <select name='modedrop' onchange='this.form.submit();'>\
-");
+// String content3 = F("\
+// <!DOCTYPE HTML>\
+//   <head>\
+//     <title>%</title>\
+//     <meta name='viewport' content='width=device-width, initial-scale=1'/>\
+//     <meta http-equiv='Pragma' content='no-cache'>\
+//     <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
+//     <style>\
+//        body {background-color: #E6E6FA;}\
+//     </style> \
+//   </head>\
+// <body><h1> % </h1>\
+// %\
+// <br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
+// <br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
+// <form name=frmTest action='/ws2812' method='POST'>\
+// <br>Select Mode <select name='modedrop' onchange='this.form.submit();'>\
+// ");
 
-  buf = insertvariable ( content3, String(deviceid));
+  buf = insertvariable ( FPSTR(webpage_ws2812_main_1), String(deviceid));
   buf = insertvariable ( buf, String(deviceid));
   
  // if (WiFi.status() == WL_CONNECTED) 
-buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
+buf = insertvariable ( buf, "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>");
  // old  buf = insertvariable ( buf, F("<script type='text/javascript' src='/jscolor.js'></script>"));
 
  //   } else { buf = insertvariable ( buf, " "); } ;
@@ -345,11 +345,12 @@ for (uint8_t k=0; k < numberofmodes; k++ ) {
 
 // Palletee
 
-String content4 = F("\
-<form name=frm action='/ws2812' method='POST' style ='display:inline;'>\
-Select Palette <select name='palettedrop' onchange='this.form.submit();'>\
-");
-    server.client().print(content4);
+// String content4 = F("\
+// <form name=frm action='/ws2812' method='POST' style ='display:inline;'>\
+// Select Palette <select name='palettedrop' onchange='this.form.submit();'>\
+// ");
+
+    server.client().print(FPSTR(webpage_ws2812_main_2));
 
 for (uint8_t k = 0; k < numberofpalettes; k++ ) {
     if (WS2812_Settings.Palette_Choice == k) { 
@@ -370,27 +371,27 @@ for (uint8_t k = 0; k < numberofpalettes; k++ ) {
 
     if (WS2812_Settings.Random == 1 ) randomcolours = "checked"; else randomcolours = " ";  
 
-  String content00 = F("\
-<form action='/ws2812' method = 'POST' style ='display:inline;'>\
-  <input type='checkbox' name='random' value='1' % onchange='this.form.submit();'>\
-</form>\
-"); 
+//   String content00 = F("\
+// <form action='/ws2812' method = 'POST' style ='display:inline;'>\
+//   <input type='checkbox' name='random' value='1' % onchange='this.form.submit();'>\
+// </form>\
+// "); 
 
 
-  buf = insertvariable ( content00, randomcolours);  //WebRGBcolour
+  buf = insertvariable ( FPSTR(webpage_ws2812_main_3), randomcolours);  //WebRGBcolour
   
   server.client().print(buf);
 
 
 
-  //if(WiFi.status() == WL_CONNECTED) {
-  String content0 = F("<form action='/ws2812' method='POST'\
-  <p>Color: <input class='color' name='rgbpicker' value = '%' >\
-  <br>  <input type='submit' value='Submit'/>\
-  </form>\
-  ");
+  // //if(WiFi.status() == WL_CONNECTED) {
+  // String content0 = F("<form action='/ws2812' method='POST'\
+  // <p>Color: <input class='color' name='rgbpicker' value = '%' >\
+  // <br>  <input type='submit' value='Submit'/>\
+  // </form>\
+  // ");
 
-  buf = insertvariable ( content0, WebRGBcolour);  //WebRGBcolour
+  buf = insertvariable ( FPSTR(webpage_ws2812_main_4), WebRGBcolour);  //WebRGBcolour
   
     //server.sendContent(buf);
     server.client().print(buf);
@@ -408,21 +409,21 @@ for (uint8_t k = 0; k < numberofpalettes; k++ ) {
  // 6 = String(power) 
   //    <br>Animation: <input type='range' name='anispeed'min='1' max='10000' value='%' onchange='this.form.submit();' >\
 
-  String content1 = F("\
-  <form name=sliders action='/ws2812' method='POST'>\
-  <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
-  <br>Timer: <input type='range' name='timer'min='1' max='2000' value='%' onchange='this.form.submit();'>\
-  </form><br>\
-    <form action='/ws2812' method='POST' style='display:inline;'>\
-    Current Preset: % \
-    <br>Save Preset: <input type='text' id='presetsave' name='presetsave' value='%' >\
-    <input type='submit'  value='Save'/>\
-    </form>\
-    <br>Power = %mA\
-  ");
+  // String content1 = F("\
+  // <form name=sliders action='/ws2812' method='POST'>\
+  // <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
+  // <br>Timer: <input type='range' name='timer'min='1' max='2000' value='%' onchange='this.form.submit();'>\
+  // </form><br>\
+  //   <form action='/ws2812' method='POST' style='display:inline;'>\
+  //   Current Preset: % \
+  //   <br>Save Preset: <input type='text' id='presetsave' name='presetsave' value='%' >\
+  //   <input type='submit'  value='Save'/>\
+  //   </form>\
+  //   <br>Power = %mA\
+  // ");
   
   //buf = insertvariable ( content1, String(CurrentAnimationSpeed)); 
-  buf = insertvariable ( content1, String(WS2812_Settings.Brightness)); 
+  buf = insertvariable ( FPSTR(webpage_ws2812_main_5), String(WS2812_Settings.Brightness)); 
   buf = insertvariable ( buf, String(WS2812_Settings.Timer)); 
  // buf = insertvariable ( buf, String(pixelCount)); 
  // buf = insertvariable ( buf, String(pixelPIN)); 
@@ -1999,22 +2000,22 @@ bool updateLEDs = false;
   }
 
 
-  String content = F("\
-  <!DOCTYPE HTML>\
-  <head>\
-    <title>%</title>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'/>\
-    <meta http-equiv='Pragma' content='no-cache'>\
-    <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
-    <style>\
-       body {background-color: #E6E6FA;}\
-    </style> \
-  </head>\
-    <body><h1> % </h1>\
-    <br> <a href='/lightsconfig?reset=true'>RESET</a> | <a href='/lightsconfig?resetall=true'>RESET ALL</a> \
-    <form name=form action='/lightsconfig' method='POST'>");
+  // String webpage_ws2812_config_1 = F("\
+  // <!DOCTYPE HTML>\
+  // <head>\
+  //   <title>%</title>\
+  //   <meta name='viewport' content='width=device-width, initial-scale=1'/>\
+  //   <meta http-equiv='Pragma' content='no-cache'>\
+  //   <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
+  //   <style>\
+  //      body {background-color: #E6E6FA;}\
+  //   </style> \
+  // </head>\
+  //   <body><h1> % </h1>\
+  //   <br> <a href='/lightsconfig?reset=true'>RESET</a> | <a href='/lightsconfig?resetall=true'>RESET ALL</a> \
+  //   <form name=form action='/lightsconfig' method='POST'>");
 
-    buf = insertvariable ( content, String(deviceid));
+    buf = insertvariable ( FPSTR(webpage_ws2812_config_1), String(deviceid));
     buf = insertvariable ( buf, String(deviceid));
     
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
@@ -2050,17 +2051,8 @@ bool updateLEDs = false;
     //server.sendContent(buf);
     server.client().print(buf); 
     
-  buf = F("<input type='submit' value='Submit'>\
-          </form></p>\
-          <form action='/lightsconfig' method='POST'>\
-          <p>Save Preset: <input type='text' id='leds' name='preset' value='%' >\
-          <br><input type='submit'  value='Save'/>\
-          </form>\
-          <form action='/lightsconfig' method='POST'>\
-          <p>LEDs: <input type='text' id='leds' name='leds' value='%' >\
-          <br>  <input type='submit' value='Submit'/>\
-          </form>\
-          ");
+buf = FPSTR(webpage_ws2812_config_2);
+
 //           <br>PIN: <input type='text' id='ledpin' name='ledpin' value='%' > (PIN 2 only, UART\
 
   buf += htmlendstring; 
@@ -2660,7 +2652,23 @@ void cache Set_Defaults() {
 //                              NEEDS WORK FOR SINGLE STRINGS...
 // 
 
-XY return_adjacent(XY &Input) {
+
+// XY return_adjacent(const XY &Input) {
+// bool OK;
+// XY Output; 
+// const uint16_t Total_X = WS2812_Settings.Total_X; 
+
+//             do {  
+//               const uint8_t direction = random(8); 
+//               OK = false; 
+//               Output = return_adjacent(Input, direction);
+//               if ( return_pixel(Output.x, Output.y, Total_X) < 0 ) OK = true; 
+//             } while (!OK);
+
+// }
+
+
+XY return_adjacent(const XY &Input) { ; // , const uint8_t direction) {
 XY Output; 
 bool OK;
 const uint16_t Total_Y = return_total_y ( WS2812_Settings.Total_X ); 
@@ -2711,57 +2719,4 @@ XY cache toXY(uint8_t x, uint8_t y ) {
   return grid; 
 }
 
-#ifdef WIP
-
-void test123b () {
-//RgbColor constant(100,100,100); 
-HslColor constantHSL(0,0,0.40); 
-
-RgbColor constant = RgbColor(102,102,102); // constantHSL; 
-
-//RgbColor constant = HslColor(0,0,0.392); 
-//HslColor constantHSL = HslColor(constant);
-
-
-    Serial.print("[RGB] : ");
-    Serial.print(constant.R);
-    Serial.print(", ");
-    Serial.print(constant.G);
-    Serial.print(", ");
-    Serial.println(constant.B);
-    Serial.print("[HSL] : ");
-
-    Serial.print( HslColor(constant).H,5 );
-    Serial.print(", ");
-    Serial.print( HslColor(constant).S,5 );
-    Serial.print(", ");
-    Serial.println( HslColor(constant).L,5 );
-    Serial.print("[HSB] : ");
-
-    Serial.print( HsbColor(constant).H,5 );
-    Serial.print(", ");
-    Serial.print( HsbColor(constant).S,5 );
-    Serial.print(", ");
-    Serial.println( HsbColor(constant).B,5 );
-    //Serial.print(" = ");
-
-RgbColor a(255,1,0),b(255,0,0); 
-HsbColor c(0.5,0.011,0),d(0.5,0,0);
-HslColor e(0.5,1,0),f(0.5,0,0);
-
-if (a == b) Serial.println("a == b");
-if (a != b) Serial.println("a != b");
-
-if (c == d) Serial.println("c == d");
-if (c != d) Serial.println("c != d");
-
-if (e == f) Serial.println("e == f");
-if (e != f) Serial.println("e != f");
-
-if (constantHSL == constant) Serial.println("Cross comparison works");
-
-
-}
-
-#endif
 
