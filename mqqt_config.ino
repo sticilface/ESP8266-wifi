@@ -216,7 +216,7 @@ void cache handle_mqtt() {
           server.client().print(buf); 
       }
 
-      server.client().print(htmlendstring); 
+      server.client().print(FPSTR(htmlendstring)); 
 
 
       if (networkrestart) restartNetworking(); 

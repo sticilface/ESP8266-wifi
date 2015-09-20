@@ -95,50 +95,23 @@ void  restartNetworking()
 
   if (EEPROM.read(ssidAddressbyte) == flagvalue) {
     
-      //Serial.print("Joining Wifi Network (");
-      //Serial.print(ssid);
-      //Serial.print(",");
-      //Serial.print(password);
-      //Serial.print(")");
-#ifdef WIFIOVERRIDE 
-
-
-#else 
-
-
-
-// if(String(ssid) != WiFi.SSID()) {
-//       Debug("WiFi begin called...(");
-//      // Debug(WiFi.SSID()); 
-//      // Debugln(")");
-     
-     WiFi.begin(ssid, password);
-// } else Debugln("Already connected.."); 
-// //      WiFi.begin(ssid, password);
-#endif
-
-    int i = 0;
-    while (WiFi.status() != WL_CONNECTED ) {
-    delay(500);
-    i++;
-    Serial.print(".");
-    if (i == 100) { Serial.println("Failed"); break; } ;
-    }
+      WiFi.begin(ssid, password);
+      uint8_t i = 0;
+      while (WiFi.status() != WL_CONNECTED ) {
+        delay(500);
+        i++;
+        Serial.print(".");
+        if (i == 100) { Serial.println("Failed"); break; } ;
+      }
     
-
   }  else { Serial.println("NO SSID specified...");   }
   
   
   if(WiFi.status() != WL_CONNECTED)
   {
-    //Serial.println();
-    //Serial.print("Setting up Access Point....");
-    //WiFi.mode(WIFI_AP_STA);
+
     wifimode = 2;
-    //AP_STA_timer = millis();
-    //WiFi.softAP(deviceid);
-    //WiFi.softAP((char*)(getdeviceID_MAC()).c_str(), "melvana");
-    //Serial.println((char*)(getdeviceID_MAC()).c_str());
+
   } else  {
     Serial.println("");
     Serial.print("Connected to ");
@@ -148,15 +121,13 @@ void  restartNetworking()
   }
 
   if (wifimode == 2 ) {
-    //Serial.println();
+
     Serial.print("Setting up Access Point....");
     WiFi.mode(WIFI_AP_STA);
     delay(5); 
     AP_STA_timer = millis();
-    //WiFi.softAP(deviceid);
     WiFi.softAP((char*)(getdeviceID_MAC()).c_str(), "melvana");
     Serial.println((char*)(getdeviceID_MAC()).c_str());
-
 
   }
   
@@ -203,42 +174,6 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
 } 
 
 
-
-
-double cache os_atof(const char* s)
-{
-	double rez = 0, fact = 1;
-	while (*s && (*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n'))
-		s++;
-	if (*s == 0)
-		return 0; // can't read
-
-	if (*s == '-')
-	{
-		s++;
-		fact = -1;
-	};
-	for (int point_seen = 0; *s; s++)
-	{
-		if (*s == '.')
-		{
-			point_seen = 1;
-			continue;
-		};
-		int d = *s - '0';
-		if (d >= 0 && d <= 9)
-		{
-			if (point_seen)
-				fact /= 10.0;
-			rez = rez * 10.0f + (double) d;
-		};
-	};
-	return rez * fact;
-}
-
-
-
-
 void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
 
 {
@@ -272,90 +207,22 @@ void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
 
 
 
-void cache uptime ()
-
-{
-   // send_mqtt_msg("Uptime", String(millis()/60000));
-  long time = millis(); 
- // int sec = millis() / 1000;
- // int min = sec / 60;
- // int hr = min / 60;
- // char Up_time[20]; 
- // snprintf ( Up_time, 20, "%02d:%02d:%02d", hr, min % 60, sec % 60 );
-
-  Serial.print("MODE = (");
-  Serial.print(opState);
-Serial.print(",");
-Serial.print(Current_Effect_State);
-Serial.print(") ");
-
- Serial.print(" HEAP = ");
-  Serial.print(ESP.getFreeHeap());
-  //Serial.print();
-  Serial.print(" ");
-  if (animator->IsAnimating()) { 
-    Serial.print("* (");
-  } else {
-    Serial.print("- (");
-  }
-  Serial.print(time);
-  Serial.print(" - ");
-  Serial.print(lasteffectupdate);
-  Serial.print(" > ");
-  Serial.print(WS2812_Settings.Timer);
-  Serial.print(") ("); 
-  if  ( (millis() - lasteffectupdate > WS2812_Settings.Timer) || (lasteffectupdate == 0 ) )  {
-    Serial.print("Update available");
-  } else {
-    Serial.print("waiting");
-  } ;
-  Serial.println(")");
-}
-
-
-
-
+// My own OTA update, that does not crash on a malformed UDP Packet
 void OTA_UPDATE() {
 
   if (OTA.parsePacket()) {
 
     IPAddress remote = OTA.remoteIP();
+    char packetBuffer[100];
+    OTA.read(packetBuffer, 100); 
 
-   //int packetSize; 
-   char packetBuffer[100];
-   //char cmd[20], port[20], size[20]; 
-
-   OTA.read(packetBuffer, 100); 
-   //Serial.print("packetBuffer = ");
-   //Serial.print(packetBuffer);
-
-//int spaceindex = String(packetBuffer).indexOf(" ") ;
-
-//Serial.printf(" Space index = %u \n", spaceindex); 
-
-String packetString = String(packetBuffer); 
-
-
-int cmd = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
-
-packetString = packetString.substring(packetString.indexOf(' ')+1, packetString.length() );
-
-int port = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
-
-packetString = packetString.substring(packetString.indexOf(' ')+1, packetString.length() );
-
-int size = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
-
-//Serial.printf("CMD = %s, PORT = %s, SIZE = %s \n", cmd, port, size); 
-
-Debugf("CMD = %u, PORT = %u, SIZE = %u \n", cmd, port, size); 
-
-//Serial.print("CMD = ");
-//Serial.println(cmd);
-//Serial.print("PORT = ");
-//Serial.println(port);
-//Serial.print("SIZE = ");
-//Serial.println(size);
+      String packetString = String(packetBuffer); 
+      int cmd = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+      packetString = packetString.substring(packetString.indexOf(' ')+1, packetString.length() );
+      int port = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+      packetString = packetString.substring(packetString.indexOf(' ')+1, packetString.length() );
+      int size = (packetString.substring(0 , packetString.indexOf(' ') )).toInt();
+      Debugf("CMD = %u, PORT = %u, SIZE = %u \n", cmd, port, size); 
 
 if (cmd == 99 && port == 0 && size == 0) ESP.restart(); 
 
@@ -424,17 +291,7 @@ if ( port > 0 && size > 0) {
 
 }
 
-void cache OTAreset2() {
-  int sec = millis() / 1000;
-  int min = sec / 60;
-  int hr = min / 60;
-    
-  char Up_time[20]; 
-  Debugf ("%02d:%02d:%02d\n", hr, min % 60, sec % 60 );
 
-    //  OTA.stop();
-    //  OTA.begin(aport); // resume listenting.. 
-}
 
 void cache OTAreset() {
     
@@ -451,12 +308,10 @@ void cache OTAreset() {
 
 String cache insertvariable(String Source , String insert) {
 
-//int position = Source.indexOf("%");
-String one, two; 
-one = Source.substring(0,Source.indexOf('%') );
-two = Source.substring(Source.indexOf('%') + 1 , Source.length());
-
-return (one + insert + two); 
+    String one, two; 
+    one = Source.substring(0,Source.indexOf('%') );
+    two = Source.substring(Source.indexOf('%') + 1 , Source.length());
+    return (one + insert + two); 
 }
 
 

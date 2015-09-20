@@ -439,7 +439,7 @@ for (uint8_t k = 0; k < numberofpalettes; k++ ) {
   buf = insertvariable ( buf, loaded_var ); 
   buf = insertvariable ( buf, String(current_loaded_preset) ); 
   buf = insertvariable ( buf, String(power) ); 
-  buf += htmlendstring; 
+  buf += FPSTR(htmlendstring); 
  
   //server.send(200, "text/html", buf);
 
@@ -791,7 +791,6 @@ void cache Pre_effect() {
 
     Current_Effect_State = RUN_EFFECT; 
    // lasteffectupdate = 0; 
-    Random_func_timeout = 0; //RESET additionall timeout...  NOT SURE IF THIS IS NEEDED... 
    // Effect_Refresh = false; 
     effectPosition = 0; // reset effect position... 
 }
@@ -1139,7 +1138,7 @@ switch(Current_Effect_State) {
  if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still animating! 
      
       if (millis() - lasteffectupdate > ( WS2812_Settings.Timer * 150 )) {      
-      fade_to(   dim(Wheel(random(0,255) ) ) , CurrentAnimationSpeed, RGB ) ;
+      fade_to(   dim(Wheel(random(0,255) ) ) , 2000, RGB ) ;
       lasteffectupdate = millis(); 
 };
 
@@ -1965,7 +1964,7 @@ bool updateLEDs = false;
 
    if (server.args() > 1 || ( server.hasArg("preset") == false && server.args() == 1) ) { 
    //   lasteffectupdate = 0; 
-      Random_func_timeout = 0; 
+   //   Random_func_timeout = 0; 
       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
       current_loaded_preset_changed = 1; 
       
@@ -2053,11 +2052,8 @@ bool updateLEDs = false;
     //server.sendContent(buf);
     server.client().print(buf); 
     
-buf = FPSTR(webpage_ws2812_config_2);
-
-//           <br>PIN: <input type='text' id='ledpin' name='ledpin' value='%' > (PIN 2 only, UART\
-
-  buf += htmlendstring; 
+  buf = FPSTR(webpage_ws2812_config_2);
+  buf += FPSTR(htmlendstring); 
   buf = insertvariable ( buf, String(current_loaded_preset)); 
   buf = insertvariable ( buf, String(pixelCount)); 
   //buf = insertvariable ( buf, String(pixelPIN));  // removed until other method of driving pixels is found. 
@@ -2068,7 +2064,6 @@ buf = FPSTR(webpage_ws2812_config_2);
 
 if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
-  //server.send(200, "text/html", buf);
 
 
 
@@ -2778,7 +2773,7 @@ int bytes_read = EEPROM_readAnything(address, WS2812_Settings);
 if (WS2812_Settings.SavedOpState != 0 ) { LastOpState = (operatingState)WS2812_Settings.SavedOpState; };  // Stops last opstate being over written by an OFF..
 
 
-  CurrentAnimationSpeed = WS2812_Settings.Animationspeed; 
+ // CurrentAnimationSpeed = WS2812_Settings.Animationspeed; 
 
 
 Serial.print("Settings loaded ------- ");
@@ -2864,7 +2859,7 @@ Debugln("End-------------------------");
       Debugln(WebRGBcolour); 
 
 
-      if (IntervalMultiplier == 0) IntervalMultiplier = 1; 
+      if (WS2812_Settings.Time_Stretch == 0) WS2812_Settings.Time_Stretch = 1; 
 
 
 if (location != 0) {

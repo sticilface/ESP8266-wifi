@@ -175,7 +175,7 @@ void ICACHE_FLASH_ATTR handle_wifi() {
 
   buf += FPSTR(webpage_handlewifi_2); 
 
-  buf += htmlendstring; 
+  buf += FPSTR(htmlendstring); 
 
 
     //server.sendContent(buf);
@@ -278,7 +278,7 @@ void handle_misc ()
   server.sendContent(buf);
   server.sendContent(FPSTR(webpage_misc_2));
 
-  server.sendContent(htmlendstring); 
+  server.sendContent(FPSTR(htmlendstring)); 
 
   //server.send(200, "text/html", buf);
 

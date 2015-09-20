@@ -120,35 +120,16 @@ char mqtttopic[BUFSIZE];// = "esp";
 // char mqttserver[BUFSIZE];// = "192.168.1.24";
 String mqttserver_string = " "; 
 
-/////// ------- COMMAND ARGS -------
-//const int numberofcommands = 13;
-//const char* commands[numberofcommands] = {"setpoint","kd","ki","kp","state","ssid","password","eeprom","deviceid","mqttserver","restart", "send","test"};
 
 
-const String htmlendstring = "<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a> <a href='/ws2812'>WS2812</a>";
-#define numberofbaudrates 6
+//const String htmlendstring = "<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a> <a href='/ws2812'>WS2812</a>";
+
+
+const uint8_t numberofbaudrates(6); 
 const long baudrates[numberofbaudrates] = {9600,115200,256000,460800,921600,2000000};
 uint8_t currentspeed = 2; 
 long serialspeed = 115200; 
 
-
-boolean light_status = false;
-
-/////// ---- bitwise testing
-
-const int bitaddress = 500;
-
-#define PIN_1 0x01
-#define PIN_2 0x02
-#define PIN_3 0x04
-#define PIN_4 0x08
-#define PIN_5 0x10
-#define PIN_6 0x20
-#define PIN_7 0x40
-#define PIN_8 0x80
-
-
-BlendMethod Blend = HSL; 
 
 enum operatingState { 
 OFF = 0,                     // 0
@@ -188,6 +169,7 @@ NEWANIMATIONS,
 operatingState opState = OFF;
 operatingState LastOpState = OFF;
 operatingState HoldingOpState = OFF; 
+
 static const char *MODE_STRING[] = {
 "Off", 
 "Color", 
@@ -220,92 +202,41 @@ static const char *MODE_STRING[] = {
 "HSIcycle", 
 "New-Animations", 
 };
-#define numberofmodes 15 /////// DONT FORGET THIS....
+const uint8_t numberofmodes(15); /////// DONT FORGET THIS....
+
 
 static const char *PALETTE_STRING[] = {
 "ALL", "Complementary", "Monochromatic", "Analogous", "Split-Complements", 
 "Triadic", "Tetradic", "Even-Spread", "Wheel"
 };
-#define numberofpalettes 9 /////// DONT FORGET THIS....
-
+const uint8_t numberofpalettes(9); /////// DONT FORGET THIS....
 
 
 
 
 uint16_t Pixel_Update_Freq = 0; 
 uint32_t lasteffectupdate = 0; 
-//uint16_t WS2812interval = 2000; 
 uint32_t power = 0; 
 
 uint8_t current_loaded_preset = 0; 
 bool current_loaded_preset_changed = false; 
 bool EEPROM_commit_var = false; 
 
-//uint8_t CurrentPreset = 0;
-
 
 uint16_t pixelCount = 40;
 uint8_t pixelPIN = 2;
-//uint8_t CurrentBrightness = 255; 
+
 bool paused = false; 
 bool LED_Settings_Changed = false; 
-uint16_t CurrentAnimationSpeed = 2000; 
-uint8_t IntervalMultiplier = 1; 
 bool Effect_Refresh = false; 
 uint8_t timer_effect_tick_timeout = 10; // controls the flow of effect generation... put to 0 by UDP and ADAlight...
-bool SendFail = false; 
 bool Enable_Animations = false; 
 
-//RgbColor NewColour = RgbColor(0,0,0);
 
 String WebRGBcolour = "000000"; // This is for the WEBPAGE... takes the value when colour is changed...
-
-   Palette Palette_Choice;  //   1
-
-
+Palette Palette_Choice;  //   1
 effectState Current_Effect_State = PRE_EFFECT; 
-
-unsigned long Random_func_timeout = 0;
-
 uint16_t effectPosition = 0;
-
-//uint16_t 
-//var1 = 0,var2 = 0,var3 = 0,var4 = 0,var5 = 0,
-//var6 = 0,var7 = 0,var8 = 0,var9 = 0,var10 = 0;
-
-
-
-
-//#ifdef LOOPDEBUG
-//bool temp_bug_track = false ; 
-//#endif
-
-//uint32_t temp_unfinished = 0;
-//uint32_t temp_lastunfinished = 0; 
-
-//////////////////////////// --  WEB PAGES -----
-
-
-const char webpage_ws2812[] PROGMEM = "\
-<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
-%\
-<br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
-<br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
-<form name=frmTest action='/ws2812' method='POST'>\
-Select Mode <select name='modedrop' onchange='this.form.submit();'>\
-";
-
-
-
-struct config_t
-{
-    char ssid[BUFSIZE] ;// = "";
-    char password[BUFSIZE] ;//  = "";
-    char deviceid[BUFSIZE];// = "";
-} configuration;
-
-
-   //operatingState SavedOpState;
 
 struct WS2812Settings_t {
    uint8_t  SavedOpState;
@@ -360,11 +291,6 @@ const uint8_t GAMMA_2811[] = {
 };
 #endif
 
-
-// DMX....
-
-#define UNIVERSE 1      /* Universe to listen for */
-#define CHANNEL_START 1 /* Channel to start listening at */
 
 
 
