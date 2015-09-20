@@ -8,12 +8,12 @@
 To compile this project requries 
 
 1) https://github.com/Makuna/NeoPixelBus/tree/UartDriven <br>
-	Must git checkout UartDriven 
+	Must git checkout UartDriven <br>
 2) https://github.com/forkineye/E131 <br>
 3) PubSubClient https://github.com/Imroy/pubsubclient <br>
 4) Simple Timer https://github.com/infomaniac50/SimpleTimer <br>
 
-
+The ESP must be set to 160Mhz, ideally with 1Mbyte of flash to allow OTA to work. 
 
 This is one of my first sketches, it is rough around the edges but seems to work well enough.   Features include:
 

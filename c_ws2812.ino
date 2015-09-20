@@ -214,6 +214,9 @@ if (!ani_update && strip->IsAnimating()) {
 
 //lasteffectupdate = millis(); 
 
+    random_colour_timer() ; //   change colour based on timer. 
+
+
 
 } // end of ws2812 function 
 
@@ -2243,6 +2246,8 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 //  This function returns a random colour from palette if no index is specified!  
 //  Returns a different colour than the previous one. 
+
+
 RgbColor cache Return_Palette (RgbColor Input) {
 
       uint8_t random_choice; 
@@ -2251,9 +2256,8 @@ RgbColor cache Return_Palette (RgbColor Input) {
 
 switch (WS2812_Settings.Palette_Choice) {
           case ALL:                // 0 
-            number_of_choices = WS2812_Settings.Palette_Number; 
+            number_of_choices = 255; 
            // return Wheel(random(255)); 
-
             break;
           case COMPLEMENTARY:      // 1
             number_of_choices = 2; 
@@ -2718,4 +2722,26 @@ XY cache toXY(uint8_t x, uint8_t y ) {
 
   return grid; 
 }
+
+bool random_colour_timer () {
+
+  if (!WS2812_Settings.Random) return 0;  // return if random colour selection is disabled.  
+
+  static uint32_t _last = 0; 
+  const uint32_t _time = map (WS2812_Settings.Timer, 0, 255, 1000, 600000) ; 
+
+    if (millis() - _last > _time || timeroverride) {
+
+        RgbColor oldcolour = WS2812_Settings.Color;
+
+        do {
+          WS2812_Settings.Color = Wheel(random(255)); 
+        } while (WS2812_Settings.Color == oldcolour) ;
+
+        _last = millis();   
+    }
+
+}
+
+
 

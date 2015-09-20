@@ -783,7 +783,7 @@ void cache Random_colour() {
 
  uint16_t  timer = map ( WS2812_Settings.Timer , 1, 2000, 1000 , 60000 );
  RgbColor colour; 
- static uint8_t static_colour; 
+ //static uint8_t static_colour; 
  //static uint32_t temp_timer; 
 
   switch(Current_Effect_State) {
@@ -799,33 +799,41 @@ void cache Random_colour() {
         break;
     
     case RUN_EFFECT:  
-  
-      if (  millis() - lasteffectupdate >  map ( WS2812_Settings.Timer , 1, 2000, 1000 , 600000 )  || Effect_Refresh)  {
 
-        if ( !animator->IsAnimating() || Effect_Refresh ) {
+    {
 
-              effectPosition++ ; 
+    const uint32_t effect_timer = map ( WS2812_Settings.Timer , 1, 2000, 1000 , 600000 ) ;
 
-               if (WS2812_Settings.Random == true ) {
-                 if (effectPosition == 10 || Effect_Refresh ) { static_colour = random(255); effectPosition = 0 ; } ; 
+      if ( millis() - lasteffectupdate >  effect_timer || Effect_Refresh  )  {
 
 
-                 colour = Return_Palette(Wheel(static_colour)) ;
+      random_colour_timer(true);  //  test function to update colour if random is chosen... based on timer... 
 
-               } else {
+
+
+     //   if (  || Effect_Refresh ) {
+
+             // effectPosition++ ; 
+
+             //  if (WS2812_Settings.Random == true ) {
+             //    if (effectPosition == 10 || Effect_Refresh ) { static_colour = random(255); effectPosition = 0 ; } ; 
+
+
+             //    colour = Return_Palette(Wheel(static_colour)) ;
+
+              // } else {
 
                 colour = Return_Palette(WS2812_Settings.Color) ;
 
-               }
+              // }
 
                 dim(colour);
 
                 animator->FadeTo( map ( WS2812_Settings.Timer , 1, 2000, 500 , 5000 ), colour); 
                 
-
                 lasteffectupdate = millis(); 
                 Effect_Refresh = false; 
-            }
+         }
       }
         break;
 
@@ -1422,6 +1430,8 @@ static bool effect_state = false;
       
 } 
 }
+
+
 
 ////////////////////////////////////
 

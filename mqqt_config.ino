@@ -83,7 +83,8 @@ if ((pub.payload_string()).indexOf('=') > 0)
 
 void cache initiatemqqt ()
     {
-
+      if (!MQTT_enabled) return; 
+      
         mqttclient.set_server(MQTTserver);
         mqttclient.set_callback(MQTTcallback);
 
