@@ -1278,7 +1278,12 @@ if (Effect_Refresh) {
   Effect_Refresh = false; 
 }
 
-if (!triggered || Effect_Refresh_colour) {
+
+const uint32_t new_colour_time = map (WS2812_Settings.Timer, 0, 255, 20000, 300000) ; 
+
+
+
+if (!triggered || Effect_Refresh_colour || random_colour_timer(new_colour_time)) {
 
         if (WS2812_Settings.Palette_Choice == WHEEL)  {
 
@@ -1290,21 +1295,21 @@ if (!triggered || Effect_Refresh_colour) {
 
           }  else  { //if (WS2812_Settings.Effect_Option == 0) {
               
-              const uint32_t new_colour_time = map (WS2812_Settings.Timer, 0, 255, 20000, 300000) ; 
               
-              if (WS2812_Settings.Random == true ) {
+               
+    //          if (WS2812_Settings.Random == true ) {
 
-                      if (millis() - effect_timer > new_colour_time  || Effect_Refresh_colour ) { 
-                              static_colour = random(255); 
-                              for (uint8_t i = 0; i < animationCount; i++) {
-                                      pVars = &_vars[i]; 
-                                      pVars->oldcolour = pVars->colour; 
-                                      pVars->newcolour = dim(Return_Palette(Wheel(static_colour), i) ) ; 
-                                      pVars->effectchanged = true; 
-                              }
-                       effect_timer = millis() ;
-                      }
-              } else if (WS2812_Settings.Random == false ) {
+                      // if (millis() - effect_timer > new_colour_time  || Effect_Refresh_colour ) { 
+                      //         static_colour = random(255); 
+                      //         for (uint8_t i = 0; i < animationCount; i++) {
+                      //                 pVars = &_vars[i]; 
+                      //                 pVars->oldcolour = pVars->colour; 
+                      //                 pVars->newcolour = dim(Return_Palette(Wheel(static_colour), i) ) ; 
+                      //                 pVars->effectchanged = true; 
+                      //         }
+                      //  effect_timer = millis() ;
+                      // }
+    //          } else if (WS2812_Settings.Random == false ) {
 
                               for (uint8_t i = 0; i < animationCount; i++) {
                                       pVars = &_vars[i]; 
@@ -1312,9 +1317,10 @@ if (!triggered || Effect_Refresh_colour) {
                                       pVars->newcolour = dim(Return_Palette(WS2812_Settings.Color, i) ); 
                                       pVars->effectchanged = true; 
                               }
+
               effect_timer = millis() ;            
               triggered = true; 
-              }
+      //        }
 
           }
     Effect_Refresh_colour = false; 

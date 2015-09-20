@@ -214,7 +214,6 @@ if (!ani_update && strip->IsAnimating()) {
 
 //lasteffectupdate = millis(); 
 
-    random_colour_timer() ; //   change colour based on timer. 
 
 
 
@@ -2723,14 +2722,13 @@ XY cache toXY(uint8_t x, uint8_t y ) {
   return grid; 
 }
 
-bool random_colour_timer () {
+bool random_colour_timer (const uint32_t _time) {
 
-  if (!WS2812_Settings.Random) return 0;  // return if random colour selection is disabled.  
+  if (!WS2812_Settings.Random) return false;  // return if random colour selection is disabled.  
 
   static uint32_t _last = 0; 
-  const uint32_t _time = map (WS2812_Settings.Timer, 0, 255, 1000, 600000) ; 
 
-    if (millis() - _last > _time || timeroverride) {
+    if (millis() - _last > _time) {
 
         RgbColor oldcolour = WS2812_Settings.Color;
 
@@ -2739,7 +2737,11 @@ bool random_colour_timer () {
         } while (WS2812_Settings.Color == oldcolour) ;
 
         _last = millis();   
+
+        return true;
     }
+
+    return false; 
 
 }
 
