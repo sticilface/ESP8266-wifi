@@ -1,64 +1,61 @@
 
-
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+//                                           Globals  
+//
+//////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 // Wifi parameters
-const int BUFSIZE = 32; //was 16 
+const int BUFSIZE = 32; 
 const String version =  "WS2812-OTA";
 const char compile_date[] = __DATE__ " " __TIME__;
+
+
 String buf; // use for HTTP 
 
 char ssid[BUFSIZE] ;
 char password[BUFSIZE] ;
+char deviceid[BUFSIZE];  
 
-
-
-char deviceid[BUFSIZE];// = "";
-//String deviceid;
-
-String clientName = " ";
-String LocalIP = " ";
-
-const uint16_t aport = 8266; // tvlights
-//const uint16_t aport = 8267; // lamp3
-//const uint16_t aport = 8268; // bathroom
-//const uint16_t aport = 8269; // NODE-MCU
-
-const unsigned int UDPlightPort = 8888; // 6454; //8888;      // local port to listen on
-
-/*  NOT IN  USE... but should be... 
-*
-*   //const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
-*
-*const char serverIndex[] PROGMEM = const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
-*FPSTR(serverIndex) to use this...
-*/
-
-char bufchar[BUFSIZE];
-
-
+const uint16_t aport = 8266; 
 bool isOTAupdate = false; 
-char mqttcharbuf[200];
 
-String mqttbuf = " ";
+const uint16_t UDPlightPort = 8888; 
+const IPAddress multicast_ip_addr(224,0,0,0); // Multicast broadcast address
 
-char mqttesptopic[BUFSIZE] = "esp";  //Required to define the GLOBAL MQTT RESPONSE!
 
-uint8_t wifinetworksfound = 0;
 uint8_t wifimode = 0;
-
 const int APtimeout = 300000;
-boolean APtimeout_done = false;
-const int MQTTtimeout = 600000;
-const int MQTTtemptimeout = 60000;
-const int Uptimer_timeout = 1000;
+bool APtimeout_done = false;
+bool networkrestart = false;
+long AP_STA_timer = 0;
 
-// Action boolean perams .... memory functions
-boolean networkrestart = false;
-boolean paramsreload = false;
-boolean mqttreloadvar2 = false;
-boolean mqttreload = false;
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+//                                            MQTT  
+//
+//////////////////////////////////////////////////////////////////////////////////////////
+
+char mqttesptopic[] = "esp";  //Required GLOBAL ESP subscription !
+const int MQTTtimeout = 600000;
+bool mqttreload = false;
+IPAddress MQTTserver(0,0,0,0);
+bool MQTT_enabled = false;
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+//                                            EEPROM  
+//
+//////////////////////////////////////////////////////////////////////////////////////////
+
+bool EEPROM_commit_var = false; 
 
 
 const byte flagvalue = 199;  // Used to identify which settings are saved. // NOT a memory location... 
@@ -75,9 +72,6 @@ const uint16_t AutoRestartEffectAddress = 137;
 const uint16_t ON_OFF_State_Address = 138; 
 
 
-const uint16_t START_address_settings = 160;
-
-
 const uint8_t deviceidAddressbyte = 1;
 const uint8_t ssidAddressbyte = 2;
 const uint8_t passwordAddressbyte = 3;
@@ -86,49 +80,30 @@ const uint8_t APbyte = 5; // Used to set emergency access mode...
 const uint8_t MQTTenabledbyte = 6;
 const uint8_t DEBUGenabledbyte = 7;
 const uint8_t SERIALspeedbyte = 8;
-
 const uint8_t PixelPIN_enablebyte = 9; 
 const uint8_t PixelCount_enablebyte = 10;
 
+const uint16_t START_address_settings = 160; // Start EEPROM address for Plugin
 
 
 
-//boolean MQTTenabled;
+bool DEBUG = false;
 
-long AP_STA_timer = 0;
-long MQTT_connect_timer = 0;
-long request_timeout = 0; 
-long Uptime_timer = 0;
-
-
-
-
-// Features Enables
-
-boolean MQTT_enabled = false;
-//boolean ThingSpeak_enable;
-//boolean Prowl_Enable;
-int DEBUG = false;
-boolean Plugin_enable = false;
-
-
-IPAddress MQTTserver(0,0,0,0);
-const IPAddress multicast_ip_addr(224,0,0,0);
-////////////////////-----------MQTT---------------///////////////////
-
-char mqtttopic[BUFSIZE];// = "esp";
-// char mqttserver[BUFSIZE];// = "192.168.1.24";
-String mqttserver_string = " "; 
-
-
-
-//const String htmlendstring = "<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a> <a href='/ws2812'>WS2812</a>";
 
 
 const uint8_t numberofbaudrates(6); 
 const long baudrates[numberofbaudrates] = {9600,115200,256000,460800,921600,2000000};
 uint8_t currentspeed = 2; 
 long serialspeed = 115200; 
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+//                                            Plugin Variables  
+//
+//////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 enum operatingState { 
@@ -220,7 +195,6 @@ uint32_t power = 0;
 
 uint8_t current_loaded_preset = 0; 
 bool current_loaded_preset_changed = false; 
-bool EEPROM_commit_var = false; 
 
 
 uint16_t pixelCount = 40;

@@ -1,7 +1,7 @@
 ////// ----- SSID Handle ---------
 void cache ssid_command (String value)
 {
-          //String buf;
+          char bufchar[BUFSIZE];
           value = value.substring(0,BUFSIZE-1);
           value.toCharArray(bufchar, BUFSIZE);
 
@@ -29,6 +29,7 @@ void cache ssid_command (String value)
 
 void cache password_command (String value)
 {
+          char bufchar[BUFSIZE];
           value = value.substring(0,BUFSIZE-1);
           value.toCharArray(bufchar, BUFSIZE);
           if (strcmp(password, bufchar) != 0)
@@ -51,6 +52,7 @@ void cache password_command (String value)
 
 void cache deviceid_command (String value)
 {
+          char bufchar[BUFSIZE];
           value = value.substring(0,BUFSIZE-1);
           value.toCharArray(bufchar, BUFSIZE);
           if (strcmp(deviceid, bufchar) != 0)

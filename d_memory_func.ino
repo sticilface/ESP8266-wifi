@@ -12,7 +12,7 @@ void LoadParams()
     MQTTserver[i] = EEPROM.read( mqttAddress+i);
    }
    
-   mqttserver_string = String(MQTTserver[0]) + "." + String(MQTTserver[1]) + "." + String(MQTTserver[2]) + "." + String(MQTTserver[3]) ; 
+   //mqttserver_string = String(MQTTserver[0]) + "." + String(MQTTserver[1]) + "." + String(MQTTserver[2]) + "." + String(MQTTserver[3]) ; 
 
   }
   

@@ -9,66 +9,52 @@ String cache macToStr(const uint8_t* mac)
   return result;
 }
 
-void cache clearbufchar()
-{
- for (int i = 0; i < BUFSIZE; i++) {
-    bufchar[i] = 0;
-  }
+
+
+String cache IPtoString(IPAddress address) {
+
+  String IP = "";
+  for (int i = 0; i < 4; i++)
+    { 
+      IP += String(address[i]); 
+      if (i < 3) IP += ".";
+    }
+
+  return IP;  
 }
 
-void cache updateIPaddress()
-{
-  LocalIP = "";
-  IPAddress myaddr = WiFi.localIP();
-  for (int i = 0; i < 4; i++)
-  { 
-  LocalIP += String(myaddr[i]); 
-  if (i < 3) LocalIP += ".";
-  }
-}
 
 bool cache firstboot() {
 
-if (EEPROM.read(0) != flagvalue) {
- EEPROM_wipe();
- EEPROM.write(0,flagvalue);
-
- Save_All_Defaults(); // sets sensible defaults...  
-
-  EEPROM_commit_var = true;
- return true; 
-} else { return false; }
-
-
+      if (EEPROM.read(0) != flagvalue) {
+            EEPROM_wipe();
+            EEPROM.write(0,flagvalue);
+            Save_All_Defaults(); // sets sensible defaults...  
+            EEPROM_commit_var = true;
+            return true; 
+      } else { 
+            return false; 
+      }
 
 }
 
  void cache getdeviceID()
 {
   
-  Serial.println();  
+  //Serial.println();  
 
     if(deviceid[0] == 0 || EEPROM.read(0) != flagvalue) 
-    {
-      
-      //clientName = "esp-";
-      //uint8_t mac[6];// = {12,34,56,78,89,34 };
-      //WiFi.macAddress(mac);
-      
-      //clientName += macToStr(mac);
+    {      
       (getdeviceID_MAC()).toCharArray(deviceid, BUFSIZE);      
-
       Serial.print("No Device name in EEPROM.....Creating Device Name: ");
-
       Serial.println(deviceid);
-      //Serial.println();
       } 
 } 
 
 
 String cache getdeviceID_MAC () {
       
-      clientName = "esp-";
+      String clientName = "esp-";
       uint8_t mac[6];// = {12,34,56,78,89,34 };
       WiFi.macAddress(mac);
       clientName += macToStr(mac);
@@ -77,7 +63,7 @@ String cache getdeviceID_MAC () {
 
 
 
-void  restartNetworking() 
+void cache restartNetworking() 
 {
   
   networkrestart = false;
@@ -131,7 +117,6 @@ void  restartNetworking()
 
   }
   
-  updateIPaddress();
   
   }
 
@@ -166,11 +151,10 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
 } 
 
 
- void cache scannetworks()
+ int cache scannetworks()
 {
   Serial.println("Scanning for Networks");
-  wifinetworksfound = WiFi.scanNetworks();
-
+   return WiFi.scanNetworks();
 } 
 
 
@@ -208,7 +192,7 @@ void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
 
 
 // My own OTA update, that does not crash on a malformed UDP Packet
-void OTA_UPDATE() {
+void cache OTA_UPDATE() {
 
   if (OTA.parsePacket()) {
 

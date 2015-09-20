@@ -131,19 +131,21 @@ Wifi Config Page
 
 
 void ICACHE_FLASH_ATTR handle_wifi() {
+
+  uint8_t wifinetworksfound = WiFi.scanNetworks();
  
  if (server.arg("ssid").length() !=0 ) ssid_command(server.arg("ssid"));
  if (server.arg("password").length() !=0 ) password_command(server.arg("password"));
  if (server.arg("deviceid").length() !=0 ) deviceid_command(server.arg("deviceid"));
  if (server.arg("mqttserver").length() !=0 ) mqttserver_command(server.arg("mqttserver")); 
- if (server.arg("scan").length() !=0 ) scannetworks();
+ //if (server.arg("scan").length() !=0 ) scannetworks();
  if (server.arg("reboot").length() !=0 ) ESP.reset(); // abort();
 
 
-   buf = insertvariable ( FPSTR(webpage_handlewifi_1) , LocalIP ); 
-   buf = insertvariable ( buf, LocalIP ); 
+   buf = insertvariable ( FPSTR(webpage_handlewifi_1) , IPtoString(WiFi.localIP()) ); 
+   buf = insertvariable ( buf, IPtoString(WiFi.localIP() ) ); 
    buf = insertvariable ( buf, String(ssid) ); 
-   buf = insertvariable ( buf, mqttserver_string ); 
+   buf = insertvariable ( buf, IPtoString(MQTTserver) ); 
    if (mqttclient.connected()) buf = insertvariable ( buf, "Connected" ) ; else buf = insertvariable ( buf, "Disconnected" ) ; 
    buf = insertvariable ( buf,   String(deviceid) ); 
    buf = insertvariable ( buf,   String(deviceid) ); 

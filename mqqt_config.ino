@@ -2,30 +2,16 @@
 
 
 
-//void callback(char* mqtttopic, byte* payload, unsigned int length) {
 
-void MQTTcallback (const MQTT::Publish& pub) {
-
-  //Serial.print("MQTT Message Recieved: ");
-  //Serial.print(pub.topic());
-  //Serial.print(" => ");
-  //Serial.println(pub.payload_string());
+void cache MQTTcallback (const MQTT::Publish& pub) {
 
 
-    //String topicrecieved = pub.topic();
-    
-  //  mqttbuf = pub.payload_string();
-
- // -- 1) Identify ESP commands
  if (pub.payload_string() == "identify") 
       {
                 Serial.print("Identify Request Recieved: ");
                 String temp = "esp/" + String(deviceid);
-                //temp.toCharArray(mqttcharbuf,200);
-                //char iparray[20];
-                //LocalIP.toCharArray(iparray,20) ; // WiFi.localIP();
                 
-                if(mqttclient.publish(temp, LocalIP)) Serial.println("Sent"); 
+                if(mqttclient.publish(temp, IPtoString(WiFi.localIP()) )) Serial.println("Sent"); 
       } 
       
 if (pub.payload_string() == "reboot" || pub.payload_string() == "restart") ESP.reset(); //system_restart(); // abort();
@@ -90,36 +76,28 @@ void cache initiatemqqt ()
                    .add_topic(deviceid,2)  // this is the esp topic... 
                    );
                 //delay(5);
-                send_mqtt_msg( String(deviceid), LocalIP,2); // the 2 signifies that it publishes under the esp/ topic and not device
+                send_mqtt_msg( String(deviceid), IPtoString(WiFi.localIP()) ,2); // the 2 signifies that it publishes under the esp/ topic and not device
                 //delay(5);
-                send_mqtt_msg( "IP", LocalIP);   
+                send_mqtt_msg( F("IP"), IPtoString(WiFi.localIP() ));   
                 //delay(5);
-                send_mqtt_msg( "Version", version);                
+                send_mqtt_msg( F("Version"), version);                
                 //delay(5);
 
-                send_mqtt_msg( "Status", "Device Ready");
+                send_mqtt_msg( F("Status"), F("Device Ready"));
               
             } else
                 {
-                Serial.println("Failed");
+                Serial.println(F("Failed") );
                 }
   
         } else {
-                Serial.println("Connected already");
+                Serial.println(F("Connected already"));
          } 
         } else {
-                Serial.println("No MQTT Server is Defined");
+                Serial.println(F("No MQTT Server is Defined"));
         }
 } 
   
-void cache mqttbufcharclear ()
-  {
-    for (int i = 0; i <200; i++)
-    { 
-      mqttcharbuf[i] = 0;
-    }
-    
-  } 
 
 
 void  send_mqtt_msg (String topic, String message, int type )
@@ -207,7 +185,7 @@ void cache handle_mqtt() {
 
      if(MQTT_enabled) {
       
-          buf += "<br>MQTT Server is: " + String(mqttserver_string) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
+          buf += "<br>MQTT Server is: " + IPtoString(MQTTserver) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
           server.client().print(buf); 
           buf = insertvariable ( FPSTR(webpage_mqtt_2), String(deviceid));
           buf = insertvariable ( buf, String(deviceid));
