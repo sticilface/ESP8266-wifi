@@ -6,15 +6,16 @@
 void cache MQTTcallback (const MQTT::Publish& pub) {
 
 
- if (pub.payload_string() == "identify") 
+ if (pub.payload_string() == F("identify") )
       {
-                Serial.print("Identify Request Recieved: ");
-                String temp = "esp/" + String(deviceid);
+                Serial.print(F("Identify Request Recieved: "));
+                String temp = F("esp/"); 
+                temp += String(deviceid);
                 
-                if(mqttclient.publish(temp, IPtoString(WiFi.localIP()) )) Serial.println("Sent"); 
+                if(mqttclient.publish(temp, IPtoString(WiFi.localIP()) )) Serial.println(F("Sent")); 
       } 
       
-if (pub.payload_string() == "reboot" || pub.payload_string() == "restart") ESP.reset(); //system_restart(); // abort();
+if (pub.payload_string() == F("reboot") || pub.payload_string() == F("restart")) ESP.reset(); //system_restart(); // abort();
 
 
 //  NEW METHODS.... 
@@ -22,7 +23,6 @@ if ((pub.topic()).indexOf("/effect/set") > 0) WS2812_effect_string(pub.payload_s
 if ((pub.topic()).indexOf("/mode/set") > 0) WS2812_mode_string(pub.payload_string());
 if ((pub.topic()).indexOf("/timer/set") > 0) WS2812timer_command_string(pub.payload_string());
 if ((pub.topic()).indexOf("/brightness/set") > 0) WS2812_dim_string(pub.payload_string());
-//if ((pub.topic()).indexOf("/animationspeed/set") > 0) AnimationSpeed_command_string (    pub.payload_string()  );
 if ((pub.topic()).indexOf("/colour/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
 if ((pub.topic()).indexOf("/color/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
 if ((pub.topic()).indexOf("/loadpreset/set") > 0) WS2812_preset_string(pub.payload_string());
@@ -45,29 +45,29 @@ void cache initiatemqqt ()
 
         // generate topic...
 
-        String topicString = String(deviceid) + "/Status";
+        String topicString = String(deviceid) + F("/Status");
         char topic[50]; 
         topicString.toCharArray(topic,50);
-        String MainTopicString = String(deviceid) + "/+/+";
+        String MainTopicString = String(deviceid) + F("/+/+");
 
-      Serial.print("Initiating MQTT Connection: ");
+      Serial.print(F("Initiating MQTT Connection: "));
 
       if (EEPROM.read(mqttAddressbyte) == flagvalue) 
         {                   
       if (!mqttclient.connected()) 
         {             // - check to see if connected 
           
-          Serial.print("Connecting: ") ;
+          Serial.print(F("Connecting: ") );
             //Serial.print(MQTTserver);
             //Serial.print(")....");
 
           if (  mqttclient.connect(MQTT::Connect(deviceid)
                .set_clean_session()
-               .set_will(topic, "Connection Lost!")
+               .set_will(topic, F("Connection Lost!"))
                .set_keepalive(60)
               ) ) {
 
-                Serial.println("Success");
+                Serial.println(F("Success" )) ;
                 MainTopicString.toCharArray(topic,50);
 
             mqttclient.subscribe(MQTT::Subscribe()
@@ -146,7 +146,7 @@ void cache handle_mqtt() {
     if (EEPROM.read(MQTTenabledbyte) != 0) EEPROM.write(MQTTenabledbyte, 0); // write mqtt enabled byte....
     EEPROM_commit_var = true;
     mqttclient.disconnect();      
-    Serial.println("MQQT DISABLED");
+    Serial.println(F("MQQT DISABLED"));
 
     }
 
@@ -155,19 +155,19 @@ void cache handle_mqtt() {
   String MQTT_enabled_checked_yes;
   String MQTT_enabled_checked_no;
 
-  String form_Uptime_enabled_yes = "checked" ;
+  String form_Uptime_enabled_yes = F("checked") ;
   String form_Uptime_enabled_no = " ";
 
   int mqttconnected = mqttclient.connected();
 
   if (MQTT_enabled == true) {
 
-  MQTT_enabled_checked_yes = "checked" ;
+  MQTT_enabled_checked_yes = F("checked") ;
   MQTT_enabled_checked_no = " ";
   }
   else {
   MQTT_enabled_checked_yes = " " ;
-  MQTT_enabled_checked_no = "checked";
+  MQTT_enabled_checked_no = F("checked");
    }
 
   buf = insertvariable ( FPSTR(webpage_mqtt_1) , String(deviceid));
@@ -185,7 +185,9 @@ void cache handle_mqtt() {
 
      if(MQTT_enabled) {
       
-          buf += "<br>MQTT Server is: " + IPtoString(MQTTserver) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
+          buf += F("<br>MQTT Server is: ");
+          buf += IPtoString(MQTTserver) + "..."; 
+          (mqttconnected)? buf += F("<font color='green'> Connected </font>"): buf += F("<font color='red'> Disconnected </font>");
           server.client().print(buf); 
           buf = insertvariable ( FPSTR(webpage_mqtt_2), String(deviceid));
           buf = insertvariable ( buf, String(deviceid));

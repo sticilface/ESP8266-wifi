@@ -1,16 +1,3 @@
-// TODO.... 
-// 1.  Move animationspeed AND effects timer into one variable! 
-// 2.  
-// 3.  consolidate text and order of effects
-// 4.  MQTT - direct to pixel buffer (maybe have to re work the size of the buffer --->  look at update by mqtt...)
-// 5.   
-// 6.  Maybe get changes in current dim level to Walk the pixel buffer... and NOT reset the animation effect state
-// 7.  rework ALL effects to use animations class in progress
-// 8.  SORT OUT THE HSL FLOATS STUFF
-// 9   Implement Var3 as pallette type.. Colour Picker, Complementary, analogous, Split complements, triadic, tetradic : http://www.sessions.edu/color-calculator
-// 10. Var4 = Pallette Range
-// 11. Var? = No of available colours to choose from.   
-// 12. Use AJAX and XML to serve static web page!  
 
 
 void cache ws2812 ()  // put switch cases here...
@@ -79,7 +66,7 @@ switch (opState)
       test4();
       break;
     case SQUARES:
-      Squares();
+      //Squares();
       break;
     case EQ1:
       eq1();
@@ -120,45 +107,25 @@ timer_effect_tick = millis();
 
 } // end of if timer for effect generation.... 
 
-// if (  (millis() - update_strip_time > 15) && ( opState != ADALIGHT || opState != UDP ) ) {
 
-//     static bool alternate_flag = false; 
-
-//     if ( animator->IsAnimating() && !alternate_flag ) { animator->UpdateAnimations(100); }  // do animatiors every 30
-  
-//     SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms.  // do show every 15.. to make smooth...
-//     //  one LED takes 30uS of nointeruppts, 100 takes 3ms. 
-//     update_strip_time = millis();
-
-//     alternate_flag = !alternate_flag; 
-  
-//   } 
 
 
 if (  (millis() - update_strip_time > Pixel_Update_Freq) && ( opState != ADALIGHT || opState != UDP ) ) {
+  
   if (Enable_Animations) {
     if ( animator->IsAnimating() ) animator->UpdateAnimations(100); 
   }
 
     strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
-
-    //  one LED takes 30uS of nointeruppts, 100 takes 3ms. 
     update_strip_time = millis();
   
   } 
 
 
 
-  if (millis() - timer_PixelPower > 10000) { // was 10 seconds
+  if (millis() - timer_PixelPower > 10000) { 
        power = getPixelPower();
-       //Debugf("Power =%u \n",power); 
        timer_PixelPower = millis();
-    //   Debugf("HEAP = %u\n", ESP.getFreeHeap()); 
-    //   Debugf("Send_Fail: count = %u, average/s = %u \n", send_fail_count, send_fail_count / 10);
-    //   send_fail_count = 0;
-    //   File f = SPIFFS.open("/power.htm", "a");
-    //   f.println(power);
-    //   f.close();
     }
  
 
@@ -175,7 +142,7 @@ if (millis() - HoldingState_Failover > 5000) {
     opState = HoldingOpState;
     triggered = false; 
     Current_Effect_State = PRE_EFFECT; 
-    Debugln("HoldingState Failover activated");
+    Debugln(F("HoldingState Failover activated"));
   }
 
 }
@@ -183,38 +150,18 @@ if (millis() - HoldingState_Failover > 5000) {
 if(LED_Settings_Changed) {
   Save_LED_Settings(0);                    // Save current settings to EEPROM
   current_loaded_preset_changed = true;    // Change flag to say current effect has changed
-  send_mqtt_msg("Preset", "0");            // Update the MQTT preset selection to 0
+  send_mqtt_msg(F("Preset"), "0");            // Update the MQTT preset selection to 0
   LED_Settings_Changed = false;            // Reset settings changed. 
 }
 
-
-/*
-static bool ani_update = false;
-
-if (!ani_update && strip->IsAnimating()) {
-  Serial.print("Animating...");
-  ani_update = true;
-} else if (ani_update && !strip->IsAnimating()) {
-  Serial.println("Stopped");
-  ani_update = false;
-}
-*/
-
-//    send_mqtt_msg("effect", MODE_STRING[opState]); 
-
 //  Deal with pause... only when effect is in the run phase... 
-    if (paused && Current_Effect_State == RUN_EFFECT) {
+if (paused && Current_Effect_State == RUN_EFFECT) {
       Current_Effect_State = EFFECT_PAUSED ;
       if (Enable_Animations) animator->Pause();
     } else if (!paused && Current_Effect_State == EFFECT_PAUSED) {
       Current_Effect_State = RUN_EFFECT ;
       if (Enable_Animations) animator->Resume(); 
     }
-
-
-//lasteffectupdate = millis(); 
-
-
 
 
 } // end of ws2812 function 
@@ -242,25 +189,10 @@ String randomcolours = " " ;
       }
 
  if (server.hasArg("rgbpicker"))  { 
-    //WS2812_mode_string("rgb-" + server.arg("rgbpicker"));
     WS2812_Set_New_Colour(server.arg("rgbpicker"));
-    Debugln("RGB picker command: " + server.arg("rgbpicker"));
   }
 
-   if (server.hasArg("presetsave")) Save_LED_Settings(  server.arg("presetsave").toInt() );
-
-  //if (server.arg("command").length() != 0) WS2812_command_string(server.arg("command"));
-
-//  if (server.arg("leds").length() != 0) {
-//    pixelCount = server.arg("leds").toInt();
-//    updateLEDs = true;
-//  }
-
-//   if (server.arg("ledpin").length() != 0) {
-//    pixelPIN = server.arg("ledpin").toInt();
-//    updateLEDs = true;
-//  }
-
+  if (server.hasArg("presetsave")) Save_LED_Settings(  server.arg("presetsave").toInt() );
   if (server.hasArg("modedrop"))  WS2812_mode_string(server.arg("modedrop"));
   if (server.hasArg("palettedrop"))   { 
       WS2812_Settings.Palette_Choice = server.arg("palettedrop").toInt(); 
@@ -279,48 +211,18 @@ String randomcolours = " " ;
       //----  having this under here works better as the page gets updated before the request data is fired back!
 
       if (paused) { 
-        paused_string = "<a href='/ws2812?paused=0'>PLAY</a> " ; 
+        paused_string = F("<a href='/ws2812?paused=0'>PLAY</a> " ); 
       } else {
-        paused_string = "<a href='/ws2812?paused=1'>PAUSE</a>" ; 
+        paused_string = F("<a href='/ws2812?paused=1'>PAUSE</a>" ); 
       }
-//<!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta name='viewport' content='initial-scale=1'><title> % </title></head><body><h1> % </h1>\
-
-// String content3 = F("\
-// <!DOCTYPE HTML>\
-//   <head>\
-//     <title>%</title>\
-//     <meta name='viewport' content='width=device-width, initial-scale=1'/>\
-//     <meta http-equiv='Pragma' content='no-cache'>\
-//     <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
-//     <style>\
-//        body {background-color: #E6E6FA;}\
-//     </style> \
-//   </head>\
-// <body><h1> % </h1>\
-// %\
-// <br> <a href='/ws2812?mode=off'>OFF</a> | <a href='/ws2812?mode=on'>ON</a>  | % | <a href='/ws2812?mode=refresh'>REFRESH</a> | <a href='/lightsconfig'>CONFIG</a>\
-// <br> PRESET: <a href='/ws2812?preset=1'>1</a> | <a href='/ws2812?preset=2'>2</a> | <a href='/ws2812?preset=3'>3</a> | <a href='/ws2812?preset=4'>4</a> | <a href='/ws2812?preset=5'>5</a> | <a href='/ws2812?preset=6'>6</a> | <a href='/ws2812?preset=7'>7</a> | <a href='/ws2812?preset=8'>8</a> | <a href='/ws2812?preset=9'>9</a> | <a href='/ws2812?preset=10'>10</a>\
-// <form name=frmTest action='/ws2812' method='POST'>\
-// <br>Select Mode <select name='modedrop' onchange='this.form.submit();'>\
-// ");
 
   buf = insertvariable ( FPSTR(webpage_ws2812_main_1), String(deviceid));
   buf = insertvariable ( buf, String(deviceid));
-  
- // if (WiFi.status() == WL_CONNECTED) 
-buf = insertvariable ( buf, "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>");
- // old  buf = insertvariable ( buf, F("<script type='text/javascript' src='/jscolor.js'></script>"));
-
- //   } else { buf = insertvariable ( buf, " "); } ;
-//buf = insertvariable ( buf, " "); // get rid of this when above is included...
-
+  buf = insertvariable ( buf, F("<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"));
   buf = insertvariable ( buf, paused_string);
 
-
-//  if (wifimode == 1) { buf += "<script type='text/javascript' src='http://jscolor.com/jscolor/jscolor.js'></script>"; } ; // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-
-    server.send(200, "text/html", "");
+    server.send(200, F("text/html"), "");
     WiFiClient client = server.client();
 
     //server.sendContent(buf);
@@ -333,38 +235,29 @@ for (uint8_t k=0; k < numberofmodes; k++ ) {
     if (HoldingOpState == k) { 
         selected = "' selected "; 
       } else selected = "' "; 
-  buf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + MODE_STRING[k] + "</option>";
-   // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
-  }
+    buf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + MODE_STRING[k] + "</option>";
+    }
 
-  buf += "</select>";
-  buf += "</form>";
-
-
-    //server.sendContent(buf);
+    buf += F("</select>");
+    buf += F("</form>");
     server.client().print(buf);
     buf = " "; 
 
-// Palletee
 
-// String content4 = F("\
-// <form name=frm action='/ws2812' method='POST' style ='display:inline;'>\
-// Select Palette <select name='palettedrop' onchange='this.form.submit();'>\
-// ");
 
     server.client().print(FPSTR(webpage_ws2812_main_2));
 
 for (uint8_t k = 0; k < numberofpalettes; k++ ) {
     if (WS2812_Settings.Palette_Choice == k) { 
-        selected = "' selected "; 
-      } else selected = "' "; 
+        selected = F("' selected "); 
+      } else selected = F("' "); 
 
   buf += "<option value='" + String(k) + selected + ">" + String(k) + ". " + PALETTE_STRING[k] + "</option>";
    // httpbuf += "<option value='" + String(k) + "'" + ">" + String(k) + "</option>";
   }
 
-  buf += "</select>";
-  buf += "</form>";
+  buf += F("</select>");
+  buf += F("</form>");
 
 
     //server.sendContent(buf);
@@ -373,67 +266,23 @@ for (uint8_t k = 0; k < numberofpalettes; k++ ) {
 
     if (WS2812_Settings.Random == 1 ) randomcolours = "checked"; else randomcolours = " ";  
 
-//   String content00 = F("\
-// <form action='/ws2812' method = 'POST' style ='display:inline;'>\
-//   <input type='checkbox' name='random' value='1' % onchange='this.form.submit();'>\
-// </form>\
-// "); 
-
 
   buf = insertvariable ( FPSTR(webpage_ws2812_main_3), randomcolours);  //WebRGBcolour
   
   server.client().print(buf);
-
-
-
-  // //if(WiFi.status() == WL_CONNECTED) {
-  // String content0 = F("<form action='/ws2812' method='POST'\
-  // <p>Color: <input class='color' name='rgbpicker' value = '%' >\
-  // <br>  <input type='submit' value='Submit'/>\
-  // </form>\
-  // ");
 
   buf = insertvariable ( FPSTR(webpage_ws2812_main_4), WebRGBcolour);  //WebRGBcolour
   
     //server.sendContent(buf);
     server.client().print(buf);
 
+    buf = insertvariable ( FPSTR(webpage_ws2812_main_5), String(WS2812_Settings.Brightness)); 
+    buf = insertvariable ( buf, String(WS2812_Settings.Timer)); 
 
+    String loaded_var; 
 
-  //}  // This is needed as it pulls in stuff from internet... when in AP mode causes crash.  
-  
-
- // 1 = CurrentAnimationSpeed String(CurrentAnimationSpeed) 
- // 2 = CurrentBrightness String(CurrentBrightness)
- // 3 = WS2812interval String(WS2812interval)
- // 4 = pixelCount String(pixelCount)
- // 5 = pixelPIN String(pixelPIN)
- // 6 = String(power) 
-  //    <br>Animation: <input type='range' name='anispeed'min='1' max='10000' value='%' onchange='this.form.submit();' >\
-
-  // String content1 = F("\
-  // <form name=sliders action='/ws2812' method='POST'>\
-  // <br>Brightness: <input type='range' name='dim'min='0' max='255' value='%' onchange='this.form.submit();' >\
-  // <br>Timer: <input type='range' name='timer'min='1' max='2000' value='%' onchange='this.form.submit();'>\
-  // </form><br>\
-  //   <form action='/ws2812' method='POST' style='display:inline;'>\
-  //   Current Preset: % \
-  //   <br>Save Preset: <input type='text' id='presetsave' name='presetsave' value='%' >\
-  //   <input type='submit'  value='Save'/>\
-  //   </form>\
-  //   <br>Power = %mA\
-  // ");
-  
-  //buf = insertvariable ( content1, String(CurrentAnimationSpeed)); 
-  buf = insertvariable ( FPSTR(webpage_ws2812_main_5), String(WS2812_Settings.Brightness)); 
-  buf = insertvariable ( buf, String(WS2812_Settings.Timer)); 
- // buf = insertvariable ( buf, String(pixelCount)); 
- // buf = insertvariable ( buf, String(pixelPIN)); 
-
-  String loaded_var; 
-
-  if (current_loaded_preset == 0)  { loaded_var = "none" ; } else { loaded_var = String(current_loaded_preset) ; } ; 
-  if (current_loaded_preset_changed) { loaded_var += " (unsaved changes)" ; }; 
+  if (current_loaded_preset == 0)  { loaded_var = F("none") ; } else { loaded_var = String(current_loaded_preset) ; } ; 
+  if (current_loaded_preset_changed) { loaded_var += F(" (unsaved changes)") ; }; 
 
 
   buf = insertvariable ( buf, loaded_var ); 
@@ -441,16 +290,8 @@ for (uint8_t k = 0; k < numberofpalettes; k++ ) {
   buf = insertvariable ( buf, String(power) ); 
   buf += FPSTR(htmlendstring); 
  
-  //server.send(200, "text/html", buf);
+  server.client().print(buf);
 
-
-    //server.sendContent(buf);
-    server.client().print(buf);
-
-//if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
-//power = getPixelPower();
-
-//animator->Resume();
 }
 
 
@@ -465,8 +306,8 @@ if ( (Value == "on" || Value == "yes") && CurrentRestartValue == false )
     { 
       EEPROM.write(AutoRestartEffectAddress, 1) ;
       EEPROM_commit_var = true; 
-      Serial.print("Auto Restart Set to True");
-      send_mqtt_msg("AutoRestart", "Auto restart set to true"); 
+      Serial.print(F("Auto Restart Set to True"));
+      send_mqtt_msg(F("AutoRestart"),F( "Auto restart set to true")); 
       changed = true; 
     }
 
@@ -474,20 +315,19 @@ if ( (Value == "off" || Value == "no") && CurrentRestartValue == true )
     { 
       EEPROM.write(AutoRestartEffectAddress, 0) ;
       EEPROM_commit_var = true; 
-      Serial.print("Auto Restart Set to False");
-      send_mqtt_msg("AutoRestart", "Auto restart set to false"); 
+      Serial.print(F("Auto Restart Set to False"));
+      send_mqtt_msg(F("AutoRestart"), F("Auto restart set to false")); 
       changed = true; 
     }
  
-if (changed == false) send_mqtt_msg("AutoRestart", "Auto restart unchanged"); 
+if (changed == false) send_mqtt_msg(F("AutoRestart"), F("Auto restart unchanged")); 
 
 
 }
 
 
 void cache WS2812_toggle_string(String Value) {
-  //Serial.print("toggle hit, original mode = "); 
-  //Serial.println(current_loaded_preset); 
+
 
       if (Value == "toggle") {
 
@@ -511,11 +351,8 @@ void cache WS2812_toggle_string(String Value) {
               if (saved != 0) break; 
               current_loaded_preset++;        
               if (current_loaded_preset > 10) current_loaded_preset = 1;
-           //   Serial.print(current_loaded_preset);
-           //   Serial.print(",");
           }
-          //Serial.print("  scan end.... mode asked for = ");
-          //Serial.print(current_loaded_preset);
+
           WS2812_preset_string(String(current_loaded_preset));
         }
     }
@@ -555,22 +392,6 @@ void cache send_current_settings () {
 }
 
 
-// THINK THIS IS REDUNDANT FUNCTION NOW... 
-// void cache WS2812_mode_number(String Value) {
-
-//       lasteffectupdate = 0;
-//       uint8_t chosen_mode = Value.toInt();
-//       Debugln("MODE DROP recieved: " + Value);
-//       opState = (operatingState)chosen_mode;
-
-//       if (chosen_mode != 0)  { 
-//       LastOpState = (operatingState)chosen_mode;
-//       LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-//       }
-// }
-
-//  might need to add an effect function timeout thing....  to reset effect and call update with NEW dim setting... 
-
 
 void  cache  WS2812_dim_string (String Value)
 {
@@ -591,9 +412,10 @@ void  cache  WS2812_dim_string (String Value)
 
       // if (isnan(CurrentBrightness)) CurrentBrightness = 255;
 
-      Debugln("Brightness set to: " + String(WS2812_Settings.Brightness));
+      Debug(F("Brightness set to: "));
+      Debugln ( String(WS2812_Settings.Brightness) );
 
-      send_mqtt_msg("brightness", String(WS2812_Settings.Brightness));
+      send_mqtt_msg(F("brightness"), String(WS2812_Settings.Brightness));
 
 }
 
@@ -677,9 +499,9 @@ void  cache WS2812_mode_string (String Value)
 
 
    if (HoldingOpState == OFF) { 
-    send_mqtt_msg("mode","off");
+    send_mqtt_msg(F("mode"),"off");
   } else { 
-    send_mqtt_msg("mode", "on");
+    send_mqtt_msg(F("mode"), "on");
   }
 
       
@@ -700,7 +522,7 @@ void cache WS2812_Set_New_Colour (String instruction) {
       Effect_Refresh = true;         // flag current effect that settings have changed 
       current_loaded_preset_changed = 1; 
       
-      send_mqtt_msg("colour", WebRGBcolour); 
+      send_mqtt_msg(F("colour"), WebRGBcolour); 
 
 
 }
@@ -714,9 +536,9 @@ void cache WS2812timer_command_string (String Value)
 
   //  lasteffectupdate = 0;
     WS2812_Settings.Timer = Value.toInt();
-    send_mqtt_msg("timer", Value); 
+    send_mqtt_msg(F("timer"), Value); 
     LED_Settings_Changed = true;   // Calls the modifier to save all the current settings to EEPROM... 
-    Debugf("Timer = %u \n", WS2812_Settings.Timer);
+    Debugf(F("Timer = %u \n"), WS2812_Settings.Timer);
 }
 
 
@@ -819,7 +641,7 @@ void cache initiateWS2812 ()
   ChangeNeoPixels(pixelCount, pixelPIN); // initial setup
   Pixel_Update_Freq = 10 + ( pixelCount * 30 ) / 1000 ;   
   if (Pixel_Update_Freq < MINIMUM_REFRESH ) Pixel_Update_Freq = MINIMUM_REFRESH;  
-  Debugf("Update frequency = %u\n", Pixel_Update_Freq);
+  Debugf(F("Update frequency = %u\n"), Pixel_Update_Freq);
   strip->Begin();
   SetRandomSeed();
   
@@ -971,20 +793,6 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 } // end of coolblobs
 
 
-//////// i nserted
-/*
-
-void setcolour () {
-
-    for (uint8_t pixel = 0; pixel < pixelCount; pixel++) {
-
-      //strip->LinearFadePixelColor(5000, pixel, NewColour);
-
-    }
-
-}
-
-*/
 
 void cache  FadeInFadeOutRinseRepeat(uint8_t peak) {
 
@@ -1091,19 +899,7 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 void cache SetRandomSeed()
 {
-  // uint32_t seed;
-  // random works best with a seed that can use 31 bits
-  // analogRead on a unconnected pin tends toward less than four bits
-  // seed = analogRead(0);
-  // delay(1);
-  
-  // for (int shifts = 3; shifts < 31; shifts += 3)
-  // {
-  //   seed ^= analogRead(0) << shifts;
-  //   delay(1);
-  // }
-  
-  // Serial.println(seed);
+
   randomSeed(ESP.getCycleCount());
 
 }
@@ -1138,7 +934,7 @@ switch(Current_Effect_State) {
  if (animator->IsAnimating()) { break; }  ; //  This line stops the effect from running if it is still animating! 
      
       if (millis() - lasteffectupdate > ( WS2812_Settings.Timer * 150 )) {      
-      fade_to(   dim(Wheel(random(0,255) ) ) , 2000, RGB ) ;
+      animator->FadeTo( 2000,  dim(Wheel(random(0,255) ) ) ) ;
       lasteffectupdate = millis(); 
 };
 
@@ -1196,25 +992,10 @@ switch(Current_Effect_State) {
 
 
        for (uint8_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++) {
-
           int pixel = return_shape_square(x_rand, y_rand, sq_pixel, square_size, total_x ); 
-          //Serial.print("."); 
-
-
-         // if (pixel >= 0) { 
-         //       if (animator->IsAnimating(pixel)) { coordinates_OK = false; Serial.println(" REJECT") ; break; }; 
-         // }
-         //   if (sq_pixel == (square_size * square_size)-1) { coordinates_OK = true; Serial.print(" ACCEPT") ;}; 
-
-         // }
-
-
-        Serial.print(pixel); 
-        Serial.print(",");
-
-
-
-}
+          Serial.print(pixel); 
+          Serial.print(",");
+        }
 
       lasteffectupdate = millis(); 
 
@@ -1232,38 +1013,7 @@ Serial.println(")");
 
 }
 
-/*
 
-
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
-
-//Serial.println("TEST4");
-  static int wsPoint = 0;
-  RgbColor color1 = Wheel(100);
-  RgbColor color2 = Wheel(200);
-
-if (wsPoint == 255) wsPoint = 0; 
- if (millis() > (lasteffectupdate ) ){
-
-
-
-
-
-HsvFADErgb(color1,color2,wsPoint); 
-
-
-
-lasteffectupdate = millis() + WS2812interval ;
-wsPoint++; 
-}
-
-if (Current_Effect_State == POST_EFFECT) Post_effect(); 
-}
-
-
-
-
-*/
 
 void  cache test() {
 switch(Current_Effect_State) {
@@ -1284,10 +1034,10 @@ switch(Current_Effect_State) {
             uint32_t stepsR =  time / ( color.R - originalColor.R ) ; 
             float steps_progress = 1.0 / ( color.R - originalColor.R ) ; 
 
-            Debug("progress / step = ");
+            Debug(F("progress / step = "));
 
             Serial.print(steps_progress); 
-            Serial.print(", ");
+            Serial.print(F(", "));
 
             AnimUpdateCallback animUpdate = [=](float progress)
             {
@@ -1304,8 +1054,6 @@ switch(Current_Effect_State) {
 
                 uint8_t tempprogressINT = (tempprogress / steps_progress ) * 100 ; 
 
-                //Serial.println((uint8_t)tempprogress);
-
                 updatecount++;
                 
                 updatedColor = RgbColor::LinearBlend(originalColor, color, progress);
@@ -1321,12 +1069,6 @@ switch(Current_Effect_State) {
 
                   if (toggle == 2) toggle = 0; 
 
-                  // if (updatedColor.R == strip->GetPixelColor(0).R) {
-                  //     // if the new color = current pixel colour.... do some magic
-                  //     static bool add  = 0;
-                  //     updatedColor.R += add; 
-                  //     add = !add; 
-                  // }
 
                 strip->SetPixelColor(0, updatedColor);
 
@@ -1361,64 +1103,11 @@ switch(Current_Effect_State) {
 
 
 
-// void rainbow(uint8_t wait) {
-//   uint16_t i, j;
-
-//   for(j=0; j<256; j++) {
-//     for(i=0; i<strip.numPixels(); i++) {
-//       strip.setPixelColor(i, Wheel((i+j) & 255));
-//     }
-//     strip.show();
-//     delay(wait);
-//   }
-// }
 
 
 
 
 
-/*
-
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
-// Var 1 = timer interval
-// Var 2 = wsPoint Min
-// Var 3 = wsPoint Max
-// Var 4 = wsPoint step....  
-// Var 5 = pixel jump?  ie... instead of i++, do i =+ var 3... ? might need to turn of previous pixel
-// Var 6 = wheel multipler... or wheel map..  (wheel takes value.. returns color...)
-// try to constrain wspoint which is color generator... 
- if(var3 == 0) var3 = 256; // MAKE sure that there is a +ve end point for the colour wheel... else wsPoint = var3;
-
- if (millis() > (lasteffectupdate) ){
-
-  static int wsPoint =0;
-  //uint16_t i; // , j;
-  //pixelsNUM = 60;
-  //for(j=0; j<256; j++) { v
-    for(int i=0; i<pixelCount; i++) {
-    //RgbColor tempcolour = Wheel(i+wsPoint);
-    strip->SetPixelColor(i, dim(Wheel(i+wsPoint)));
-    }
-    
-    if (wsPoint==var3) wsPoint=var2; 
-    wsPoint++;
-    lasteffectupdate = millis() + WS2812interval ;
-}
-    // Serial.println("Colours Updated..." + String(//strip->numPixels()));
-
-if (Current_Effect_State == POST_EFFECT) Post_effect(); 
-
-}   // END OF RAINBOW
-
-
-/*
-void cache clearpixels() {
-
-    memset(pixelsPOINT, 0, 3 * strip->PixelCount() );   // clear current without... 
-
-
-}
-*/
 
 
 
@@ -1538,106 +1227,106 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 // Working 
 
-void cache fade_to(RgbColor Colour) {
-fade_to(Colour,2000,RGB); 
-}
+// void cache fade_to(RgbColor Colour) {
+// fade_to(Colour,2000,RGB); 
+// }
 
-void cache fade_to(RgbColor Colour, uint16_t time ) {
-fade_to(Colour,time,RGB); 
-}
+// void cache fade_to(RgbColor Colour, uint16_t time ) {
+// fade_to(Colour,time,RGB); 
+// }
 
-void cache fade_to(RgbColor NewColour, uint16_t time, BlendMethod method ) {
+// void cache fade_to(RgbColor NewColour, uint16_t time, BlendMethod method ) {
     
-     for (uint16_t i = 0; i < pixelCount; i++)
+//      for (uint16_t i = 0; i < pixelCount; i++)
             
-            {
+//             {
 
-        RgbColor original = strip->GetPixelColor(i);
-        // NewColour = dim(NewColour);
+//         RgbColor original = strip->GetPixelColor(i);
+//         // NewColour = dim(NewColour);
 
-        AnimUpdateCallback animUpdate = [=](float progress)
-        {
-          if (method == RGB) { 
-            RgbColor updatedColor = RgbColor::LinearBlend(original, NewColour , progress) ;   
-            strip->SetPixelColor(i, updatedColor); 
-          }; 
+//         AnimUpdateCallback animUpdate = [=](float progress)
+//         {
+//           if (method == RGB) { 
+//             RgbColor updatedColor = RgbColor::LinearBlend(original, NewColour , progress) ;   
+//             strip->SetPixelColor(i, updatedColor); 
+//           }; 
 
-           if (method == HSL) { 
-            HslColor updatedColor = HslColor::LinearBlend(HslColor(original), HslColor(NewColour), progress); 
-            strip->SetPixelColor(i, updatedColor);  
-          };         
+//            if (method == HSL) { 
+//             HslColor updatedColor = HslColor::LinearBlend(HslColor(original), HslColor(NewColour), progress); 
+//             strip->SetPixelColor(i, updatedColor);  
+//           };         
            
-        };
+//         };
 
-        animator->StartAnimation(i, time, animUpdate);
-   }
-}
-
-
+//         animator->StartAnimation(i, time, animUpdate);
+//    }
+// }
 
 
-void cache Squares () {
 
-  /*
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
-  static int wsPoint = 0;
+// void cache Squares () {
+
   
-  if (var8 == 0) var8 = 5;
-  if (var7 == 0) var7 = 13;  
+// if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
 
-  uint8_t numberofpoints = var8; // default 5
-  uint8_t x,y;
-  uint8_t total_y = return_total_y(var7); 
-  uint8_t total_x = var7; 
+//   static int wsPoint = 0;
+  
+//   if (var8 == 0) var8 = 5;
+//   if (var7 == 0) var7 = 13;  
 
-
-    if ( (millis() > lasteffectupdate) && (!strip->IsAnimating()) ) {
-      for(int i = 0; i < pixelCount; i++) // SET everything to black!  
-      {
-        //strip->SetPixelColor(i,0);
-        strip->LinearFadePixelColor(CurrentAnimationSpeed, i, 0);
-      }
-
-      for (int i = 0; i < numberofpoints; i++) {
+//   uint8_t numberofpoints = var8; // default 5
+//   uint8_t x,y;
+//   uint8_t total_y = return_total_y(var7); 
+//   uint8_t total_x = var7; 
 
 
-      uint8_t x_rand = random(1, total_x-2) ; 
-      uint8_t y_rand = random(1, total_y-2) ;
+//     if ( (millis() > lasteffectupdate) && (!strip->IsAnimating()) ) {
+//       for(int i = 0; i < pixelCount; i++) // SET everything to black!  
+//       {
+//         //strip->SetPixelColor(i,0);
+//         strip->LinearFadePixelColor(CurrentAnimationSpeed, i, 0);
+//       }
 
-      RgbColor colour = Wheel(random(255)) ; //  RgbColor(random(255),random(255),random(255));
-
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand,y_rand,total_x), dim(colour));
-
-      colour.Darken(50);
-
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand + 1 , total_x     ), dim(colour));
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand     , total_x     ), dim(colour));
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand - 1 , total_x     ), dim(colour));
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand + 1 , total_x     ), dim(colour));
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand - 1 , total_x     ), dim(colour));
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand + 1 , total_x     ), dim(colour));
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand     , total_x     ), dim(colour));
-      strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand - 1 , total_x     ), dim(colour));       
+//       for (int i = 0; i < numberofpoints; i++) {
 
 
-    }
+//       uint8_t x_rand = random(1, total_x-2) ; 
+//       uint8_t y_rand = random(1, total_y-2) ;
 
-    lasteffectupdate = millis() + CurrentAnimationSpeed + (WS2812interval*10) ;
-    strip->StartAnimating(); // start animations
+//       RgbColor colour = Wheel(random(255)) ; //  RgbColor(random(255),random(255),random(255));
 
-    }
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand,y_rand,total_x), dim(colour));
+
+//       colour.Darken(50);
+
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand + 1 , total_x     ), dim(colour));
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand     , total_x     ), dim(colour));
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand - 1 , y_rand - 1 , total_x     ), dim(colour));
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand + 1 , total_x     ), dim(colour));
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand     , y_rand - 1 , total_x     ), dim(colour));
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand + 1 , total_x     ), dim(colour));
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand     , total_x     ), dim(colour));
+//       strip->LinearFadePixelColor(CurrentAnimationSpeed, return_pixel(x_rand + 1 , y_rand - 1 , total_x     ), dim(colour));       
+
+
+//     }
+
+//     lasteffectupdate = millis() + CurrentAnimationSpeed + (WS2812interval*10) ;
+//     strip->StartAnimating(); // start animations
+
+//     }
 
 
 
-//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-if (Current_Effect_State == POST_EFFECT) Post_effect();  
+// //if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+// if (Current_Effect_State == POST_EFFECT) Post_effect();  
 
 
 
-*/
 
-} // end of Squares
+
+// } // end of Squares
 
 
 
@@ -1682,180 +1371,9 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-void cache Adalight_Flash() {
-
-    strip->ClearTo(RgbColor(255,0,0));
-    strip->Show(); 
-    delay(200);
-    
-    strip->ClearTo(RgbColor(0,255,0));
-    strip->Show(); 
-    delay(200);
-    
-    strip->ClearTo(RgbColor(0,0,255));
-    strip->Show(); 
-    delay(200);
-    
-    strip->ClearTo(RgbColor(0,0,0));
-    strip->Show(); 
-    delay(100); 
-
-  }
 
 
-void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
-  
-  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
-  static boolean Adalight_configured;
-  static uint16_t effectbuf_position = 0;
-  enum mode { MODE_INITIALISE = 0, MODE_HEADER, MODE_CHECKSUM, MODE_DATA, MODE_SHOW, MODE_FINISH};
-  static mode state = MODE_INITIALISE;
-  static int effect_timeout = 0;
-  static uint8_t prefixcount = 0;
-  static unsigned long ada_sent = 0; 
-  static unsigned long pixellatchtime = 0;
-  const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
-  static bool SendFailhere = false; 
-  //const unsigned long initializetimeout = 10000; 
-  //static unsigned long initializetime = 0; 
-    //if (!Adalight_configured) {
-    //    Adalight_Flash(); 
-    //    Adalight_configured = true;
-    //}
 
-//    if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
-//      pixellatchtime = 0; // reset counter / latch to zero should only fire when show pixls has been called!
-//      StripOFF();  // turn off pixels... 
-//      state = MODE_HEADER;  // resume header search....
-//    }
-
-    // if(millis() > initializetime + initializetimeout) state = MODE_INITIALISE; // this goes to initiaase mode...
-
-    if (Current_Effect_State == PRE_EFFECT) { state = MODE_INITIALISE; } ; 
-      //Pre_effect();  
-    // }
-
-    if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH;  
-
-    //if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH; 
-
-
-  switch (state) {
-
-    case MODE_INITIALISE:
-      Serial.println("Begining of Adalight");
-      timer_effect_tick_timeout = 0; 
-      if(millis() > 60000) Adalight_Flash(); 
-      state = MODE_HEADER;
-      Current_Effect_State = RUN_EFFECT; 
-      //Pre_effect();  
-      //Current_Effect_State = RUN_EFFECT;
-
-      break; 
-
-    case MODE_HEADER:
-
-      effectbuf_position = 0; // reset the buffer position for DATA collection...
-
-          if(Serial.available()) { // if there is serial available... process it... could be 1  could be 100....
-               
-            for (int i = 0; i < Serial.available(); i++) {  // go through every character in serial buffer looking for prefix...
-
-              if (Serial.read() == prefix[prefixcount]) { // if character is found... then look for next...
-                  prefixcount++;
-              } else prefixcount = 0;  //  otherwise reset....  ////
-
-            if (prefixcount == 3) {
-            effect_timeout = millis(); // generates START TIME.....
-            state = MODE_CHECKSUM;
-            prefixcount =0;
-            break; 
-            } // end of if prefix == 3
-            } // end of for loop going through serial....
-            } else if (!Serial.available() && (ada_sent + 5000) < millis()) {
-                  Serial.print("Ada\n"); // Send "Magic Word" string to host
-                  ada_sent = millis(); 
-            } // end of serial available....
-
-    break;
-
-    case MODE_CHECKSUM:
-
-        if (Serial.available() >= 3) {
-          hi  = Serial.read();
-          lo  = Serial.read();
-          chk = Serial.read();
-          if(chk == (hi ^ lo ^ 0x55)) {
-            state = MODE_DATA;
-          } else {
-            state = MODE_HEADER; // ELSE RESET.......
-          }
-        }
-
-      if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
-
-      break;
-
-    case MODE_DATA:
-
-        //  this bit is what might... be causing the flashing... as it extends past memory stuctures....
-        while (Serial.available() && effectbuf_position < 3 * strip->PixelCount()) {  // was <=  
-          
-          pixelsPOINT[effectbuf_position++] = Serial.read();
-          //if (effectbuf_position == 3 * strip->PixelCount()) break; 
-        }
-
-      if (effectbuf_position >= 3*pixelCount) { // goto show when buffer has recieved enough data...
-        state = MODE_SHOW;
-        break;
-      } 
-
-        if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
-
-
-      break;
-
-    case MODE_SHOW:
-
-      strip->Dirty(); // MUST USE if you're using the direct buffer copy... 
-
-  //    do { SendFail = strip->Show(); } while ( SendFail == 1 ) ;
-
-      // SendFailhere = strip->Show();
-       pixellatchtime = millis();
-
-      //if (!strip->Show()) state = MODE_HEADER;
-#ifndef ESPUARTWS2812 // NOT needed if driving LEDs using the UART Serial 1.
-
-    SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
-#else
-    strip->Show();
-#endif
-      state = MODE_HEADER;
-
-      break;
-
-    case MODE_FINISH:
-
-      Serial.print("END OF ADALIGHT..."); 
-      timer_effect_tick_timeout = 100; 
-      //Current_Effect_State = PRE_EFFECT; 
-      //opState = HoldingOpState; 
-      //state == MODE_INITIALISE; 
-      Post_effect();  
-
-    break; 
-}
-
-      //strip->Show();
-
-
- //initializetime = millis(); // this resets the timer 
-
-
-//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
-
-}
 
 
 // called to change the number of pixels
@@ -1873,7 +1391,7 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
 
     if (count != pixelCountstored) {
 
-        Debugln("Pixel count changed..."); 
+        Debugln(F("Pixel count changed...")); 
         int a = pixelCount / 256;
         int b = pixelCount % 256;        
         EEPROM.write(PixelCount_address,a);
@@ -1891,18 +1409,9 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     if (commitchanges == true) {
         //EEPROM_commit_var = true;
         EEPROM.commit(); // actually save changes to avoid having a boot loop....  and unable to exit... 
-        Debugln("WS2812 Settings Updated."); 
+        Debugln(F("WS2812 Settings Updated.")); 
         }
-//Debugln("1");
 
-//   if (animator != NULL)
-//   {
-// Debugln("1.1");
-//     delete animator;
-// Debugln("2");
-
-//   }
-//Debugln("3");
 
   if (strip != NULL)
   {           
@@ -1919,13 +1428,13 @@ void cache ChangeNeoPixels(uint16_t count, uint8_t pin)  {
     if (count > ANIMATION_LIMIT) { 
       Enable_Animations = false; 
       //animator = NULL; 
-      Debugln("Animations Disabled");
+      Debugln(F("Animations Disabled"));
     } else {
 
       if (animator != NULL) delete animator; // has to be here...
       animator = new NeoPixelAnimator(strip); //  this allows for massive strings with NO animator...
       Enable_Animations = true; 
-      Debugln("Animations Enabled");
+      Debugln(F("Animations Enabled"));
 
     }
 //Debugln("4");
@@ -1948,8 +1457,6 @@ int cache getPixelPower () {
   brightness = map(brightness,0,255,0,60);
   brightnesstally = brightnesstally + brightness;
 }
-
- //brightnesstally = brightnesstally / pixelCount;
 
 return brightnesstally;
 } 
@@ -2001,20 +1508,6 @@ bool updateLEDs = false;
   }
 
 
-  // String webpage_ws2812_config_1 = F("\
-  // <!DOCTYPE HTML>\
-  // <head>\
-  //   <title>%</title>\
-  //   <meta name='viewport' content='width=device-width, initial-scale=1'/>\
-  //   <meta http-equiv='Pragma' content='no-cache'>\
-  //   <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
-  //   <style>\
-  //      body {background-color: #E6E6FA;}\
-  //   </style> \
-  // </head>\
-  //   <body><h1> % </h1>\
-  //   <br> <a href='/lightsconfig?reset=true'>RESET</a> | <a href='/lightsconfig?resetall=true'>RESET ALL</a> \
-  //   <form name=form action='/lightsconfig' method='POST'>");
 
     buf = insertvariable ( FPSTR(webpage_ws2812_config_1), String(deviceid));
     buf = insertvariable ( buf, String(deviceid));
@@ -2071,14 +1564,14 @@ if (updateLEDs) { initiateWS2812(); updateLEDs = false;};
 
 
 
-int16_t cache return_pixel(uint16_t x, uint16_t y, uint16_t total_in_x) {
+int16_t cache return_pixel(const uint16_t x, const uint16_t y, const uint16_t total_in_x) {
   uint16_t a = (total_in_x * y) + x ;  // the added 1 is to allow a void pixel to equal 0. 
   if ( a > strip->PixelCount()  ) return -1;   // need the one otherwise it will stop one short of the end..
   return a; 
 }
 
 
-uint16_t cache return_total_y(uint16_t total_in_x) {
+uint16_t cache return_total_y(const uint16_t total_in_x) {
   uint16_t y = pixelCount / total_in_x; 
   uint8_t remainder = pixelCount % total_in_x;
   if (remainder > 0) { y++; } 
@@ -2087,7 +1580,7 @@ uint16_t cache return_total_y(uint16_t total_in_x) {
 
 
 //  Returns a pixel number... starting in bottom left...
-int16_t cache return_shape_square(uint16_t first_pixel_x, uint16_t first_pixel_y , uint16_t desired_pixel, uint8_t grid_size, uint16_t total_in_x) {
+int16_t cache return_shape_square(const uint16_t first_pixel_x, const uint16_t first_pixel_y , const uint16_t desired_pixel, const uint8_t grid_size, const uint16_t total_in_x) {
 
   int16_t pixel ; 
   uint16_t pixel_x, pixel_y, total_y;
@@ -2198,48 +1691,12 @@ if (millis() > (last_pixelshift + pixelshift_timer)) {
 
 
 void cache eq1 () {
-/*
-if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
-
-  if (millis() > lasteffectupdate  )  {
-
-      strip->SetPixelColor(3, RgbColor(255,0,0));
-      strip->SetPixelColor(4, RgbColor(0,255,0));
-      //strip->SetPixelColor(4, RgbColor(0,0,255));
-      lasteffectupdate = millis() + WS2812interval;
-  } 
-          
-uint8_t direction = random(0,2);
-
-if (direction == 0 ) {
-
-pixelshift(6,0);
-
-} else if (direction == 1) {
-
-pixelshift(0,6);
-
-} else if (direction == 2) {
-
-pixelshift_middle(); 
 
 
-};
- 
-// pixelshift(6,0);
 
-
-if (Current_Effect_State == POST_EFFECT) Post_effect(); 
-
-*/
 }
 
-// void cache Set_Colour_ToptoBottom() {
 
-// }
-
-//  This function returns a random colour from palette if no index is specified!  
-//  Returns a different colour than the previous one. 
 
 
 RgbColor cache Return_Palette (RgbColor Input) {
@@ -2573,42 +2030,6 @@ if (Current_Effect_State == POST_EFFECT) Post_effect();
 
 
 
-// void cache aaa(RgbColor a) {
-
-
-
-// }
-
-// void cache aaa(HslColor b) {
-
-
-  
-// }
-
-// void cache aaa(String b) {
-
-
-// }
-/*
-
-void cache send_status () {
-
-     if (opState == OFF) { 
-    send_mqtt_msg("mode","off");
-    send_mqtt_msg("effect","off");
-  } else { 
-    send_mqtt_msg("mode", "on");
-  }
-
-    //delay(10);
-    send_mqtt_msg("timer", String(WS2812interval));
-    send_mqtt_msg("brightness", String(CurrentBrightness));
-
-
-
-}
-*/
-
 void cache Save_All_Defaults() {
 
   Set_Defaults(); 
@@ -2620,7 +2041,7 @@ void cache Save_All_Defaults() {
 
   }
 
-  Serial.println("Default settings saved");
+  Serial.println(F("Default settings saved"));
   EEPROM_commit_var = true; 
 }
 
@@ -2646,24 +2067,6 @@ void cache Set_Defaults() {
 
 }
 
-// 
-//                              NEEDS WORK FOR SINGLE STRINGS...
-// 
-
-
-// XY return_adjacent(const XY &Input) {
-// bool OK;
-// XY Output; 
-// const uint16_t Total_X = WS2812_Settings.Total_X; 
-
-//             do {  
-//               const uint8_t direction = random(8); 
-//               OK = false; 
-//               Output = return_adjacent(Input, direction);
-//               if ( return_pixel(Output.x, Output.y, Total_X) < 0 ) OK = true; 
-//             } while (!OK);
-
-// }
 
 
 XY return_adjacent(const XY &Input) { ; // , const uint8_t direction) {
@@ -2700,13 +2103,7 @@ return Output;
 
 }
 
-// no longer needed... 
-// void cache initialiseAnimationObject(uint8_t n) {
 
-//         if (animatedobject != NULL) delete animatedobject; //         
-//         animatedobject = new AnimatedObject( strip, animator, n); //  ...  pointers to strip, animator number of objects... 
-
-// }
 
 XY cache toXY(uint8_t x, uint8_t y ) {
 
@@ -2745,7 +2142,7 @@ bool random_colour_timer (const uint32_t _time) {
 void cache Save_LED_Settings (uint8_t location) {
 
   WS2812_Settings.SavedOpState = (uint8_t)LastOpState; 
-  Debugf("Saved opState = %u \n", WS2812_Settings.SavedOpState); 
+  Debugf(F("Saved opState = %u \n"), WS2812_Settings.SavedOpState); 
   
   if ( location < 0 || location > 10) return;  // check valid storage range. 
 
@@ -2773,49 +2170,47 @@ int bytes_read = EEPROM_readAnything(address, WS2812_Settings);
 if (WS2812_Settings.SavedOpState != 0 ) { LastOpState = (operatingState)WS2812_Settings.SavedOpState; };  // Stops last opstate being over written by an OFF..
 
 
- // CurrentAnimationSpeed = WS2812_Settings.Animationspeed; 
 
-
-Serial.print("Settings loaded ------- ");
+Serial.print(F("Settings loaded ------- "));
 Serial.print(bytes_read) ;
-Serial.print(" Bytes read");
-Serial.print(" ------- \n" ); 
+Serial.print(F(" Bytes read"));
+Serial.print(F(" ------- \n") ); 
 
-  Debug("Op State        ==> ");
+  Debug(F("Op State        ==> "));
 Debugln(WS2812_Settings.SavedOpState);
-  Debug("Timer           ==> ");
+  Debug(F("Timer           ==> "));
 Debugln(WS2812_Settings.Timer);
-  Debug("Animation speed ==> ");
+  Debug(F("Animation speed ==> "));
 Debugln(WS2812_Settings.Animationspeed);
-  Debug("Brightness      ==> ");
+  Debug(F("Brightness      ==> "));
 Debugln(WS2812_Settings.Brightness);
-  Debug("Colour          ==> ");
+  Debug(F("Colour          ==> "));
 Debug(WS2812_Settings.Color.R);
-Debug("  "); 
+Debug(F("  ")); 
 Debug(WS2812_Settings.Color.G);
-Debug("  "); 
+Debug(F("  ")); 
 Debugln(WS2812_Settings.Color.B);
-  Debug("Palette         ==> ");
+  Debug(F("Palette         ==> "));
 Debugln(WS2812_Settings.Palette_Choice);
-  Debug("Palette Range   ==> ");
+  Debug(F("Palette Range   ==> "));
 Debugln(WS2812_Settings.Palette_Range);
-  Debug("Number Colours  ==> ");  
+  Debug(F("Number Colours  ==> "));  
 Debugln(WS2812_Settings.Palette_Number);
-  Debug("Random          ==> ");  
+  Debug(F("Random          ==> "));  
 Debugln(WS2812_Settings.Random);
-  Debug("Time Stretch    ==> ");
+  Debug(F("Time Stretch    ==> "));
 Debugln(WS2812_Settings.Time_Stretch);
-  Debug("Total X         ==> ");
+  Debug(F("Total X         ==> "));
 Debugln(WS2812_Settings.Total_X);
-  Debug("Effect Count    ==> ");
+  Debug(F("Effect Count    ==> "));
 Debugln(WS2812_Settings.Effect_Count);
-  Debug("Effect Min Size ==> ");
+  Debug(F("Effect Min Size ==> "));
 Debugln(WS2812_Settings.Effect_Min_Size);
-  Debug("Effect Max Size ==> ");
+  Debug(F("Effect Max Size ==> "));
 Debugln(WS2812_Settings.Effect_Max_Size);
-  Debug("Effect Option   ==> ");
+  Debug(F("Effect Option   ==> "));
 Debugln(WS2812_Settings.Effect_Option);
-Debugln("End-------------------------"); 
+Debugln(F("End-------------------------")); 
 
         String Rstring, Gstring, Bstring;
         uint8_t R, G, B; 
@@ -2846,13 +2241,13 @@ Debugln("End-------------------------");
         } 
 
 
-      Debug("Colour debugging (String) R=") ; 
+      Debug(F("Colour debugging (String) R=")) ; 
       Debug(Rstring); 
-      Debug(", G=");
+      Debug(F(", G="));
       Debug(Gstring);
-      Debug(", B=");
+      Debug(F(", B="));
       Debug(Bstring); 
-      Debug(" ==> "); 
+      Debug(F(" ==> ")); 
       WebRGBcolour = Rstring + Gstring + Bstring; 
       WebRGBcolour.toUpperCase();
 
@@ -2874,15 +2269,14 @@ if (location != 0) {
 
 void SendMQTTsettings () {
   
-  //Serial.println("Once only task hit"); 
-  String message = "effect:"; 
+  String message = F("effect:"); 
 
   for (uint8_t i = 0; i < numberofmodes; i++)  {
     message += String(MODE_STRING[i]); 
     if (i < (numberofmodes - 1)) { message += ","; }; 
    }
 
-    send_mqtt_msg("effectlist", message); 
+    send_mqtt_msg(F("effectlist"), message); 
 
     send_current_settings(); 
 

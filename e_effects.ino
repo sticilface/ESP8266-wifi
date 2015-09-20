@@ -423,7 +423,7 @@ void cache StripOFF() {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
-// 
+//              RgbColour
 // 
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -533,7 +533,7 @@ void cache RGBcolour () {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
-// 
+//                    Rainbow cycle
 // 
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -998,11 +998,6 @@ const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ;
         };
 
         animator->StartAnimation(pixel, WS2812_Settings.Timer * WS2812_Settings.Effect_Option , animUpdate);
-// 
-// 
-// 
-// 
-// 
 
             Effect_Refresh = false; 
             lasteffectupdate = millis(); 
@@ -1025,128 +1020,13 @@ const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ;
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//                                SNAKES  
+//    
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// void cache AnimatorClass1 () {
-
-// //static uint32_t testimer; 
-
-//   switch(Current_Effect_State) {
-
-//     case PRE_EFFECT:
-//     {
-
-//         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-//         if (animatedobject != NULL) delete animatedobject; // 
-        
-//         const uint8_t numberofanimations = 5; 
-//         animatedobject = new AnimatedObject( strip, animator, numberofanimations); //  ...  pointers to strip, animator number of objects... 
-
-//         static uint8_t coordinate_array[numberofanimations * 2];  // create array to hold the x,y 
-
-
-//     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
-
-//             RgbColor newcolor = RgbColor(0,0,0);
-
-//             if (i == 0) newcolor = RgbColor(255,0,0);
-//             if (i == 1) newcolor = RgbColor(0,255,0);
-//             if (i == 2) newcolor = RgbColor (0,0,255);
-//             if (i > 2 ) newcolor = Wheel(random(255));
-
-//             //RgbColor newcolor = Wheel(random(255));
-
-
-//             uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
-//             uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
-
-//             coordinate_array[i * 2] = x; 
-//             coordinate_array[(i * 2) + 1] = y; 
-
-          
-//             Debugf("Start Pixels %u = (%u,%u) \n", i, x,y );
-
-//           ObjectCallback ObjectUpdate = [i, newcolor, &coordinate_array ](uint8_t &x_t, uint8_t &y_t)
-//             {
-
-//                   X_Y_Coordinates XY;       
-//                   uint16_t pixel; 
-//                   bool OK = false; 
-//                   uint8_t counter = 0; 
-
-//                   XY.X = coordinate_array[  i*2      ];
-//                   XY.Y = coordinate_array[ (i*2) + 1 ];
-
-//                   do {
-//                       counter++;
-//                       X_Y_Coordinates returned_XY = return_adjacent(XY); 
-//                       pixel = return_pixel(returned_XY.X, returned_XY.Y, WS2812_Settings.Total_X) - 1;   
-
-//                       if (!animator->IsAnimating(pixel)) {
-//                           OK = true; 
-//                           coordinate_array[  i*2      ]  = XY.X = returned_XY.X;
-//                           coordinate_array[ (i*2) + 1 ]  = XY.Y = returned_XY.Y; 
-//                           }
-
-//                       if (counter == 5) break; // bail out if it has not found a suitable pixel!  
-//                       } while (!OK) ; 
-
-
-//                   if (OK) {
-//          //Debugf("%u (%u,%u)-> %u | ", i, XY.X, XY.Y, pixel); 
-//                   RgbColor originalColor = RgbColor(0,0,0);
-//          //RgbColor newcolor = Wheel( effectPosition++ % 255 );  //   WS2812_Settings.Color; 
-
-//                             AnimUpdateCallback animUpdate = [newcolor,originalColor,pixel](float progress)
-//                               {
-//                                RgbColor updatedColor; 
-//                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(originalColor, newcolor, progress * 2.0f);
-//                                if (progress > 0.5) updatedColor = RgbColor::LinearBlend(newcolor, originalColor, (progress * 2.0f) - 1.0f );
-//                                strip->SetPixelColor(pixel, updatedColor);
-//                               };
-
-//                   animator->StartAnimation(pixel, WS2812_Settings.Timer * WS2812_Settings.Effect_Option , animUpdate);
-
-//                   };
-
-//              };
-
-//             uint8_t slot = animatedobject->Add(ObjectUpdate, x, y);
-//             Debugf("Started sequence %u \n", slot); 
-//           }; // end of multiple effect count generations... 
-
-//             Pre_effect(); 
-//             lasteffectupdate = millis(); 
-          
-//     }
-
-//     break; 
-
-//     case RUN_EFFECT:
-//       {
-//         static bool triggered = false; 
-     
-//          if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
-
-//           animatedobject->UpdateAll();
-
-//           //Debugln(); 
-//           lasteffectupdate = millis(); 
-//           Effect_Refresh = false; 
-//         }
-
-//       } // end of switch scope
-//       break;
-//     case POST_EFFECT: 
-
-//       delete animatedobject; 
-//       animatedobject = NULL; 
-      
-//       Post_effect(); 
-//       break; 
-
-      
-// } 
-// }
 
 void cache Snakes (bool overlap) {
 typedef std::function<void()> AniObjectCallback;
@@ -1293,23 +1173,9 @@ if (!triggered || Effect_Refresh_colour || random_colour_timer(new_colour_time))
               pVars->effectchanged = false; 
             }
 
-          }  else  { //if (WS2812_Settings.Effect_Option == 0) {
+          }  else  { 
               
-              
-               
-    //          if (WS2812_Settings.Random == true ) {
-
-                      // if (millis() - effect_timer > new_colour_time  || Effect_Refresh_colour ) { 
-                      //         static_colour = random(255); 
-                      //         for (uint8_t i = 0; i < animationCount; i++) {
-                      //                 pVars = &_vars[i]; 
-                      //                 pVars->oldcolour = pVars->colour; 
-                      //                 pVars->newcolour = dim(Return_Palette(Wheel(static_colour), i) ) ; 
-                      //                 pVars->effectchanged = true; 
-                      //         }
-                      //  effect_timer = millis() ;
-                      // }
-    //          } else if (WS2812_Settings.Random == false ) {
+    
 
                               for (uint8_t i = 0; i < animationCount; i++) {
                                       pVars = &_vars[i]; 
@@ -1392,6 +1258,17 @@ if (!triggered || Effect_Refresh_colour || random_colour_timer(new_colour_time))
 
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//                                Strobes  
+//    
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 void cache Strobe () {
   
 static uint16_t old_update_freq; 
@@ -1439,120 +1316,187 @@ static bool effect_state = false;
 
 
 
-////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//                                Adalight  
+//    
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// void cache Empty () {
+void cache Adalight_Flash() {
+
+    strip->ClearTo(RgbColor(255,0,0));
+    strip->Show(); 
+    delay(200);
+    
+    strip->ClearTo(RgbColor(0,255,0));
+    strip->Show(); 
+    delay(200);
+    
+    strip->ClearTo(RgbColor(0,0,255));
+    strip->Show(); 
+    delay(200);
+    
+    strip->ClearTo(RgbColor(0,0,0));
+    strip->Show(); 
+    delay(100); 
+
+  }
+
+  
+void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+  
+  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+  static boolean Adalight_configured;
+  static uint16_t effectbuf_position = 0;
+  enum mode { MODE_INITIALISE = 0, MODE_HEADER, MODE_CHECKSUM, MODE_DATA, MODE_SHOW, MODE_FINISH};
+  static mode state = MODE_INITIALISE;
+  static int effect_timeout = 0;
+  static uint8_t prefixcount = 0;
+  static unsigned long ada_sent = 0; 
+  static unsigned long pixellatchtime = 0;
+  const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
+  static bool SendFailhere = false; 
+  //const unsigned long initializetimeout = 10000; 
+  //static unsigned long initializetime = 0; 
+    //if (!Adalight_configured) {
+    //    Adalight_Flash(); 
+    //    Adalight_configured = true;
+    //}
+
+//    if (pixellatchtime > 0 && (pixellatchtime + serialTimeout) < millis()) {
+//      pixellatchtime = 0; // reset counter / latch to zero should only fire when show pixls has been called!
+//      StripOFF();  // turn off pixels... 
+//      state = MODE_HEADER;  // resume header search....
+//    }
+
+    // if(millis() > initializetime + initializetimeout) state = MODE_INITIALISE; // this goes to initiaase mode...
+
+    if (Current_Effect_State == PRE_EFFECT) { state = MODE_INITIALISE; } ; 
+      //Pre_effect();  
+    // }
+
+    if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH;  
+
+    //if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH; 
 
 
-//   switch(Current_Effect_State) {
+  switch (state) {
 
-//     case PRE_EFFECT:
-//     {
+    case MODE_INITIALISE:
+      Serial.println("Begining of Adalight");
+      timer_effect_tick_timeout = 0; 
+      if(millis() > 60000) Adalight_Flash(); 
+      state = MODE_HEADER;
+      Current_Effect_State = RUN_EFFECT; 
+      //Pre_effect();  
+      //Current_Effect_State = RUN_EFFECT;
 
-//             Pre_effect(); 
+      break; 
+
+    case MODE_HEADER:
+
+      effectbuf_position = 0; // reset the buffer position for DATA collection...
+
+          if(Serial.available()) { // if there is serial available... process it... could be 1  could be 100....
+               
+            for (int i = 0; i < Serial.available(); i++) {  // go through every character in serial buffer looking for prefix...
+
+              if (Serial.read() == prefix[prefixcount]) { // if character is found... then look for next...
+                  prefixcount++;
+              } else prefixcount = 0;  //  otherwise reset....  ////
+
+            if (prefixcount == 3) {
+            effect_timeout = millis(); // generates START TIME.....
+            state = MODE_CHECKSUM;
+            prefixcount =0;
+            break; 
+            } // end of if prefix == 3
+            } // end of for loop going through serial....
+            } else if (!Serial.available() && (ada_sent + 5000) < millis()) {
+                  Serial.print("Ada\n"); // Send "Magic Word" string to host
+                  ada_sent = millis(); 
+            } // end of serial available....
+
+    break;
+
+    case MODE_CHECKSUM:
+
+        if (Serial.available() >= 3) {
+          hi  = Serial.read();
+          lo  = Serial.read();
+          chk = Serial.read();
+          if(chk == (hi ^ lo ^ 0x55)) {
+            state = MODE_DATA;
+          } else {
+            state = MODE_HEADER; // ELSE RESET.......
+          }
+        }
+
+      if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
+
+      break;
+
+    case MODE_DATA:
+
+        //  this bit is what might... be causing the flashing... as it extends past memory stuctures....
+        while (Serial.available() && effectbuf_position < 3 * strip->PixelCount()) {  // was <=  
           
+          pixelsPOINT[effectbuf_position++] = Serial.read();
+          //if (effectbuf_position == 3 * strip->PixelCount()) break; 
+        }
 
-//     }
+      if (effectbuf_position >= 3*pixelCount) { // goto show when buffer has recieved enough data...
+        state = MODE_SHOW;
+        break;
+      } 
 
-//     break; 
-
-//     case RUN_EFFECT:
-//       {
-
-
-//       } // end of switch scope
-//       break;
-//     case POST_EFFECT: 
-
-//       Post_effect(); 
-//       break; 
-
-      
-// } 
-// }
+        if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
 
 
+      break;
 
-//////////////////////
+    case MODE_SHOW:
 
-// void cache AnimatorClass2 () {
+      strip->Dirty(); // MUST USE if you're using the direct buffer copy... 
 
-// static uint32_t testimer; 
+  //    do { SendFail = strip->Show(); } while ( SendFail == 1 ) ;
 
-//   switch(Current_Effect_State) {
+      // SendFailhere = strip->Show();
+       pixellatchtime = millis();
 
-//     case PRE_EFFECT:
-//     {
+      //if (!strip->Show()) state = MODE_HEADER;
+#ifndef ESPUARTWS2812 // NOT needed if driving LEDs using the UART Serial 1.
 
-//         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-//         if (animatedobject != NULL) delete animatedobject; // ...
-//         animatedobject = new AnimatedObject( strip, animator, 5); //  ...  pointers to strip, animator number of objects... 
+    SendFail = strip->Show();  // takes 6ms with 200, take 12ms with 400 ----> so 100 takes 3ms. 
+#else
+    strip->Show();
+#endif
+      state = MODE_HEADER;
 
+      break;
 
-//     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
+    case MODE_FINISH:
 
-//             RgbColor newcolor = Wheel(random(255));
+      Serial.print("END OF ADALIGHT..."); 
+      timer_effect_tick_timeout = 100; 
+      //Current_Effect_State = PRE_EFFECT; 
+      //opState = HoldingOpState; 
+      //state == MODE_INITIALISE; 
+      Post_effect();  
 
-//             uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
-//             uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
-          
-//             Debugf("Start Pixels %u = (%u,%u) \n", i, x, y );
+    break; 
+}
 
-//              ObjectCallback ObjectUpdate = [x,y,i]()
-//                 {
-//                   static bool triggered = false; //  = x; 
-//                   static uint16_t X = 0, Y = 0; 
-
-//                   if (!triggered) { 
-//                     X = x;
-//                     Y = y; 
-//                     triggered = true; 
-//                   }
-                  
-//                   X++;
-//                   Y++; 
-
-//                   Debugf("%u Callback (%u,%u) \n", i, X, Y ); 
-          
-
-//                  };
-
-//             uint8_t slot = animatedobject->Add(ObjectUpdate);
-
-//             Debugf("Started sequence %u \n", slot); 
-
-//           }; // end of multiple effect count generations... 
+      //strip->Show();
 
 
-//             Pre_effect(); 
-//             testimer = millis(); 
-          
+ //initializetime = millis(); // this resets the timer 
 
-//     }
 
-//     break; 
+//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
 
-//     case RUN_EFFECT:
-//       {
-//         static bool triggered = false; 
-     
-//          if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
+}
 
-//           animatedobject->UpdateAll();
-//           lasteffectupdate = millis(); 
-//           Effect_Refresh = false; 
-//         }
 
-//       } // end of switch scope
-//       break;
-//     case POST_EFFECT: 
 
-//       delete animatedobject; 
-//       animatedobject = NULL; 
-      
-//       Post_effect(); 
-//       break; 
-
-      
-// } 
-// }

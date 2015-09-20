@@ -24,8 +24,8 @@ WiFiUDP Udp;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  	NeoPixelBus* strip = NULL; 
-  	NeoPixelAnimator* animator = NULL;
-  	uint8_t* pixelsPOINT = NULL;
-	E131 e131; 
+ NeoPixelBus* strip = NULL; 
+ NeoPixelAnimator* animator = NULL;
+ uint8_t* pixelsPOINT = NULL;
+ E131 e131; 
 

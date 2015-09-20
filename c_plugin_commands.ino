@@ -45,7 +45,7 @@ uint8_t temp,tempb;
       //Serial.print("/n Saved Colours are: ");
 
 // SAVED SETTINGS..... 
-Debug("Loading last op state from EEPROM = ");
+Debug(F("Loading last op state from EEPROM = "));
 current_loaded_preset = EEPROM.read(LastOpState_Address);
 Debugln(current_loaded_preset);
 if(current_loaded_preset > 10) current_loaded_preset = 0;
@@ -60,8 +60,8 @@ initiateWS2812();
 bool AutoRestartValue = EEPROM.read(AutoRestartEffectAddress);
 bool Last = EEPROM.read(ON_OFF_State_Address); 
 
-Debugf("AutoRestartValue = %u \n", AutoRestartValue);
-Debugf("Last ON/OFF = %u \n", Last);
+Debugf(F("AutoRestartValue = %u \n"), AutoRestartValue);
+Debugf(F("Last ON/OFF = %u \n"), Last);
 
 if ( AutoRestartValue == true ) 
     { 
@@ -69,17 +69,18 @@ if ( AutoRestartValue == true )
           //WS2812_mode_string("on");
           HoldingOpState = LastOpState; 
           Current_Effect_State = POST_EFFECT;
-          Debugln("MODE returned to ON");
+          Debugln(F("MODE returned to ON"));
         } else {
           //WS2812_mode_string("off");
           Current_Effect_State = POST_EFFECT; //  Set this to TERMINATE current effect.... 
           HoldingOpState = OFF; 
-          Debugln("MODE returned to OFF");
+          Debugln(F("MODE returned to OFF"));
         }
     }
 
 
-  Debugln("Loaded");
+  Debugln(F("Loaded"));
+  
   timer.setTimeout(10000, SendMQTTsettings);
 
 

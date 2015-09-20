@@ -5,12 +5,12 @@
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Byte DUMP EEPROM to HTML.... Main Page 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
-
+//  ***  I realise that this function needs to be optimised.. it is pretty rubbish...
 
 void ICACHE_FLASH_ATTR handle_bytedump() {
   String bytedump; 
   // your 32s are : 31,63,95,127,159,191,223,255,287,319,351,383,415,447,479,511
-  Serial.println("Begining html dump of EEPROM.");
+  Serial.println(F("Begining html dump of EEPROM."));
 
 server.setContentLength(CONTENT_LENGTH_UNKNOWN);
 
@@ -21,14 +21,18 @@ server.setContentLength(CONTENT_LENGTH_UNKNOWN);
 
 
    int j = 0;
-   bytedump = "<p><table style='width:50%'><tr>";
+   bytedump = F("<p><table style='width:50%'><tr>");
    for (int i = 0; i < 128; i++) // was 128
    {
    char value = EEPROM.read(i);
-   bytedump += "<td>" + String(value) + "</td>";
+     bytedump += F("<td>");
+     bytedump += String(value); 
+     bytedump += F("</td>");
    if (j == 31) 
    { 
-     bytedump += "<td>" + String(i) + "<td></tr><tr>";
+     bytedump += F("<td>");
+     bytedump += String(i);
+     bytedump += F("<td></tr><tr>");
      j = -1;
    }
      j += 1; 
@@ -38,7 +42,7 @@ server.setContentLength(CONTENT_LENGTH_UNKNOWN);
 
    //bytedump = " ";
 
-  bytedump = "<td></tr><tr>";
+  bytedump = F("<td></tr><tr>");
    j = 0;
    for (int i = 128; i < 256; i++) // was 128 -- > 256
    {
@@ -46,10 +50,14 @@ server.setContentLength(CONTENT_LENGTH_UNKNOWN);
    char value[4]; 
    snprintf ( value, 4, "%03d", EEPROM.read(i) );
 
-   bytedump += "<td>" + String(value) + "</td>";
+     bytedump += F("<td>");
+     bytedump += String(value); 
+     bytedump += F("</td>");
    if (j == 31) 
    { 
-     bytedump += "<td>" + String(i) + "<td></tr><tr>";
+     bytedump += F("<td>");
+     bytedump += String(i);
+     bytedump += F("<td></tr><tr>");
      j = -1;
    }
      j += 1; 
@@ -61,16 +69,20 @@ server.setContentLength(CONTENT_LENGTH_UNKNOWN);
 
     //bytedump = " ";
 
- bytedump = "<td></tr><tr>";
+ bytedump = F("<td></tr><tr>");
    j = 0;
    for (int i = 256; i < 384; i++) // was 128 -- > 256
    {
    char value[4]; 
    snprintf ( value, 4, "%03d", EEPROM.read(i) );
-   bytedump += "<td>" + String(value) + "</td>";
+   bytedump += F("<td>");
+     bytedump += String(value); 
+     bytedump += F("</td>");
    if (j == 31) 
    { 
-     bytedump += "<td>" + String(i) + "<td></tr><tr>";
+     bytedump += F("<td>");
+     bytedump += String(i);
+     bytedump += F("<td></tr><tr>");
      j = -1;
    }
      j += 1; 
@@ -80,22 +92,26 @@ server.setContentLength(CONTENT_LENGTH_UNKNOWN);
 
   server.sendContent(bytedump);
 
- bytedump = "<td></tr><tr>";
+ bytedump = F("<td></tr><tr>");
    j = 0;
    for (int i = 384; i < 512; i++) // was 128 -- > 256
    {
    char value[4]; 
    snprintf ( value, 4, "%03d", EEPROM.read(i) );
-   bytedump += "<td>" + String(value) + "</td>";
+   bytedump += F("<td>");
+     bytedump += String(value); 
+     bytedump += F("</td>");
    if (j == 31) 
    { 
-     bytedump += "<td>" + String(i) + "<td></tr><tr>";
+     bytedump += F("<td>");
+     bytedump += String(i);
+     bytedump += F("<td></tr><tr>");
      j = -1;
    }
      j += 1; 
    }
 
-   bytedump += "</table>";
+   bytedump += F("</table>");
 
   server.sendContent(bytedump);
 
@@ -146,7 +162,7 @@ void ICACHE_FLASH_ATTR handle_wifi() {
    buf = insertvariable ( buf, IPtoString(WiFi.localIP() ) ); 
    buf = insertvariable ( buf, String(ssid) ); 
    buf = insertvariable ( buf, IPtoString(MQTTserver) ); 
-   if (mqttclient.connected()) buf = insertvariable ( buf, "Connected" ) ; else buf = insertvariable ( buf, "Disconnected" ) ; 
+   if (mqttclient.connected()) buf = insertvariable ( buf, F("Connected") ) ; else buf = insertvariable ( buf, F("Disconnected") ) ; 
    buf = insertvariable ( buf,   String(deviceid) ); 
    buf = insertvariable ( buf,   String(deviceid) ); 
 
@@ -167,12 +183,13 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   {
     if(WiFi.status() == WL_CONNECTED && strcmp(ssid, WiFi.SSID(i)) == 0)
     {
-     checked = " checked";
+     checked = F(" checked");
     } else
     {
      checked = " ";
     }
-  buf += "<input type='radio' name='ssid' value='" + String(WiFi.SSID(i)) + "'" + checked + ">" + String(WiFi.SSID(i)) + "(" + String(WiFi.RSSI(i)) + ") <br/>";
+  buf += F("<input type='radio' name='ssid' value='") ; 
+  buf += String(WiFi.SSID(i)) + "'" + checked + ">" + String(WiFi.SSID(i)) + "(" + String(WiFi.RSSI(i)) + ") <br/>";
   }
 
   buf += FPSTR(webpage_handlewifi_2); 
@@ -197,7 +214,7 @@ void ICACHE_FLASH_ATTR handle_wifi() {
 
 void ICACHE_FLASH_ATTR handle_io() {
   
-    server.send(200, "text", "IO comming soon");
+    server.send(200, "text", F("IO comming soon"));
 
 }
 
@@ -220,14 +237,14 @@ void handle_misc ()
 
           // UPDATE SERIAL SPEED...  requires reboot to work...
   if (server.hasArg("serial")) {
-            Serial.println("NEW SERIAL RECIEVED..");
+            Serial.println(F("NEW SERIAL RECIEVED.."));
             Serial.end();
             delay(10); 
             currentspeed = (server.arg("serial")).toInt() + 1; 
             serialspeed = baudrates[currentspeed - 1] ; 
             Serial.begin(serialspeed); // 921600 460800 115200
             delay(10);
-            Serial.print("Serial mode recieved: ");
+            Serial.print(F("Serial mode recieved: "));
             Serial.println(currentspeed);
             updateEEPROMflag = true; 
         } ; 
@@ -274,7 +291,9 @@ void handle_misc ()
         selectedhere = "' selected "; 
       } else { selectedhere = "' "; }
 
-    buf += "<option value='" + String(i) + selectedhere + ">" + String(baudrates[i]) + "</option>";
+    buf += F("<option value='");
+    buf += String(i) + selectedhere + ">" + String(baudrates[i]);
+    buf += F("</option>");
   }
 
   server.sendContent(buf);
