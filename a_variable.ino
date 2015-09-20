@@ -114,7 +114,7 @@ RAINBOW,                     // 3
 RAINBOWCYCLE,                // 4
 RANDOM_TOP_BOTTOM,           // 5
 RANDOM_TOP_BOTTOM_LINEAR,    // 6
-SQUARES2,                    // 7
+SQUARES,                    // 7
 SQUARESRANDOM,               // 8
 ADALIGHT,                    // 9
 UDP,                         // 10
@@ -130,7 +130,6 @@ FADEINFADEOUT,
 COOLBLOBS,
 SPIRAL,
 TEST4,
-SQUARES,
 EQ1,
 RANDOMFUNC, 
 ARTNET,  
@@ -153,7 +152,7 @@ static const char *MODE_STRING[] = {
 "Rainbow-Cycle",
 "HSV-Top-Bottom", 
 "Linear-Top-Bottom", 
-"Squares2",
+"Squares",
 "Squares-Random",
 "AdaLight", 
 "UDP", 

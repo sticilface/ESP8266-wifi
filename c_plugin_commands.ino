@@ -60,8 +60,8 @@ initiateWS2812();
 bool AutoRestartValue = EEPROM.read(AutoRestartEffectAddress);
 bool Last = EEPROM.read(ON_OFF_State_Address); 
 
-Debugf(F("AutoRestartValue = %u \n"), AutoRestartValue);
-Debugf(F("Last ON/OFF = %u \n"), Last);
+Debugf("AutoRestartValue = %u \n", AutoRestartValue);
+Debugf("Last ON/OFF = %u \n", Last);
 
 if ( AutoRestartValue == true ) 
     { 

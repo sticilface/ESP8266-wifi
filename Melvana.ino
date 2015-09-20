@@ -12,6 +12,7 @@
 //#define HEAP_TIMER
 //#define STAGING
 //#define WIP // This is work in progress... so probably will break things...
+#define USE_COLOUR_OPERATORS
 
 // ----------------------------------------------------------------------------------- 
 
@@ -21,11 +22,6 @@
 
 #ifdef MDNSSERVICE
 	#include <ESP8266mDNS.h>
-#endif
-
-
-#ifdef STAGING
- 	#include <FS.h>
 #endif
 
 #include <ESP8266WebServer.h>
