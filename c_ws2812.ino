@@ -2747,3 +2747,149 @@ bool random_colour_timer (const uint32_t _time) {
 
 
 
+void cache Save_LED_Settings (uint8_t location) {
+
+  WS2812_Settings.SavedOpState = (uint8_t)LastOpState; 
+  Debugf("Saved opState = %u \n", WS2812_Settings.SavedOpState); 
+  
+  if ( location < 0 || location > 10) return;  // check valid storage range. 
+
+  uint16_t address = START_address_settings + (32 * location); 
+  uint8_t byteswritten = EEPROM_writeAnything( address, WS2812_Settings); 
+
+     if (location == 0 ) EEPROM.write(LastOpState_Address, 0); // if were no longer on preset.. but defualt back to 0
+
+     EEPROM_commit_var = true;
+
+     if (location != 0)   { 
+      current_loaded_preset_changed = false; 
+      current_loaded_preset = location; 
+    }
+
+}
+
+
+void cache Load_LED_Defaults (uint8_t location) {
+
+if ( location < 0 || location > 10) location = 0; 
+uint16_t address = START_address_settings + (32 * location); 
+int bytes_read = EEPROM_readAnything(address, WS2812_Settings);
+
+if (WS2812_Settings.SavedOpState != 0 ) { LastOpState = (operatingState)WS2812_Settings.SavedOpState; };  // Stops last opstate being over written by an OFF..
+
+
+  CurrentAnimationSpeed = WS2812_Settings.Animationspeed; 
+
+
+Serial.print("Settings loaded ------- ");
+Serial.print(bytes_read) ;
+Serial.print(" Bytes read");
+Serial.print(" ------- \n" ); 
+
+  Debug("Op State        ==> ");
+Debugln(WS2812_Settings.SavedOpState);
+  Debug("Timer           ==> ");
+Debugln(WS2812_Settings.Timer);
+  Debug("Animation speed ==> ");
+Debugln(WS2812_Settings.Animationspeed);
+  Debug("Brightness      ==> ");
+Debugln(WS2812_Settings.Brightness);
+  Debug("Colour          ==> ");
+Debug(WS2812_Settings.Color.R);
+Debug("  "); 
+Debug(WS2812_Settings.Color.G);
+Debug("  "); 
+Debugln(WS2812_Settings.Color.B);
+  Debug("Palette         ==> ");
+Debugln(WS2812_Settings.Palette_Choice);
+  Debug("Palette Range   ==> ");
+Debugln(WS2812_Settings.Palette_Range);
+  Debug("Number Colours  ==> ");  
+Debugln(WS2812_Settings.Palette_Number);
+  Debug("Random          ==> ");  
+Debugln(WS2812_Settings.Random);
+  Debug("Time Stretch    ==> ");
+Debugln(WS2812_Settings.Time_Stretch);
+  Debug("Total X         ==> ");
+Debugln(WS2812_Settings.Total_X);
+  Debug("Effect Count    ==> ");
+Debugln(WS2812_Settings.Effect_Count);
+  Debug("Effect Min Size ==> ");
+Debugln(WS2812_Settings.Effect_Min_Size);
+  Debug("Effect Max Size ==> ");
+Debugln(WS2812_Settings.Effect_Max_Size);
+  Debug("Effect Option   ==> ");
+Debugln(WS2812_Settings.Effect_Option);
+Debugln("End-------------------------"); 
+
+        String Rstring, Gstring, Bstring;
+        uint8_t R, G, B; 
+        R = WS2812_Settings.Color.R;
+        G = WS2812_Settings.Color.G;
+        B = WS2812_Settings.Color.B;
+
+
+      if (R == 0) { Rstring = "00" ;
+        } else if  ( R < 16 && R > 0 ) {
+           Rstring = "0" + String(R,HEX); 
+        } else {
+           Rstring = String(R,HEX); 
+        } 
+
+      if (G == 0) { Gstring = "00" ;
+        } else if  ( G < 16 && G > 0 ) {
+           Gstring = "0" + String(G,HEX); 
+        } else {
+           Gstring = String(G,HEX); 
+        } 
+
+      if (B == 0) { Bstring = "00" ;
+        } else if  ( B < 16 && B > 0 ) {
+           Bstring = "0" + String(B,HEX); 
+        } else {
+           Bstring = String(B,HEX); 
+        } 
+
+
+      Debug("Colour debugging (String) R=") ; 
+      Debug(Rstring); 
+      Debug(", G=");
+      Debug(Gstring);
+      Debug(", B=");
+      Debug(Bstring); 
+      Debug(" ==> "); 
+      WebRGBcolour = Rstring + Gstring + Bstring; 
+      WebRGBcolour.toUpperCase();
+
+      Debugln(WebRGBcolour); 
+
+
+      if (IntervalMultiplier == 0) IntervalMultiplier = 1; 
+
+
+if (location != 0) {
+
+    EEPROM.write(LastOpState_Address, location);    
+    EEPROM_commit_var = true; 
+}
+
+
+}
+
+
+void SendMQTTsettings () {
+  
+  //Serial.println("Once only task hit"); 
+  String message = "effect:"; 
+
+  for (uint8_t i = 0; i < numberofmodes; i++)  {
+    message += String(MODE_STRING[i]); 
+    if (i < (numberofmodes - 1)) { message += ","; }; 
+   }
+
+    send_mqtt_msg("effectlist", message); 
+
+    send_current_settings(); 
+
+  
+}

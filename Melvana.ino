@@ -1,4 +1,3 @@
-#define HSL_FLOAT
 #define MDNSSERVICE
 
 
@@ -11,12 +10,6 @@
 // ----------------------------------------------------------------------------------- 
 
 
-#define GAMMA_CORRECTION
-
-#define ESPUARTWS2812 // USE UART to drive pixels, required until bitbanging is fixed. 
-
-#define ANIMATION_LIMIT 250 // limit for number of pixels where animations work.. otherwise it crashes. 
-#define MINIMUM_REFRESH 30 // minimum update frequency for WS2812
 
 #include <WifiUDP.h>
 
@@ -50,3 +43,10 @@
 #ifdef STAGING
 	//ADC_MODE(ADC_VCC);
 #endif
+
+#define HSL_FLOAT
+#define GAMMA_CORRECTION
+#define ESPUARTWS2812 // USE UART to drive pixels, required until bitbanging is fixed. 
+#define ANIMATION_LIMIT 250 // limit for number of pixels where animations work.. otherwise it crashes. 
+#define MINIMUM_REFRESH 30 // minimum update frequency for WS2812
+

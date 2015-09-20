@@ -45,37 +45,6 @@ if ((pub.topic()).indexOf("/toggle/set") > 0) WS2812_toggle_string(pub.payload_s
 if ((pub.topic()).indexOf("/autorestart/set") > 0) WS2812_autorestart_string(pub.payload_string());
 
 
-/*
-
-if ((pub.payload_string()).indexOf('=') > 0) 
-      {
-       String instruction = (pub.payload_string()).substring(0,mqttbuf.indexOf('=') );
-
-       String value = (pub.payload_string()).substring((pub.payload_string()).indexOf('=') +1 ,(pub.payload_string()).length());
-       
-       // Command_Handler (instruction,value);
-         if (instruction == "ssid") ssid_command(value);
-         if (instruction == "password") password_command(value);
-         if (instruction == "deviceid") deviceid_command(value);
-         if (instruction == "mqttserver") mqttserver_command(value);
-         if (instruction == "serial") Serial_Command(value);
-         if (instruction == "debug") debug_command(value);       
-        
-       //action_handler ();
-        if (networkrestart) restartNetworking(); 
-        if (mqttreload) mqttreloadfunc();
-       
-
-       // if (instruction == "mode")  WS2812_mode_string(value);
-       // if (instruction == "timer")  WS2812timer_command_string(value);
-       // if (instruction == "brightness")  WS2812_dim_string(value);
-       // if (instruction == "animationspeed") CurrentAnimationSpeed = value.toInt();
-
-       
-      } 
-      
-*/
-
 
 } // --- end of mqtt callback
 
@@ -156,46 +125,25 @@ void cache mqttbufcharclear ()
 void  send_mqtt_msg (String topic, String message, int type )
 
 {
-  //static long lastmessage; 
 
-  if (!MQTT_enabled) return;
-
-  //char mqtttopicbuf[1000];
- 
- if ( type == 1 ) topic = String(deviceid) +  "/" + topic;
- if ( type == 2 ) topic = "esp/" + topic;
- 
- 
-     
-  // topic.toCharArray(mqtttopicbuf,200);
-  // message.toCharArray(mqttcharbuf,200);
+  if (!MQTT_enabled) return; 
+  if ( type == 1 ) topic = String(deviceid) +  "/" + topic;
+  if ( type == 2 ) topic = "esp/" + topic;
  
   if (mqttclient.connected()) 
     {
-       //if(mqttclient.publish((char*)topic.c_str(), (char*)message.c_str()))
-     // if(mqttclient.publish(topic, message))
-     //  {
-          //  Serial.println("MQTT msg SENT: " + topic + ", Message: " + message);
-     //   } else {
-     //       Serial.println("MQTT msg Failed: " + topic + ", Message: " + message);
-     //   }
-//animator->Pause();
-
-  mqttclient.publish(MQTT::Publish((char*)topic.c_str(), (char*)message.c_str())
-                .set_qos(2)
-               );        
+          mqttclient.publish(MQTT::Publish((char*)topic.c_str(), (char*)message.c_str())
+          .set_qos(2)
+          );        
     }
-    //delay(2);
-
-//animator->Resume();
     
 }
 
+
+
 void  send_mqtt_msg (String topic, String message ) // overloading functon to allow default msg send...
-{
-  
-  send_mqtt_msg ( topic, message, 1); 
-  
+{  
+  send_mqtt_msg ( topic, message, 1);  
 }
 
 
@@ -226,8 +174,6 @@ void cache handle_mqtt() {
 
   }
 
-
-
   String MQTT_enabled_checked_yes;
   String MQTT_enabled_checked_no;
 
@@ -246,26 +192,6 @@ void cache handle_mqtt() {
   MQTT_enabled_checked_no = "checked";
    }
 
-  //int MQTT_enabled_checked = MQTT_enabled;
-  
-//   String content = F("\
-// <!DOCTYPE HTML>\
-//   <head>\
-//     <title> % </title>\
-//     <meta name='viewport' content='width=device-width, initial-scale=1'/>\
-//     <meta http-equiv='Pragma' content='no-cache'>\
-//     <link rel='shortcut icon' href='http://espressif.com/favicon.ico'>\
-//     <style>\
-//        body {background-color: #E6E6FA;}\
-//     </style> \
-//   </head>\
-//       <body><h1> % </h1>\
-//       <title>MQTT Configuration</title></head><body><h1>MQTT Config</h1>\
-//       <form action='/mqtt' method='POST'> ENABLED:\
-//       <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='NO' % > NO \
-//       <input type='radio' onChange='this.form.submit();' name='form_MQTT_enabled' value='YES' %> YES \
-//       </form>");
-
   buf = insertvariable ( FPSTR(webpage_mqtt_1) , String(deviceid));
   buf = insertvariable ( buf, String(deviceid));
   buf = insertvariable ( buf,  MQTT_enabled_checked_no);
@@ -276,63 +202,25 @@ void cache handle_mqtt() {
     server.send(200, "text/html", "");
     WiFiClient client = server.client();
 
-    //server.sendContent(buf);
     server.client().print(buf); 
-   buf = " ";
-// 1 = String(mqttserver_string)
+    buf = " ";
 
- if(MQTT_enabled) {
-  buf += "<br>MQTT Server is: " + String(mqttserver_string) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
+     if(MQTT_enabled) {
+      
+          buf += "<br>MQTT Server is: " + String(mqttserver_string) + "..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>");
+          server.client().print(buf); 
+          buf = insertvariable ( FPSTR(webpage_mqtt_2), String(deviceid));
+          buf = insertvariable ( buf, String(deviceid));
+          buf = insertvariable ( buf, form_Uptime_enabled_no);
+          buf = insertvariable ( buf, form_Uptime_enabled_yes);
+          server.client().print(buf); 
+      }
 
-  //buf = "<br>MQTT Server is: %..." + ((mqttconnected)?"<font color='green'> Connected </font>":"<font color='red'> Disconnected </font>";
-  //buf = insertvariable ( buf, String(deviceid));
-    //server.sendContent(buf);
-    server.client().print(buf); 
-
-
-  // content = F("<br>Current device name is: <a href='http://%.local'>%</a>\
-  // <br><form action='/mqtt' method='POST'>\
-  // New Device Name: <input type='text' id='deviceid' name='deviceid' value=''> (Restart Required)<br>\
-  // MQTT Server IP: <input type='text' id='mqttserver' name='mqttserver' value=''><br>\
-  // Enable Uptime <input type='radio' name='form_Uptime_enabled' value='NO' %> NO <input type='radio' name='form_Uptime_enabled' value='YES' %> YES\
-  // <p><input type='submit' name='reboot' value='Reboot!'/>\
-  // <input type='submit' value='Submit'/>\
-  // </form></p>"); 
-
-  buf = insertvariable ( FPSTR(webpage_mqtt_2), String(deviceid));
-  buf = insertvariable ( buf, String(deviceid));
-  buf = insertvariable ( buf, form_Uptime_enabled_no);
-  buf = insertvariable ( buf, form_Uptime_enabled_yes);
+      server.client().print(htmlendstring); 
 
 
-  //buf += "<input type='radio' name='state' value='1' checked>On<input type='radio' name='state' value='0'>Off<\p>"; 
-  //buf += "\n\nSSID: <input type='text' id='ssid' name='ssid' value=''><br/>";
-  //buf += "\nPassword: <input type='text' name='password' value=''><br/></p>";
-  //buf += "<input type='submit' value='Submit'></form>"; 
-  //buf += "<p><input type='submit' name='reboot' value='Reboot!'/>\n";
-  //buf += "  <input type='submit' name ='scan' value='Scan'/>";   
-    // working buf += "  <input type='button' onClick='window.location.reload()' value='Refresh'/>\n" ;
-  //buf += "  <input type='button' onClick='window.location.replace(location.pathname)' value='Refresh'/>\n" ;
-  //buf += "  <input type='submit' value='Submit'/>" ; 
-  //buf += "</form></p>"; 
-    //server.sendContent(buf);
-    server.client().print(buf); 
-
-}
-    //server.sendContent(buf);
-    server.client().print(htmlendstring); 
-
-  //buf += htmlendstring; 
+      if (networkrestart) restartNetworking(); 
+      if (mqttreload) mqttreloadfunc();
 
 
-
-  //  server.send(200, "text/html", buf);
-
-     
-    if (networkrestart) restartNetworking(); 
-
-    if (mqttreload) mqttreloadfunc();
-
-    //server.send(200, "text/plain", buf);
-  //server.send(200, "text/plain", String("MQTT Coming soon....."));
 }

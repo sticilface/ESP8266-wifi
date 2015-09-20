@@ -133,18 +133,11 @@ void cache debug_command (String value)    {
     Serial.println("DEBUG IS DISBALED");
     if(EEPROM.read(DEBUGenabledbyte) != 0) EEPROM.write(DEBUGenabledbyte, 0);
     EEPROM_commit_var = true;
-    //flipper.detach();
-    //  digitalWrite(13, LOW);  
     send_mqtt_msg ("Status", "Debug disabled");
 
 
 
  }
-
-
-
-
-
 
 }
 
@@ -153,36 +146,15 @@ void cache debug_command (String value)    {
   
 void cache mqttreloadfunc ()
 
-{
-
-  // if (mqttreload) 
-    
+{    
       mqttreload = false;
-      //Serial.println("Disconnecting MQTT Client:..... ");
       mqttclient.disconnect();      
-      delay(10);
-      //Serial.println("Disconnecting MQTT wifiClient:..... ");
-  //    wifiClient.stop();
-  //    delay(10);      
-      //Serial.println("Creating new MQTT Client:..... ");
-  //    WiFiClient wifiClient;
-  //    delay(10);
-      //Serial.println("Calling pubsubclient:..... ");
-      //PubSubClient mqttclient(mqttserver, 1883, callback, wifiClient);
-   //   delay(10);
-      
+      delay(10);     
       initiatemqqt (); 
-                         
-       
+                                
 }
 
 
-  
-void cache Serial_Command (String value)
-
-{
-  Serial.println("#" + value);
-}
 
 
 
