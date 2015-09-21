@@ -1,13 +1,13 @@
 ////// ----- SSID Handle ---------
 void cache ssid_command (String value)
 {
-          //String buf;
+          char bufchar[BUFSIZE];
           value = value.substring(0,BUFSIZE-1);
           value.toCharArray(bufchar, BUFSIZE);
 
           if (strcmp(ssid, bufchar) != 0)
             {
-              Serial.print("New SSID: ");
+              Serial.print(F("New SSID: "));
               networkrestart = true;   //****** MUST UNCOMMENT.......
               wifimode = 2; // Set this to sort out the mode, backup.. 
               if (EEPROM.read(APbyte) != flagvalue) EEPROM.write(APbyte, flagvalue); // Set up Emergency ACCESSS BYTE....
@@ -29,11 +29,12 @@ void cache ssid_command (String value)
 
 void cache password_command (String value)
 {
+          char bufchar[BUFSIZE];
           value = value.substring(0,BUFSIZE-1);
           value.toCharArray(bufchar, BUFSIZE);
           if (strcmp(password, bufchar) != 0)
             {
-              Serial.print("New Password: ");
+              Serial.print(F("New Password: "));
               networkrestart = true;   //****** MUST UNCOMMENT.......
               wifimode = 2;
               if (EEPROM.read(APbyte) != flagvalue) EEPROM.write(APbyte, flagvalue);
@@ -51,12 +52,13 @@ void cache password_command (String value)
 
 void cache deviceid_command (String value)
 {
+          char bufchar[BUFSIZE];
           value = value.substring(0,BUFSIZE-1);
           value.toCharArray(bufchar, BUFSIZE);
           if (strcmp(deviceid, bufchar) != 0)
             {
-              Serial.print("New Deviceid: ");
-              send_mqtt_msg("status","DeviceID-> " + value);
+              Serial.print(F("New Deviceid: "));
+              send_mqtt_msg(F("status"),"DeviceID-> " + value);
 
               for (int i = 0; i < BUFSIZE; ++i) {
                  deviceid[i] = bufchar[i];
@@ -73,6 +75,7 @@ void cache deviceid_command (String value)
 void cache mqttserver_command (String value)
 {
 
+
   IPAddress tempaddress;
   
   for (int i = 0; i < 4; i++) {
@@ -84,7 +87,7 @@ void cache mqttserver_command (String value)
    }
 
    if (MQTTserver != tempaddress) {
-   Serial.print("MQTTserver IPAddress: ");
+   Serial.print(F("MQTTserver IPAddress: "));
    MQTTserver = tempaddress;
    //send_mqtt_msg("Status","MQTTServer-> " + MQTTserver);
    Serial.println(tempaddress);
@@ -110,18 +113,18 @@ void cache mqttserver_command (String value)
 void cache debug_command (String value)    {
 
 
- Serial.println("DEBUG COMMAND IS CALLED");
+ Serial.println(F("DEBUG COMMAND IS CALLED"));
 
  if(value == "timer")
 
  {
 
-    Serial.println("DEBUG IS TIMER");
+    Serial.println(F("DEBUG IS TIMER"));
     DEBUG = 1;
     if(EEPROM.read(DEBUGenabledbyte) != 1) EEPROM.write(DEBUGenabledbyte, 1);
     EEPROM_commit_var = true;
     //flipper.attach(5, flip);
-    send_mqtt_msg ("Status", "Debug set to timer");
+    send_mqtt_msg (F("Status"), F("Debug set to timer"));
 
 
  }
@@ -130,21 +133,14 @@ void cache debug_command (String value)    {
 
  {
     DEBUG = 0;
-    Serial.println("DEBUG IS DISBALED");
+    Serial.println(F("DEBUG IS DISBALED"));
     if(EEPROM.read(DEBUGenabledbyte) != 0) EEPROM.write(DEBUGenabledbyte, 0);
     EEPROM_commit_var = true;
-    //flipper.detach();
-    //  digitalWrite(13, LOW);  
-    send_mqtt_msg ("Status", "Debug disabled");
+    send_mqtt_msg (F("Status"), F("Debug disabled"));
 
 
 
  }
-
-
-
-
-
 
 }
 
@@ -153,44 +149,13 @@ void cache debug_command (String value)    {
   
 void cache mqttreloadfunc ()
 
-{
-
-  // if (mqttreload) 
-    
+{    
       mqttreload = false;
-      //Serial.println("Disconnecting MQTT Client:..... ");
       mqttclient.disconnect();      
-      delay(10);
-      //Serial.println("Disconnecting MQTT wifiClient:..... ");
-  //    wifiClient.stop();
-  //    delay(10);      
-      //Serial.println("Creating new MQTT Client:..... ");
-  //    WiFiClient wifiClient;
-  //    delay(10);
-      //Serial.println("Calling pubsubclient:..... ");
-      //PubSubClient mqttclient(mqttserver, 1883, callback, wifiClient);
-   //   delay(10);
-      
+
+      delay(10);     
       initiatemqqt (); 
-                         
-       
+                                
 }
 
-
-  
-void cache Serial_Command (String value)
-
-{
-  Serial.println("#" + value);
-}
-
-
-
-
-
-
-  
-
-
- // end of action handler....
 

@@ -22,7 +22,7 @@
 
 
 
-void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
+void cache Squares (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
   uint16_t x,y, total_y;
   uint16_t total_x = WS2812_Settings.Total_X; 
@@ -51,8 +51,6 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
   if (Number_of_colours == 0 ) Number_of_colours = 10; // set the default numbers of colours in palette. 
   total_y = return_total_y(total_x); 
   
-     //uint32_t  lower_boundary = map ( WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
-     //uint32_t  upper_boundary = map ( WS2812_Settings.Timer  + ( WS2812_Settings.Timer / 20 ), 1, 2000, 1 , 65000 );
 
   switch(Current_Effect_State) {
 
@@ -60,25 +58,10 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
     effectPosition = 0;   
     if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break ; } //  DO NOT RUN IF ANIMATIONS DISABLED
-     //if (effect_option == 1) fade_to(RgbColor(0,0,0), RGB); 
-    
-    // if (effect_option > 0) {
-     // animator->FadeTo(1000, RgbColor(0,0,0)); // a timer for this should not be necessary as the RUN effect waits for animations to stop running..
-    // }
+
 
       animator->FadeTo(1000,RgbColor(0,0,0)); 
 
-      // for (uint16_t pixel = 0; pixel < pixelCount; pixel++) {
-      // RgbColor originalColor = strip->GetPixelColor(pixel); 
-      // AnimUpdateCallback animUpdate = [=](float progress)
-      //       {
-      //           RgbColor updatedColor = RgbColor::LinearBlend(originalColor, RgbColor(0,0,0), progress);
-      //           strip->SetPixelColor(pixel, updatedColor);
-      //       };
-
-      //       animator->StartAnimation(pixel, 1000 , animUpdate); // might change this to be a random variant...
-
-      //   }
 
        
        lower_boundary_2000 = constrain (WS2812_Settings.Timer  - ( WS2812_Settings.Timer / 3 ), 1, 2000);
@@ -103,23 +86,14 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
       if ( Effect_Refresh == true ) { // This allows a refresh, or brightness change etc...  to re-set up the effect..
         Current_Effect_State = PRE_EFFECT;
         Effect_Refresh = false; 
-        Debugln("Effect Refresh called");
+        Debugln(F("Effect Refresh called"));
         break; 
       }
 
-      //if (Effect_Refresh == true)
-     //Debugf("\n effectposit = %u, numberofpoints = %u, effectstate = %u : ", effectPosition,numberofpoints,(uint8_t)Current_Effect_State );
-       //uint16_t effect_timeout = ;
+
 
      if  ( (millis() - lasteffectupdate > WS2812_Settings.Timer ) && effectPosition < numberofpoints ) {   //   This staggers the effects...
-    ///  if  ( effectPosition < numberofpoints ) {
-//      espcyclecount = ESP.getCycleCount(); 
 
-       //if (effect_option == 1 ) {
-    //Debug(".");
-        //Serial.print("Colour chosen: ");
-        //Serial.println(numbercalled++); 
-      //if (mode == 1) colour = dimbyhsv(colour, (255 - random(0,50) )); // OLD METHOD
       if (mode == 1) square_size = random(WS2812_Settings.Effect_Min_Size  ,  WS2812_Settings.Effect_Max_Size + 1 );
      // checks to see if it is a linear string or not... if less then it is equal to 0 ...
      
@@ -190,31 +164,6 @@ void cache Squares2 (uint8_t mode) { // WORKING RANDOM SQUARE SIZES...
 
 
             color = dim(color);
-
-          // if (effect_option == 3 ) {
-          //   if (counter % numberofpoints == 0) { static_colour = random(255); position = 0 ;} ; 
-          //   //if (position > numberofpoints) position = 0; 
-          //   color = Return_Analogous(Wheel(static_colour), position++, numberofpoints , range) ;
-          //   color = dim(color);
-          //   } else if (effect_option == 4) { 
-          //   color = dim(color);               
-          //   } else { 
-          //   color = dim(Wheel(random(255))); // RgbColor(random(255),random(255),random(255));
-          //   }
-       
-
-       //lower_boundary = WS2812_Settings.Timer * IntervalMultiplier * 1 ;
-       //upper_boundary = WS2812_Settings.Timer * IntervalMultiplier * 100 ;
-       
-
-
-
-
-      //upper_boundary = constrain(upper_boundary, lower_boundary ,65000); // can get rid of this when animation scaling 
-      
-      //Debugf("Time = %u \n", timeforsequence);
-      //timeforsequence = random(( CurrentAnimationSpeed * IntervalMultiplier * 10), (CurrentAnimationSpeed * 1000 * IntervalMultiplier)); //generate same time for each object
-//Debug("5, "); 
 
     for (uint16_t sq_pixel = 0; sq_pixel < (square_size * square_size); sq_pixel++)
         {
@@ -423,7 +372,7 @@ void cache StripOFF() {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
-// 
+//              RgbColour
 // 
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -533,7 +482,7 @@ void cache RGBcolour () {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
-// 
+//                    Rainbow cycle
 // 
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -783,7 +732,7 @@ void cache Random_colour() {
 
  uint16_t  timer = map ( WS2812_Settings.Timer , 1, 2000, 1000 , 60000 );
  RgbColor colour; 
- static uint8_t static_colour; 
+ //static uint8_t static_colour; 
  //static uint32_t temp_timer; 
 
   switch(Current_Effect_State) {
@@ -799,33 +748,41 @@ void cache Random_colour() {
         break;
     
     case RUN_EFFECT:  
-  
-      if (  millis() - lasteffectupdate >  map ( WS2812_Settings.Timer , 1, 2000, 1000 , 600000 )  || Effect_Refresh)  {
 
-        if ( !animator->IsAnimating() || Effect_Refresh ) {
+    {
 
-              effectPosition++ ; 
+    const uint32_t effect_timer = map ( WS2812_Settings.Timer , 1, 2000, 1000 , 600000 ) ;
 
-               if (WS2812_Settings.Random == true ) {
-                 if (effectPosition == 10 || Effect_Refresh ) { static_colour = random(255); effectPosition = 0 ; } ; 
+      if ( millis() - lasteffectupdate >  effect_timer || Effect_Refresh  )  {
 
 
-                 colour = Return_Palette(Wheel(static_colour)) ;
+      random_colour_timer(true);  //  test function to update colour if random is chosen... based on timer... 
 
-               } else {
+
+
+     //   if (  || Effect_Refresh ) {
+
+             // effectPosition++ ; 
+
+             //  if (WS2812_Settings.Random == true ) {
+             //    if (effectPosition == 10 || Effect_Refresh ) { static_colour = random(255); effectPosition = 0 ; } ; 
+
+
+             //    colour = Return_Palette(Wheel(static_colour)) ;
+
+              // } else {
 
                 colour = Return_Palette(WS2812_Settings.Color) ;
 
-               }
+              // }
 
                 dim(colour);
 
                 animator->FadeTo( map ( WS2812_Settings.Timer , 1, 2000, 500 , 5000 ), colour); 
                 
-
                 lasteffectupdate = millis(); 
                 Effect_Refresh = false; 
-            }
+         }
       }
         break;
 
@@ -895,250 +852,11 @@ int packetSize;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 // 
-//        Lava Lamp   function...  
+//                                SNAKES  
 //    
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
-
-
-
-void cache LavaLamp () {
-
-uint16_t x,y;
-int16_t pixel;  
-static XY coordinates; 
-const uint16_t Total_y = return_total_y ( WS2812_Settings.Total_X ) ; 
-//uint8_t* coordinates;        // Holds LED color values (3 bytes each)
-
-  switch(Current_Effect_State) {
-
-    case PRE_EFFECT:
-
-    if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-
-      // generate pixel... 
-
-      coordinates.x = random ( 0, WS2812_Settings.Total_X ); 
-      coordinates.y = random ( 0, Total_y ) ; 
-      pixel = return_pixel(coordinates.x, coordinates.y, WS2812_Settings.Total_X); 
-
-      Debugf("START (%u,%u)-> %u \n", coordinates.x, coordinates.y, pixel); 
-
-    // coordinates = (uint8_t *)malloc(WS2812_Settings.Effect_Max_Size);
-
-    // if (coordinates) 
-    // {
-    //     memset(coordinates, 0, WS2812_Settings.Effect_Max_Size * 3);   //  x, y, pixel..... 
-    // }
-
-      effectPosition = 0; 
-      Pre_effect(); 
-      Effect_Refresh = false; 
-    break; 
-
-    case RUN_EFFECT:
-      {
-
-        if (Effect_Refresh) Current_Effect_State = PRE_EFFECT; 
-
-        if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
-
-          bool OK = false; 
-          uint8_t counter = 0; 
-
-          do {
-            counter++;
-
-            XY returned_XY = return_adjacent(coordinates); 
-            
-            pixel = return_pixel(returned_XY.x, returned_XY.y, WS2812_Settings.Total_X);   
-            Debug("."); 
-            if (pixel > -1 && !animator->IsAnimating(pixel)) {
-              OK = true; 
-              coordinates = returned_XY; 
-              Debugln("");
-            }
-            if (counter == 5) break; 
-          } while (!OK) ; 
-
-
-        if (OK) {
-
-        Debugf("(%u,%u)-> %u", coordinates.x, coordinates.y, pixel); 
-
-        //originalColor = strip->GetPixelColor(pixel);
-        RgbColor originalColor = RgbColor(0,0,0);
-        RgbColor newcolor = Wheel( effectPosition++ % 255 );  //   WS2812_Settings.Color; 
-
-        AnimUpdateCallback animUpdate = [=](float progress)
-        {
-         //  RgbColor updatedColor = RgbColor::LinearBlend(original, dim(WS2812_Settings.Color) ,  progress) ;
-         //   strip->SetPixelColor(pixel, updatedColor);
-
-                float new_progress = progress * 2.0; 
-                if (new_progress >= 1) new_progress = (2.0 - new_progress); 
-                RgbColor updatedColor = RgbColor::LinearBlend(originalColor, newcolor, new_progress);
-                if (progress == 1.0) updatedColor = originalColor; 
-
-                strip->SetPixelColor(pixel, updatedColor);
-
-        };
-
-        animator->StartAnimation(pixel, WS2812_Settings.Timer * WS2812_Settings.Effect_Option , animUpdate);
-// 
-// 
-// 
-// 
-// 
-
-            Effect_Refresh = false; 
-            lasteffectupdate = millis(); 
-          } // end of if OK
-        } // end of timer if
-      } // end of switch scope
-      break;
-    case POST_EFFECT: 
-
-
-
-
-
-
-      Post_effect(); 
-      break; 
-
-      
-} 
-}
-
-
-
-// void cache AnimatorClass1 () {
-
-// //static uint32_t testimer; 
-
-//   switch(Current_Effect_State) {
-
-//     case PRE_EFFECT:
-//     {
-
-//         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-//         if (animatedobject != NULL) delete animatedobject; // 
-        
-//         const uint8_t numberofanimations = 5; 
-//         animatedobject = new AnimatedObject( strip, animator, numberofanimations); //  ...  pointers to strip, animator number of objects... 
-
-//         static uint8_t coordinate_array[numberofanimations * 2];  // create array to hold the x,y 
-
-
-//     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
-
-//             RgbColor newcolor = RgbColor(0,0,0);
-
-//             if (i == 0) newcolor = RgbColor(255,0,0);
-//             if (i == 1) newcolor = RgbColor(0,255,0);
-//             if (i == 2) newcolor = RgbColor (0,0,255);
-//             if (i > 2 ) newcolor = Wheel(random(255));
-
-//             //RgbColor newcolor = Wheel(random(255));
-
-
-//             uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
-//             uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
-
-//             coordinate_array[i * 2] = x; 
-//             coordinate_array[(i * 2) + 1] = y; 
-
-          
-//             Debugf("Start Pixels %u = (%u,%u) \n", i, x,y );
-
-//           ObjectCallback ObjectUpdate = [i, newcolor, &coordinate_array ](uint8_t &x_t, uint8_t &y_t)
-//             {
-
-//                   X_Y_Coordinates XY;       
-//                   uint16_t pixel; 
-//                   bool OK = false; 
-//                   uint8_t counter = 0; 
-
-//                   XY.X = coordinate_array[  i*2      ];
-//                   XY.Y = coordinate_array[ (i*2) + 1 ];
-
-//                   do {
-//                       counter++;
-//                       X_Y_Coordinates returned_XY = return_adjacent(XY); 
-//                       pixel = return_pixel(returned_XY.X, returned_XY.Y, WS2812_Settings.Total_X) - 1;   
-
-//                       if (!animator->IsAnimating(pixel)) {
-//                           OK = true; 
-//                           coordinate_array[  i*2      ]  = XY.X = returned_XY.X;
-//                           coordinate_array[ (i*2) + 1 ]  = XY.Y = returned_XY.Y; 
-//                           }
-
-//                       if (counter == 5) break; // bail out if it has not found a suitable pixel!  
-//                       } while (!OK) ; 
-
-
-//                   if (OK) {
-//          //Debugf("%u (%u,%u)-> %u | ", i, XY.X, XY.Y, pixel); 
-//                   RgbColor originalColor = RgbColor(0,0,0);
-//          //RgbColor newcolor = Wheel( effectPosition++ % 255 );  //   WS2812_Settings.Color; 
-
-//                             AnimUpdateCallback animUpdate = [newcolor,originalColor,pixel](float progress)
-//                               {
-//                                RgbColor updatedColor; 
-//                                if (progress < 0.5) updatedColor = RgbColor::LinearBlend(originalColor, newcolor, progress * 2.0f);
-//                                if (progress > 0.5) updatedColor = RgbColor::LinearBlend(newcolor, originalColor, (progress * 2.0f) - 1.0f );
-//                                strip->SetPixelColor(pixel, updatedColor);
-//                               };
-
-//                   animator->StartAnimation(pixel, WS2812_Settings.Timer * WS2812_Settings.Effect_Option , animUpdate);
-
-//                   };
-
-//              };
-
-//             uint8_t slot = animatedobject->Add(ObjectUpdate, x, y);
-//             Debugf("Started sequence %u \n", slot); 
-//           }; // end of multiple effect count generations... 
-
-//             Pre_effect(); 
-//             lasteffectupdate = millis(); 
-          
-//     }
-
-//     break; 
-
-//     case RUN_EFFECT:
-//       {
-//         static bool triggered = false; 
-     
-//          if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
-
-//           animatedobject->UpdateAll();
-
-//           //Debugln(); 
-//           lasteffectupdate = millis(); 
-//           Effect_Refresh = false; 
-//         }
-
-//       } // end of switch scope
-//       break;
-//     case POST_EFFECT: 
-
-//       delete animatedobject; 
-//       animatedobject = NULL; 
-      
-//       Post_effect(); 
-//       break; 
-
-      
-// } 
-// }
 
 void cache Snakes (bool overlap) {
 typedef std::function<void()> AniObjectCallback;
@@ -1270,7 +988,12 @@ if (Effect_Refresh) {
   Effect_Refresh = false; 
 }
 
-if (!triggered || Effect_Refresh_colour) {
+
+const uint32_t new_colour_time = map (WS2812_Settings.Timer, 0, 255, 20000, 300000) ; 
+
+
+
+if (!triggered || Effect_Refresh_colour || random_colour_timer(new_colour_time)) {
 
         if (WS2812_Settings.Palette_Choice == WHEEL)  {
 
@@ -1280,23 +1003,9 @@ if (!triggered || Effect_Refresh_colour) {
               pVars->effectchanged = false; 
             }
 
-          }  else  { //if (WS2812_Settings.Effect_Option == 0) {
+          }  else  { 
               
-              const uint32_t new_colour_time = map (WS2812_Settings.Timer, 0, 255, 20000, 300000) ; 
-              
-              if (WS2812_Settings.Random == true ) {
-
-                      if (millis() - effect_timer > new_colour_time  || Effect_Refresh_colour ) { 
-                              static_colour = random(255); 
-                              for (uint8_t i = 0; i < animationCount; i++) {
-                                      pVars = &_vars[i]; 
-                                      pVars->oldcolour = pVars->colour; 
-                                      pVars->newcolour = dim(Return_Palette(Wheel(static_colour), i) ) ; 
-                                      pVars->effectchanged = true; 
-                              }
-                       effect_timer = millis() ;
-                      }
-              } else if (WS2812_Settings.Random == false ) {
+    
 
                               for (uint8_t i = 0; i < animationCount; i++) {
                                       pVars = &_vars[i]; 
@@ -1304,9 +1013,10 @@ if (!triggered || Effect_Refresh_colour) {
                                       pVars->newcolour = dim(Return_Palette(WS2812_Settings.Color, i) ); 
                                       pVars->effectchanged = true; 
                               }
+
               effect_timer = millis() ;            
               triggered = true; 
-              }
+      //        }
 
           }
     Effect_Refresh_colour = false; 
@@ -1378,6 +1088,17 @@ if (!triggered || Effect_Refresh_colour) {
 
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//                                Strobes  
+//    
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 void cache Strobe () {
   
 static uint16_t old_update_freq; 
@@ -1423,120 +1144,201 @@ static bool effect_state = false;
 } 
 }
 
-////////////////////////////////////
-
-// void cache Empty () {
 
 
-//   switch(Current_Effect_State) {
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//                                Adalight  
+//    
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//     case PRE_EFFECT:
-//     {
+void cache Adalight_Flash() {
 
-//             Pre_effect(); 
+    strip->ClearTo(RgbColor(255,0,0));
+    strip->Show(); 
+    delay(200);
+    
+    strip->ClearTo(RgbColor(0,255,0));
+    strip->Show(); 
+    delay(200);
+    
+    strip->ClearTo(RgbColor(0,0,255));
+    strip->Show(); 
+    delay(200);
+    
+    strip->ClearTo(RgbColor(0,0,0));
+    strip->Show(); 
+    delay(100); 
+
+  }
+
+
+void cache Adalight () {    //  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+  
+  uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i;
+  static boolean Adalight_configured;
+  static uint16_t effectbuf_position = 0;
+  enum mode { MODE_INITIALISE = 0, MODE_HEADER, MODE_CHECKSUM, MODE_DATA, MODE_SHOW, MODE_FINISH};
+  static mode state = MODE_INITIALISE;
+  static int effect_timeout = 0;
+  static uint8_t prefixcount = 0;
+  static unsigned long ada_sent = 0; 
+  static unsigned long pixellatchtime = 0;
+  const unsigned long serialTimeout = 15000; // turns LEDs of if nothing recieved for 15 seconds..
+  static bool SendFailhere = false; 
+
+
+    if (Current_Effect_State == PRE_EFFECT) { state = MODE_INITIALISE; } ; 
+      //Pre_effect();  
+    // }
+
+    if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH;  
+
+    //if (Current_Effect_State == POST_EFFECT) state = MODE_FINISH; 
+
+
+  switch (state) {
+
+    case MODE_INITIALISE:
+      Serial.println(F("Begining of Adalight"));
+      timer_effect_tick_timeout = 0; 
+      if(millis() > 60000) Adalight_Flash(); 
+      state = MODE_HEADER;
+      Current_Effect_State = RUN_EFFECT; 
+      //Pre_effect();  
+      //Current_Effect_State = RUN_EFFECT;
+
+      break; 
+
+    case MODE_HEADER:
+
+      effectbuf_position = 0; // reset the buffer position for DATA collection...
+
+          if(Serial.available()) { // if there is serial available... process it... could be 1  could be 100....
+               
+            for (int i = 0; i < Serial.available(); i++) {  // go through every character in serial buffer looking for prefix...
+
+              if (Serial.read() == prefix[prefixcount]) { // if character is found... then look for next...
+                  prefixcount++;
+              } else prefixcount = 0;  //  otherwise reset....  ////
+
+            if (prefixcount == 3) {
+            effect_timeout = millis(); // generates START TIME.....
+            state = MODE_CHECKSUM;
+            prefixcount =0;
+            break; 
+            } // end of if prefix == 3
+            } // end of for loop going through serial....
+            } else if (!Serial.available() && (ada_sent + 5000) < millis()) {
+                  Serial.print("Ada\n"); // Send "Magic Word" string to host
+                  ada_sent = millis(); 
+            } // end of serial available....
+
+    break;
+
+    case MODE_CHECKSUM:
+
+        if (Serial.available() >= 3) {
+          hi  = Serial.read();
+          lo  = Serial.read();
+          chk = Serial.read();
+          if(chk == (hi ^ lo ^ 0x55)) {
+            state = MODE_DATA;
+          } else {
+            state = MODE_HEADER; // ELSE RESET.......
+          }
+        }
+
+      if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
+
+      break;
+
+    case MODE_DATA:
+
+        //  this bit is what might... be causing the flashing... as it extends past memory stuctures....
+        while (Serial.available() && effectbuf_position < 3 * strip->PixelCount()) {  // was <=  
           
+          pixelsPOINT[effectbuf_position++] = Serial.read();
+        }
 
-//     }
+      if (effectbuf_position >= 3*pixelCount) { // goto show when buffer has recieved enough data...
+        state = MODE_SHOW;
+        break;
+      } 
 
-//     break; 
-
-//     case RUN_EFFECT:
-//       {
-
-
-//       } // end of switch scope
-//       break;
-//     case POST_EFFECT: 
-
-//       Post_effect(); 
-//       break; 
-
-      
-// } 
-// }
+        if ((effect_timeout + 1000) < millis()) state = MODE_HEADER; // RESET IF BUFFER NOT FILLED WITHIN 1 SEC.
 
 
+      break;
 
-//////////////////////
+    case MODE_SHOW:
 
-// void cache AnimatorClass2 () {
+     {
+          strip->Dirty(); // MUST USE if you're using the direct buffer copy... 
+          pixellatchtime = millis();
+          strip->Show();
+          state = MODE_HEADER;
+      }
+      break;
 
-// static uint32_t testimer; 
+    case MODE_FINISH:
 
-//   switch(Current_Effect_State) {
+      Serial.print(F("END OF ADALIGHT...")); 
+      timer_effect_tick_timeout = 100; 
+      Post_effect();  
 
-//     case PRE_EFFECT:
-//     {
-
-//         if (!Enable_Animations) { Current_Effect_State = POST_EFFECT ; HoldingOpState = OFF; break;  } //  DO NOT RUN IF ANIMATIONS DISABLED
-//         if (animatedobject != NULL) delete animatedobject; // ...
-//         animatedobject = new AnimatedObject( strip, animator, 5); //  ...  pointers to strip, animator number of objects... 
-
-
-//     for (uint8_t i = 0; i < WS2812_Settings.Effect_Count; i++ ) {
-
-//             RgbColor newcolor = Wheel(random(255));
-
-//             uint8_t x = random ( 0, WS2812_Settings.Total_X ); 
-//             uint8_t y = random ( 0, return_total_y ( WS2812_Settings.Total_X ) ) ; 
-          
-//             Debugf("Start Pixels %u = (%u,%u) \n", i, x, y );
-
-//              ObjectCallback ObjectUpdate = [x,y,i]()
-//                 {
-//                   static bool triggered = false; //  = x; 
-//                   static uint16_t X = 0, Y = 0; 
-
-//                   if (!triggered) { 
-//                     X = x;
-//                     Y = y; 
-//                     triggered = true; 
-//                   }
-                  
-//                   X++;
-//                   Y++; 
-
-//                   Debugf("%u Callback (%u,%u) \n", i, X, Y ); 
-          
-
-//                  };
-
-//             uint8_t slot = animatedobject->Add(ObjectUpdate);
-
-//             Debugf("Started sequence %u \n", slot); 
-
-//           }; // end of multiple effect count generations... 
+    break; 
+}
 
 
-//             Pre_effect(); 
-//             testimer = millis(); 
-          
 
-//     }
+}
 
-//     break; 
 
-//     case RUN_EFFECT:
-//       {
-//         static bool triggered = false; 
-     
-//          if (  millis() - lasteffectupdate >  WS2812_Settings.Timer || Effect_Refresh)  {
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+// 
+//                                Theatre Chase Rainbow...   
+//    
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//           animatedobject->UpdateAll();
-//           lasteffectupdate = millis(); 
-//           Effect_Refresh = false; 
-//         }
 
-//       } // end of switch scope
-//       break;
-//     case POST_EFFECT: 
 
-//       delete animatedobject; 
-//       animatedobject = NULL; 
-      
-//       Post_effect(); 
-//       break; 
+void cache theatreChaseRainbow() {
 
-      
-// } 
-// }
+  if (Current_Effect_State == PRE_EFFECT) Pre_effect();  
+
+
+  static uint16_t colourpoint = 0; 
+  static uint8_t animationstate = 0 ; 
+  if (millis() > (lasteffectupdate ) ) {
+
+
+  //for (int j=0; j < 256; j++) {       // cycle all 256 colors in the wheel
+
+        for (int i=0; i < pixelCount; i=i+3) {
+          strip->SetPixelColor(i+animationstate, dim(Wheel(i+colourpoint)));    //turn every third pixel on
+        }
+
+
+        for (int i=0; i < pixelCount; i=i+3) {
+          strip->SetPixelColor(i+ animationstate - 1, 0);    //turn every third pixel on
+        }
+        animationstate++; 
+
+        if (animationstate == 3) animationstate = 0; // reset animation state. 
+
+
+  
+    colourpoint++; 
+    lasteffectupdate = millis() + WS2812_Settings.Timer ;
+  }  //  end of timer..... 
+
+
+//if (Current_Effect_State == POST_EFFECT) { Current_Effect_State = PRE_EFFECT; opState = HoldingOpState; } ; 
+if (Current_Effect_State == POST_EFFECT) Post_effect();  
+
+}
+
+

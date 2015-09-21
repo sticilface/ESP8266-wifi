@@ -1,4 +1,8 @@
-  
+  const char htmlendstring[] PROGMEM = R"=====(
+<p><a href='/'>Home</a>  <a href='/wifi'>WiFi</a>  <a href='/mqtt'>MQTT</a>  <a href='/misc'>MISC</a>  <br><a href='/io'>Input/Output</a> <a href='/test'>Test</a> <a href='/ws2812'>WS2812</a>
+  )=====";  
+
+
 const char webpage_misc_1[] PROGMEM = R"=====(
   <!DOCTYPE HTML><html><body bgcolor='#E6E6FA'><head> <meta http-equiv='refresh' content='30'> <meta name='viewport' content='initial-scale=1'><title> % ESP Melvide</title></head><body><h1> Misc Functions</h1>
   <p> Version = % 
