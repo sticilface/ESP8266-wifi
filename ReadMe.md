@@ -35,7 +35,7 @@ Instructions
 
 First compile and flash to ESP8266 using the arduino IDE.  
 
-First boot of ESP should make an AP that you can join.  Navigate to http://192.168.4.1/wifi and configure wifi settings, device name and MQTT server.  Press submit, wait 30 seconds, and hit refresh.  It should now give you the IP address it has recieved.  
+First boot of ESP should make an AP that you can join.  Navigate to http://192.168.4.1/wifi and configure wifi settings, device name and MQTT server.  Press submit, wait 30 seconds, and hit refresh.  It should now give you the IP address it has recieved.  This bit seems to be a bit shakey, with the ESP rebooting, sometimes it works fine...
 
 Currently the WS2812 LEDs must be attached to GPIO2, I've found best results to use this as a level converter - 74HCT245N. 
 
