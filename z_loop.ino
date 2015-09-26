@@ -1,52 +1,39 @@
 void loop( void ) {
-  // put your main code here, to run repeatedly:
+
 
 #ifdef HEAP_TIMER
   static uint32_t  loop_timeout = 0; //loop_cycle = 0 ; 
 #endif
-//loop_time = 0, loop_count = 0,
 
 if (!isOTAupdate) {
 
  	  mqttclient.loop();
- 	//optimistic_yield(1000);
- 	  yield();
-  	
+ 	  yield();  	
+
   	server.handleClient();
-  	
   	yield();
   	
   	timer.run();
-  	
   	yield();
 
   	loop_Plugin();
-
   	yield();
 
- // #ifdef MDNSSERVICE
- //   	MDNS.update();
- // #endif
-
-//if (wifimode == 1) mdns.update();  
 
 //  Async EEPROM write... wait 500mSec
-//
-	if (EEPROM_commit_var == true) {
-		static unsigned long eepromcommit_timer = 0;
-		if (eepromcommit_timer == 0 ) eepromcommit_timer = millis();
-			if (millis() - eepromcommit_timer > 200) { // wait two seconds to save changes...
-			EEPROM.commit(); // takes 35msec to perform. 
-			eepromcommit_timer = 0;
-			EEPROM_commit_var = false;
-	//		Debugln("EEPROM written!"); 
+
+  	if (EEPROM_commit_var == true) {
+	   	static unsigned long eepromcommit_timer = 0;
+	  	if (eepromcommit_timer == 0 ) eepromcommit_timer = millis();
+	   		if (millis() - eepromcommit_timer > 200) { // wait two seconds to save changes...
+		  	EEPROM.commit(); // takes 35msec to perform. 
+			  eepromcommit_timer = 0;
+			  EEPROM_commit_var = false;
 			}	 
-	}
+	 }
 
   }; // END of NOT OTA check!  
 
-//delay(1); /// test loop... see how it goes... 
-//loop_count++;
 
 #ifdef HEAP_TIMER
  if (millis() - loop_timeout > 500) {
@@ -54,16 +41,6 @@ if (!isOTAupdate) {
     loop_timeout = millis();
  };
 #endif
-
-//loop_count = loop_count / 10 ; 
-
- //Serial.printf( "Loops per second = %u,  Average cycles per loop = %u \n", loop_count , temp  ); 
-
-
- //loop_cycle = ESP.getCycleCount(); 
- //loop_count = 0;
- //loop_timeout = millis();
-//}
 
  
 OTA_UPDATE();

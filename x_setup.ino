@@ -2,16 +2,10 @@
 void setup( void ) {
   // put your setup code here, to run once:
 
-  //WiFi.disconnect();
 
   EEPROM.begin(512);
-  
-  //SPIFFS.begin();
+  bool wiped = firstboot(); 
 
-
- bool wiped = firstboot(); 
-
-  //long serialspeed = 0;
 
   currentspeed = EEPROM.read(SERIALspeedbyte);
 
@@ -21,14 +15,11 @@ void setup( void ) {
     EEPROM_commit_var = true;
   }; 
 
-
-    serialspeed = baudrates[currentspeed - 1] ; 
-
-  
+  serialspeed = baudrates[currentspeed - 1] ; 
 
   Serial.begin(serialspeed);
-
   Serial.print(F("\n\n"));
+
 
 #ifdef DEBUG_YES
   Serial.setDebugOutput(true);
@@ -36,8 +27,6 @@ void setup( void ) {
 #else
   Serial.setDebugOutput(false);
 #endif
-
-
 
 
   if (wiped) Debugln(F("FIRST BOOT EEPROM WIPED")); 
@@ -60,8 +49,6 @@ void setup( void ) {
     Debugln(F("NORMAL MODE"));
     wifimode = 1;
     } 
-
-    
 
   scannetworks();
 
@@ -98,7 +85,6 @@ void setup( void ) {
   timer.setInterval(MQTTtimeout, initiatemqqt);
 
 
-  
 if(WiFi.waitForConnectResult() == WL_CONNECTED){
 
 #ifdef MDNSSERVICE  

@@ -1,10 +1,13 @@
-
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//                  MQTT config, callback, webpage....
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 void cache MQTTcallback (const MQTT::Publish& pub) {
-
 
  if (pub.payload_string() == F("identify") )
       {
@@ -18,19 +21,7 @@ void cache MQTTcallback (const MQTT::Publish& pub) {
 if (pub.payload_string() == F("reboot") || pub.payload_string() == F("restart")) ESP.reset(); //system_restart(); // abort();
 
 
-//  NEW METHODS.... 
-if ((pub.topic()).indexOf("/effect/set") > 0) WS2812_effect_string(pub.payload_string());
-if ((pub.topic()).indexOf("/mode/set") > 0) WS2812_mode_string(pub.payload_string());
-if ((pub.topic()).indexOf("/timer/set") > 0) WS2812timer_command_string(pub.payload_string());
-if ((pub.topic()).indexOf("/brightness/set") > 0) WS2812_dim_string(pub.payload_string());
-if ((pub.topic()).indexOf("/colour/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
-if ((pub.topic()).indexOf("/color/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
-if ((pub.topic()).indexOf("/loadpreset/set") > 0) WS2812_preset_string(pub.payload_string());
-if ((pub.topic()).indexOf("/savepreset/set") > 0) { Save_LED_Settings(pub.payload_string().toInt()); };
-if ((pub.topic()).indexOf("/toggle/set") > 0) WS2812_toggle_string(pub.payload_string());
-if ((pub.topic()).indexOf("/autorestart/set") > 0) WS2812_autorestart_string(pub.payload_string());
-
-
+mqtt_plugin_handle( pub ); // passes it on to function in plugin_commands  
 
 } // --- end of mqtt callback
 
@@ -75,14 +66,9 @@ void cache initiatemqqt ()
                    .add_topic(mqttesptopic, 2)
                    .add_topic(deviceid,2)  // this is the esp topic... 
                    );
-                //delay(5);
                 send_mqtt_msg( String(deviceid), IPtoString(WiFi.localIP()) ,2); // the 2 signifies that it publishes under the esp/ topic and not device
-                //delay(5);
                 send_mqtt_msg( F("IP"), IPtoString(WiFi.localIP() ));   
-                //delay(5);
                 send_mqtt_msg( F("Version"), version);                
-                //delay(5);
-
                 send_mqtt_msg( F("Status"), F("Device Ready"));
               
             } else
@@ -125,6 +111,7 @@ void  send_mqtt_msg (String topic, String message ) // overloading functon to al
 }
 
 
+// MQTT webpage
 void cache handle_mqtt() {
   
  if (server.hasArg("mqttserver")) mqttserver_command(server.arg("mqttserver")); 

@@ -12,15 +12,35 @@ if (WiFi.status() == WL_CONNECTED)  {
 
 }
 
+
+
+//  handles MQTT response for plugin... 
+
+void cache mqtt_plugin_handle( const MQTT::Publish& pub ) {
+
+
+if ((pub.topic()).indexOf("/effect/set") > 0) WS2812_effect_string(pub.payload_string());
+if ((pub.topic()).indexOf("/mode/set") > 0) WS2812_mode_string(pub.payload_string());
+if ((pub.topic()).indexOf("/timer/set") > 0) WS2812timer_command_string(pub.payload_string());
+if ((pub.topic()).indexOf("/brightness/set") > 0) WS2812_dim_string(pub.payload_string());
+if ((pub.topic()).indexOf("/colour/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
+if ((pub.topic()).indexOf("/color/set") > 0) WS2812_Set_New_Colour(pub.payload_string());
+if ((pub.topic()).indexOf("/loadpreset/set") > 0) WS2812_preset_string(pub.payload_string());
+if ((pub.topic()).indexOf("/savepreset/set") > 0) { Save_LED_Settings(pub.payload_string().toInt()); };
+if ((pub.topic()).indexOf("/toggle/set") > 0) WS2812_toggle_string(pub.payload_string());
+if ((pub.topic()).indexOf("/autorestart/set") > 0) WS2812_autorestart_string(pub.payload_string());
+
+
+
+} 
+
 void cache setup_Plugin () {
 
   server.on("/ws2812", handle_WS2812);
   
   server.on("/lightsconfig", handle_lights_config);
 
-uint8_t temp,tempb; 
-
-
+  uint8_t temp,tempb; 
 
     if (EEPROM.read(PixelPIN_enablebyte) == flagvalue) {
       pixelPIN = EEPROM.read(PixelPIN_address);
