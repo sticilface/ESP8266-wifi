@@ -12,7 +12,7 @@
 //#define HEAP_TIMER
 //#define STAGING
 //#define WIP // This is work in progress... so probably will break things...
-#define USE_COLOUR_OPERATORS
+//#define USE_COLOUR_OPERATORS  This doesn't work 
 
 // ----------------------------------------------------------------------------------- 
 
