@@ -181,7 +181,7 @@ void ICACHE_FLASH_ATTR handle_wifi() {
   String checked;
   for (int i = 0; i < wifinetworksfound; ++i)
   {
-    if(WiFi.status() == WL_CONNECTED && strcmp(ssid, WiFi.SSID(i)) == 0)
+    if(WiFi.status() == WL_CONNECTED && String(ssid) == WiFi.SSID(i))
     {
      checked = F(" checked");
     } else

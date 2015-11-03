@@ -158,24 +158,46 @@ if (WiFi.status() == WL_CONNECTED) Serial.println("Wifi Status: Connected");
 } 
 
 
-void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
+void cache Save_String (const char * NewValue ,int writeaddress, int writeaddressbyte)
 
 {
 
               //  int writeaddress = ssidAddress;  
               //int writeaddressbyte = ssidAddressbyte;        
-              Serial.print("Saving new...");
-              String WipeString = "";
+             // Serial.print("\nSaving new...");
+             // Serial.println(NewValue); 
+              //String WipeString = "";
               //char wipestring[BUFSIZE]; 
               //int j = 0;
-              for (int i = 0; i < (BUFSIZE-1); i++)
-              {
-                WipeString += "?";
+              // for (int i = 0; i < (BUFSIZE-1); i++)
+              // {
+              //   WipeString += "?";
+              // }
+
+              for (int i=0 ; i < BUFSIZE; i++) {
+
+                EEPROM.write(writeaddress + i, '?'); 
+
+              }            
+
+              size_t sizetowrite = strlen(NewValue);
+              Serial.print("SIZE = ");
+              Serial.println(sizetowrite); 
+
+              Serial.print("Written buffer: ");
+
+              for (int i =0 ;i < sizetowrite; i++) {
+
+                Serial.print( NewValue[i]);
+                EEPROM.write(writeaddress + i, NewValue[i]); 
+
               }
 
+              EEPROM.write(writeaddress + sizetowrite, 0); // null terminate 
 
-              EEPROM_writeAnything( writeaddress, &WipeString[0]); 
-              EEPROM_writeAnything( writeaddress, NewValue); 
+              //Serial.println(" END"); 
+              //EEPROM_writeAnything( writeaddress, &WipeString[0]);               
+              //EEPROM_writeAnything( writeaddress, NewValue); 
 
               //eeprom_write_string(writeaddress, &WipeString[0]);
               //eeprom_write_string(writeaddress, NewValue);
@@ -187,6 +209,8 @@ void cache Save_String (char * NewValue,int writeaddress,int writeaddressbyte)
                    } else Serial.println();
               
                EEPROM_commit_var = true;
+
+               EEPROM.commit(); 
 }
 
 
