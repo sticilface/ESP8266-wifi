@@ -188,6 +188,7 @@ void cache Save_String (const char * NewValue ,int writeaddress, int writeaddres
 
               for (int i =0 ;i < sizetowrite; i++) {
 
+
                 Serial.print( NewValue[i]);
                 EEPROM.write(writeaddress + i, NewValue[i]); 
 
