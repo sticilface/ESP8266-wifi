@@ -18,7 +18,7 @@
 
 
 #include <ESP8266WiFi.h>
-#include <WifiUDP.h>
+#include <WiFiUdp.h>
 
 #ifdef MDNSSERVICE
 	#include <ESP8266mDNS.h>
