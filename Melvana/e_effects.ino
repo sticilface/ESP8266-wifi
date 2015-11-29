@@ -776,9 +776,9 @@ void cache Random_colour() {
 
               // }
 
-                dim(colour);
+              //  dim(colour);
 
-                animator->FadeTo( map ( WS2812_Settings.Timer , 1, 2000, 500 , 5000 ), colour); 
+                animator->FadeTo( map ( WS2812_Settings.Timer , 1, 2000, 500 , 5000 ), dim(colour)); 
                 
                 lasteffectupdate = millis(); 
                 Effect_Refresh = false; 
