@@ -1,3 +1,7 @@
+this project is no longer maintained.  Please see https://github.com/sticilface/Melvanimate for current project. 
+Thanks
+
+
 # ESP8266 Arduino Sketch for WS2812 Control
 
 
